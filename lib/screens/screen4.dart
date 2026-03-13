@@ -1,131 +1,117 @@
 import 'package:flutter/material.dart';
-import 'screen5.dart'; // Import Screen 5
+
+import '../shared/design/app_design_tokens.dart';
+import '../shared/gamification/gamification.dart';
+import '../shared/motion/app_motion_navigation.dart';
+import 'screen5.dart';
 
 class Screen4 extends StatelessWidget {
-  final String name; // Variable to hold the name passed from Screen 3
-
-  // Constructor to accept the name argument
   const Screen4({super.key, required this.name});
+
+  final String name;
 
   @override
   Widget build(BuildContext context) {
+    final gamification = GamificationScope.of(context);
     return Scaffold(
-      backgroundColor: Color(0xFFF6E2A0), // Soft yellow background
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Color(
-          0xFFF6E2A0,
-        ), // Matching AppBar color to background
-        elevation: 0, // No shadow for a flat look
-        title: Text(
-          "Apa Itu Imbuhan?",
-          style: TextStyle(color: Colors.blue, fontSize: 22),
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Apa Itu Imbuhan?'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.blue),
-          onPressed: () {
-            Navigator.pop(context); // Go back on press
-          },
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // AmiN character Image
-            Image.asset(
-              'assets/aminPage4.png', // Replace with your AmiN character image
-              height: 150,
-            ),
-            SizedBox(height: 20),
-
-            // Welcome text with the passed name
-            Text(
-              'Hello, $name!', // Display the passed name
-              style: TextStyle(fontSize: 24, color: Colors.blue),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-
-            // Description Text
-            Text(
-              'Imbuhan ialah morfem terikat yang tidak boleh berdiri sendiri.\n'
-              'Imbuhan perlu ditambah pada kata dasar untuk membentuk kata baharu atau kata terbitan.',
-              style: TextStyle(fontSize: 18, color: Colors.black),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-
-            // Subtitle and Example Words
-            Text(
-              'Kata berimbuhan ialah kata yang mempunyai imbuhan seperti:',
-              style: TextStyle(fontSize: 18, color: Colors.black),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-
-            // Example words displayed as a row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ExampleWord(text: 'berlari'),
-                ExampleWord(text: 'tertawa'),
-                ExampleWord(text: 'membaca'),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ExampleWord(text: 'menjadikan'),
-                ExampleWord(text: 'dibelikan'),
-                ExampleWord(text: 'masakan'),
-              ],
-            ),
-
-            // Continue Button
-            Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        Screen5(name: name), // Passing 'name' to Screen 5
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF0288D1), // Blue button
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                textStyle: TextStyle(fontSize: 18),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const MascotWidget(
+                assetPath: 'assets/aminPage4.png',
+                width: 130,
+                height: 130,
+                state: MascotState.idle,
               ),
-              child: Text('Teruskan'),
-            ),
-          ],
+              const SizedBox(height: 10),
+              LessonCard(
+                child: Text(
+                  'Hello, $name!',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const LessonCard(
+                child: Text(
+                  'Imbuhan ialah morfem terikat yang tidak boleh berdiri sendiri.\nImbuhan perlu ditambah pada kata dasar untuk membentuk kata baharu atau kata terbitan.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const LessonCard(
+                child: Text(
+                  'Kata berimbuhan ialah kata yang mempunyai imbuhan seperti:',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: const [
+                  _ExampleWord(text: 'berlari'),
+                  _ExampleWord(text: 'tertawa'),
+                  _ExampleWord(text: 'membaca'),
+                  _ExampleWord(text: 'menjadikan'),
+                  _ExampleWord(text: 'dibelikan'),
+                  _ExampleWord(text: 'masakan'),
+                ],
+              ),
+              const SizedBox(height: 18),
+              AnimatedKidButton(
+                label: 'Teruskan',
+                icon: Icons.arrow_forward_rounded,
+                onPressed: () {
+                  gamification.awardXp(8, reason: 'Teruskan pembelajaran');
+                  pushAdaptive(context, Screen5(name: name));
+                },
+                backgroundColor: const Color(0xFF0288D1),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Example Word Widget
-class ExampleWord extends StatelessWidget {
+class _ExampleWord extends StatelessWidget {
+  const _ExampleWord({required this.text});
+
   final String text;
-  const ExampleWord({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10),
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.yellow[700], // Color of the button
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.secondary,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.white,

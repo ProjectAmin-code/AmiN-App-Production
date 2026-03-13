@@ -2,6 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_spec.dart';
+import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/gamification/gamification.dart';
+import '../../shared/progress/progress_tracker.dart';
 import '../../quiz/models/quiz_level.dart';
 import '../../quiz/screens/quiz_shell_screen.dart';
 import '../models/learning_models.dart';
@@ -33,9 +38,26 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     _steps = _buildSteps();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _speakCurrentStep());
+      duration: AppMotionSpec.pulse,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProgressTracker.instance.updateLearningStep(
+        reachedStep: _currentIndex + 1,
+        totalSteps: _steps.length,
+      );
+      _speakCurrentStep();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotionSpec.reduceMotion(context)) {
+      _pulseController.stop();
+      _pulseController.value = 0;
+    } else if (!_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    }
   }
 
   @override
@@ -73,10 +95,20 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   void _goNext() {
+    final gamification = GamificationScope.of(context);
     if (_isLastStep) {
       return;
     }
     setState(() => _currentIndex += 1);
+    gamification.awardXp(8, reason: 'Belajar ${_currentStep.id}');
+    gamification.updateStreak(success: true);
+    if ((_currentIndex + 1) % 4 == 0) {
+      gamification.awardStars(1);
+    }
+    ProgressTracker.instance.updateLearningStep(
+      reachedStep: _currentIndex + 1,
+      totalSteps: _steps.length,
+    );
     _speakCurrentStep();
   }
 
@@ -514,21 +546,31 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           ),
                         );
                       },
-                      child: ScaleTransition(
-                        scale: Tween<double>(begin: 0.95, end: 1.08).animate(
-                          CurvedAnimation(
-                            parent: _pulseController,
-                            curve: Curves.easeInOut,
-                          ),
-                        ),
-                        child: IconButton.filled(
-                          onPressed: () => _openHotspot(hotspot),
-                          style: IconButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFCA3A),
-                            foregroundColor: const Color(0xFF1D3557),
-                          ),
-                          icon: const Icon(Icons.star_rounded),
-                        ),
+                      child: Builder(
+                        builder: (context) {
+                          final reduceMotion = AppMotionSpec.reduceMotion(
+                            context,
+                          );
+                          final scaleAnimation = reduceMotion
+                              ? const AlwaysStoppedAnimation(1.0)
+                              : Tween<double>(begin: 0.95, end: 1.08).animate(
+                                  CurvedAnimation(
+                                    parent: _pulseController,
+                                    curve: Curves.easeInOut,
+                                  ),
+                                );
+                          return ScaleTransition(
+                            scale: scaleAnimation,
+                            child: IconButton.filled(
+                              onPressed: () => _openHotspot(hotspot),
+                              style: IconButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFCA3A),
+                                foregroundColor: const Color(0xFF1D3557),
+                              ),
+                              icon: const Icon(Icons.star_rounded),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   );
@@ -619,11 +661,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                'assets/aminPage3.png',
-                width: 100,
-                height: 100,
-                fit: BoxFit.contain,
+              const BreathingCharacter(
+                child: Image(
+                  image: AssetImage('assets/aminPage3.png'),
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -656,21 +700,21 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           _levelCard(
             title: 'Tahap Mudah',
             subtitle: 'Soalan asas imbuhan meN-',
-            stars: '⭐',
+            starCount: 1,
             color: const Color(0xFF2A9D8F),
             level: QuizLevel.easy,
           ),
           _levelCard(
             title: 'Tahap Sederhana',
             subtitle: 'Ayat dan situasi harian',
-            stars: '⭐⭐',
+            starCount: 2,
             color: const Color(0xFFF4A261),
             level: QuizLevel.medium,
           ),
           _levelCard(
             title: 'Tahap Tinggi',
             subtitle: 'Soalan mencabar dan konteks panjang',
-            stars: '⭐⭐⭐',
+            starCount: 3,
             color: const Color(0xFFE76F51),
             level: QuizLevel.hard,
           ),
@@ -682,18 +726,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   Widget _levelCard({
     required String title,
     required String subtitle,
-    required String stars,
+    required int starCount,
     required Color color,
     required QuizLevel level,
   }) {
-    return GestureDetector(
+    return BounceTapCard(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => QuizShellScreen(name: widget.name, level: level),
-          ),
-        );
+        pushAdaptive(context, QuizShellScreen(name: widget.name, level: level));
       },
       child: Container(
         width: double.infinity,
@@ -712,9 +751,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         ),
         child: Row(
           children: [
-            Text(
-              stars,
-              style: const TextStyle(fontSize: 28, color: Colors.white),
+            PulsingStars(
+              count: starCount,
+              size: 26,
+              color: Colors.white,
+              spacing: 0,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -781,17 +822,16 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 260),
+                    duration: AppMotionSpec.chooseDuration(
+                      context,
+                      AppMotionSpec.switcher,
+                      AppMotionSpec.switcherReduced,
+                    ),
                     transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0.04, 0),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        ),
+                      return buildAdaptiveSwitcherTransition(
+                        context: context,
+                        animation: animation,
+                        child: child,
                       );
                     },
                     child: Container(
@@ -810,37 +850,28 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                             const SizedBox(height: 10),
                             SizedBox(
                               width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: _goNext,
-                                style: ElevatedButton.styleFrom(
+                              child: AnimatedBuilder(
+                                animation: _pulseController,
+                                builder: (context, child) {
+                                  final reduceMotion = AppMotionSpec.reduceMotion(
+                                    context,
+                                  );
+                                  final angle = reduceMotion
+                                      ? 0.0
+                                      : math.sin(_pulseController.value * math.pi) *
+                                          0.02;
+                                  return Transform.rotate(
+                                    angle: angle,
+                                    child: child,
+                                  );
+                                },
+                                child: AnimatedKidButton(
+                                  label:
+                                      _isLastStep ? 'Selesai' : step.buttonText,
+                                  icon: Icons.arrow_forward_rounded,
+                                  onPressed: _goNext,
                                   backgroundColor: const Color(0xFFFFC300),
                                   foregroundColor: const Color(0xFF1D3557),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: AnimatedBuilder(
-                                  animation: _pulseController,
-                                  builder: (context, child) {
-                                    final angle =
-                                        math.sin(
-                                          _pulseController.value * math.pi,
-                                        ) *
-                                        0.03;
-                                    return Transform.rotate(
-                                      angle: angle,
-                                      child: Text(
-                                        _isLastStep
-                                            ? 'Selesai'
-                                            : step.buttonText,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             ),

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/gamification/gamification.dart';
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/progress/progress_tracker.dart';
+
 class CariKumpulGameScreen extends StatefulWidget {
   const CariKumpulGameScreen({super.key});
 
@@ -47,7 +52,9 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
   ];
 
   final Set<String> _found = <String>{};
+  final Map<String, int> _wordBurstKeys = <String, int>{};
   bool _showCelebration = false;
+  bool _gameRecorded = false;
 
   void _onTapWord(String word) {
     if (!_targets.contains(word) || _found.contains(word)) {
@@ -55,20 +62,10 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
     }
     setState(() {
       _found.add(word);
+      _wordBurstKeys[word] = (_wordBurstKeys[word] ?? 0) + 1;
     });
-    if (_found.length == _targets.length) {
+    if (_found.length == _targets.length && !_showCelebration) {
       setState(() => _showCelebration = true);
-      Future<void>.delayed(const Duration(milliseconds: 900), () {
-        if (!mounted) {
-          return;
-        }
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CariKumpulResultScreen(stars: _found.length),
-          ),
-        );
-      });
     }
   }
 
@@ -156,45 +153,52 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
                                 alignment: alignment,
                                 child: GestureDetector(
                                   onTap: () => _onTapWord(word),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 220),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: found
-                                          ? const Color(0xFFD7FFE2)
-                                          : const Color(0xFFF5F8FB),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: found
-                                            ? const Color(0xFF2A9D8F)
-                                            : const Color(0xFFDCE6F0),
+                                  child: StarBurstOverlay(
+                                    burstKey: _wordBurstKeys[word] ?? 0,
+                                    size: 30,
+                                    alignment: Alignment.topRight,
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 220,
                                       ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          word,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                            color: found
-                                                ? const Color(0xFF0B6B58)
-                                                : const Color(0xFF1D3557),
-                                          ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: found
+                                            ? const Color(0xFFD7FFE2)
+                                            : const Color(0xFFF5F8FB),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: found
+                                              ? const Color(0xFF2A9D8F)
+                                              : const Color(0xFFDCE6F0),
                                         ),
-                                        if (found) ...[
-                                          const SizedBox(width: 6),
-                                          const Icon(
-                                            Icons.star_rounded,
-                                            color: Color(0xFFF4B400),
-                                            size: 18,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            word,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w800,
+                                              color: found
+                                                  ? const Color(0xFF0B6B58)
+                                                  : const Color(0xFF1D3557),
+                                            ),
                                           ),
+                                          if (found) ...[
+                                            const SizedBox(width: 6),
+                                            const Icon(
+                                              Icons.star_rounded,
+                                              color: Color(0xFFF4B400),
+                                              size: 18,
+                                            ),
+                                          ],
                                         ],
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -204,14 +208,35 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
                         },
                       ),
                     ),
-                    if (_showCelebration)
-                      const Center(
-                        child: Icon(
-                          Icons.celebration_rounded,
-                          size: 72,
-                          color: Color(0xFFF4B400),
-                        ),
-                      ),
+                    CelebrationBurst(
+                      active: _showCelebration,
+                      onCompleted: () {
+                        if (!_gameRecorded) {
+                          _gameRecorded = true;
+                          ProgressTracker.instance.recordGameSession(
+                            starsEarned: _found.length,
+                            starsPossible: _targets.length,
+                          );
+                          final gamification = GamificationScope.of(context);
+                          gamification.awardXp((_found.length * 4).clamp(8, 40));
+                          gamification.awardStars(2);
+                          if (_found.length == _targets.length) {
+                            gamification.grantReward(
+                              title: 'Cari & Kumpul Lengkap',
+                              message: 'Semua perkataan berjaya dikumpul!',
+                              coins: 8,
+                            );
+                          }
+                        }
+                        if (!mounted) {
+                          return;
+                        }
+                        pushReplacementAdaptive(
+                          context,
+                          CariKumpulResultScreen(stars: _found.length),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -235,66 +260,71 @@ class CariKumpulResultScreen extends StatelessWidget {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Tahniah!',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF1D3557),
+          child: ConfettiCelebration(
+            active: true,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const MascotWidget(
+                  assetPath: 'assets/aminPage3.png',
+                  width: 84,
+                  height: 84,
+                  state: MascotState.celebrate,
                 ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.star_rounded,
-                    color: Color(0xFFF4B400),
-                    size: 34,
+                const Text(
+                  'Tahniah!',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1D3557),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '$stars',
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFF4B400),
+                      size: 34,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Icon(
-                Icons.sentiment_satisfied_rounded,
-                size: 44,
-                color: Color(0xFFF4B400),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const CariKumpulGameScreen(),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$stars',
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w900,
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Icon(
+                  Icons.sentiment_satisfied_rounded,
+                  size: 44,
+                  color: Color(0xFFF4B400),
+                ),
+                const SizedBox(height: 24),
+                AnimatedKidButton(
+                  label: 'Main Lagi',
+                  icon: Icons.refresh_rounded,
+                  onPressed: () {
+                    pushReplacementAdaptive(
+                      context,
+                      const CariKumpulGameScreen(),
                     );
                   },
-                  child: const Text('Main Lagi'),
                 ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Kembali ke Main'),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Kembali ke Main'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

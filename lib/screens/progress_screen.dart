@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
 
-class ProgressScreen extends StatelessWidget {
+import '../shared/design/app_design_tokens.dart';
+import '../shared/gamification/gamification.dart';
+import '../shared/progress/progress_snapshot.dart';
+import '../shared/progress/progress_sync_service.dart';
+import '../shared/progress/progress_tracker.dart';
+
+class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key, required this.name});
 
   final String name;
+
+  @override
+  State<ProgressScreen> createState() => _ProgressScreenState();
+}
+
+class _ProgressScreenState extends State<ProgressScreen> {
+  ProgressTracker get _tracker => ProgressTracker.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tracker.setUserName(widget.name);
+    });
+  }
 
   Widget _progressTile({
     required String title,
@@ -11,46 +32,161 @@ class ProgressScreen extends StatelessWidget {
     required double value,
     required Color color,
   }) {
-    final percent = (value * 100).round();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x18000000),
-            blurRadius: 8,
-            offset: Offset(0, 3),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: LessonCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 2),
+            Text(subtitle, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 10),
+            StarProgressBar(value: value, foregroundColor: color),
+          ],
+        ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gamification = GamificationScope.of(context);
+    return AnimatedBuilder(
+      animation: _tracker,
+      builder: (context, _) {
+        final snapshot = _tracker.snapshot;
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Row(
+              children: [
+                const Text(
+                  'Kemajuan',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const Spacer(),
+                StreakWidget(streak: gamification.streak, compact: true),
+              ],
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Kemajuan pembelajaran ${widget.name}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _progressTile(
+                  title: 'Onboarding',
+                  subtitle:
+                      'Langkah awal: ${snapshot.onboardingReached}/${snapshot.onboardingTotal}',
+                  value: snapshot.onboardingRatio,
+                  color: const Color(0xFF4C78A8),
+                ),
+                _progressTile(
+                  title: 'Belajar',
+                  subtitle:
+                      'Modul selesai: ${snapshot.totalLearningReached}/${snapshot.totalLearningSteps}',
+                  value: snapshot.belajarRatio,
+                  color: const Color(0xFF2A9D8F),
+                ),
+                _progressTile(
+                  title: 'Kuiz',
+                  subtitle:
+                      'Soalan: ${snapshot.quizAnswered}/${snapshot.quizQuestionGoal} | Ketepatan: ${snapshot.quizAccuracyPercent}%',
+                  value: snapshot.quizRatio,
+                  color: const Color(0xFFF4A261),
+                ),
+                _progressTile(
+                  title: 'Main',
+                  subtitle:
+                      'Bintang: ${snapshot.gameStarsEarned}/${snapshot.gameStarsPossible} (${snapshot.gameSessionsCompleted} sesi)',
+                  value: snapshot.gameRatio,
+                  color: const Color(0xFFE76F51),
+                ),
+                _progressTile(
+                  title: 'Keseluruhan',
+                  subtitle: 'Skor kemajuan semasa',
+                  value: snapshot.overallRatio,
+                  color: const Color(0xFF1D3557),
+                ),
+                _syncCard(snapshot),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _syncCard(ProgressSnapshot snapshot) {
+    final syncError = _tracker.lastSyncError;
+    final syncedAt = _tracker.lastSyncedUtc;
+    final String statusText;
+    if (_tracker.isSyncing) {
+      statusText = 'Sedang muat naik...';
+    } else if (syncError != null) {
+      statusText = syncError;
+    } else if (syncedAt != null) {
+      statusText = 'Muat naik terakhir: ${_formatDateTime(syncedAt.toLocal())}';
+    } else {
+      statusText = 'Belum pernah dimuat naik.';
+    }
+
+    return LessonCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          const Text(
+            'Integrasi Dashboard',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 2),
-          Text(subtitle, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: value,
-              minHeight: 10,
-              color: color,
-              backgroundColor: const Color(0xFFE8EDF2),
+          const SizedBox(height: 4),
+          Text(
+            'Endpoint: ${ProgressSyncService.instance.endpoint}',
+            style: const TextStyle(
+              color: Color(0xFF4A5568),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
-            '$percent%',
+            statusText,
+            style: TextStyle(
+              color: syncError == null
+                  ? const Color(0xFF1D3557)
+                  : const Color(0xFFC0392B),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          AnimatedKidButton(
+            label: 'Muat naik sekarang',
+            icon: Icons.cloud_upload_rounded,
+            onPressed: _tracker.isSyncing ? null : _tracker.forceSync,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Data dihantar termasuk skor belajar, kuiz, main, dan masa kemas kini (${snapshot.lastUpdatedUtc.toLocal()}).',
             style: const TextStyle(
-              color: Color(0xFF1D3557),
-              fontWeight: FontWeight.w800,
+              color: Color(0xFF4A5568),
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -58,61 +194,9 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEAF7FF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFEAF7FF),
-        elevation: 0,
-        title: const Text(
-          'Kemajuan',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w800),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Kemajuan pembelajaran $name',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF1D3557),
-              ),
-            ),
-            const SizedBox(height: 14),
-            _progressTile(
-              title: 'Belajar',
-              subtitle: 'Modul pembelajaran imbuhan meN-',
-              value: 0.65,
-              color: const Color(0xFF2A9D8F),
-            ),
-            _progressTile(
-              title: 'Kuiz',
-              subtitle: 'Ketepatan jawapan tahap terkini',
-              value: 0.48,
-              color: const Color(0xFFF4A261),
-            ),
-            _progressTile(
-              title: 'Main',
-              subtitle: 'Penyertaan mini game',
-              value: 0.42,
-              color: const Color(0xFFE76F51),
-            ),
-            const Spacer(),
-            const Text(
-              'Nota: Nilai ini adalah paparan awal. Simpanan progres sebenar akan diaktifkan seterusnya.',
-              style: TextStyle(
-                color: Color(0xFF4A5568),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  String _formatDateTime(DateTime value) {
+    String twoDigits(int number) => number.toString().padLeft(2, '0');
+    return '${value.year}-${twoDigits(value.month)}-${twoDigits(value.day)} '
+        '${twoDigits(value.hour)}:${twoDigits(value.minute)}:${twoDigits(value.second)}';
   }
 }

@@ -1,6 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
+import '../shared/design/app_design_tokens.dart';
+import '../shared/gamification/gamification.dart';
+import '../shared/motion/app_motion_navigation.dart';
+import '../shared/progress/progress_tracker.dart';
 import 'screen1.dart'; // Import Screen1
 
 class Screen0 extends StatefulWidget {
@@ -13,173 +18,183 @@ class Screen0 extends StatefulWidget {
 class _Screen0State extends State<Screen0> {
   final TextEditingController _nameController = TextEditingController();
 
-  // Function to navigate to Screen1
-  void _goToScreen1() {
-    if (_nameController.text.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Screen1(name: _nameController.text),
-        ),
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProgressTracker.instance.updateOnboardingStep(
+        reachedStep: 1,
+        totalSteps: 3,
       );
-    } else {
-      // Show a snack bar if no name is entered
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Please enter your name")));
+    });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _goToScreen1() {
+    final name = _nameController.text.trim();
+    if (name.isNotEmpty) {
+      ProgressTracker.instance.setUserName(name);
+      ProgressTracker.instance.updateOnboardingStep(
+        reachedStep: 1,
+        totalSteps: 3,
+      );
+      final gamification = GamificationScope.of(context);
+      gamification.awardXp(5, reason: 'Langkah pertama');
+      gamification.updateStreak(success: true);
+      pushAdaptive(context, Screen1(name: name));
+      return;
     }
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your name')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF90E0EF), // Light blue background color
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Color(0xFF90E0EF),
-        elevation: 0, // Remove app bar shadow
-        automaticallyImplyLeading: false, // Remove back button if present
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
       ),
-      resizeToAvoidBottomInset:
-          false, // Prevent resizing when the keyboard appears
-      body: SingleChildScrollView(
-        // Ensures the layout is scrollable
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Stack to position the AmiN character and speech bubble
-              SizedBox(
-                width: double.infinity, // Provide full width
-                height: 300, // Set a fixed height for the Stack
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // AmiN Image (character) - increased size
-                    Positioned(
-                      // Position character on the left side
-                      top: 30, // Adjust to place the character higher
-                      child: Image.asset('assets/aminPage0.png', height: 300),
-                    ),
-
-                    // Speech bubble (appears to come from AmiN's mouth) - reduced size
-                    Positioned(
-                      left:
-                          174, // Position speech bubble near character's mouth
-                      top: 130, // Adjust vertical alignment
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white, // Speech bubble background color
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20),
-                            bottomRight: Radius.circular(20),
-                            bottomLeft: Radius.circular(5),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              spreadRadius: 3,
-                              blurRadius: 7,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 560,
+                    minHeight: constraints.maxHeight - 24,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const StarProgressBar(
+                        value: 1 / 3,
+                        starCount: 3,
+                        showLabel: false,
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 280,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              left: 0,
+                              top: 18,
+                              child: const MascotWidget(
+                                assetPath: 'assets/aminPage0.png',
+                                width: 220,
+                                height: 220,
+                                state: MascotState.encourage,
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: 82,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 260),
+                                child: const LessonCard(
+                                  child: Text(
+                                    'Hai! Siapa nama awak?',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        child: Text(
-                          "Hai! Siapa nama awak?",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(30),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    spreadRadius: 3,
+                                    blurRadius: 7,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      20,
+                                      20,
+                                      20,
+                                      12,
+                                    ),
+                                    child: TextField(
+                                      controller: _nameController,
+                                      textInputAction: TextInputAction.done,
+                                      onSubmitted: (_) => _goToScreen1(),
+                                      decoration: InputDecoration(
+                                        hintText: 'Taip nama awak di sini',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                      ),
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
+                                    child: AnimatedKidButton(
+                                      label: 'Mula',
+                                      onPressed: _goToScreen1,
+                                      backgroundColor: AppColors.secondary,
+                                      foregroundColor: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 10),
+                                    child: Text(
+                                      'Guna nama panggilan sahaja',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 30),
-
-              // Glassy container for the input field and text below
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(
-                          alpha: 0.6,
-                        ), // Glass effect
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 3,
-                            blurRadius: 7,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Input field
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 20,
-                            ),
-                            child: TextField(
-                              controller: _nameController,
-                              decoration: InputDecoration(
-                                hintText: 'Taip nama awak di sini',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                filled: true,
-                                fillColor: Colors.white,
-                              ),
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                          // "Mula" button
-                          ElevatedButton(
-                            onPressed: _goToScreen1,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange, // Button color
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 50,
-                                vertical: 15,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  30,
-                                ), // Rounded corners for button
-                              ),
-                            ),
-                            child: Text(
-                              "Mula",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          // "Guna nama panggilan sahaja"
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text(
-                              "Guna nama panggilan sahaja",
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

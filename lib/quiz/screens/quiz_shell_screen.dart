@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/design/app_design_tokens.dart';
+import '../../shared/gamification/gamification.dart';
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_spec.dart';
+import '../../shared/progress/progress_tracker.dart';
 import '../data/quiz_bank.dart';
 import '../models/quiz_interaction_type.dart';
 import '../models/quiz_level.dart';
@@ -213,22 +218,21 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
   Future<void> _goNext() async {
     if (_isLastQuestion) {
+      await ProgressTracker.instance.recordQuizSessionCompleted();
       final autoGradedCount = _questions.where((q) => q.isAutoGraded).length;
       final correctCount = _autoResults.values.where((result) => result).length;
       if (!mounted) {
         return;
       }
-      Navigator.pushReplacement(
+      pushReplacementAdaptive(
         context,
-        MaterialPageRoute(
-          builder: (_) => QuizResultScreen(
-            name: widget.name,
-            level: widget.level,
-            totalQuestions: _questions.length,
-            autoGradedQuestions: autoGradedCount,
-            correctAnswers: correctCount,
-            manualCompleted: _manualCompleted.length,
-          ),
+        QuizResultScreen(
+          name: widget.name,
+          level: widget.level,
+          totalQuestions: _questions.length,
+          autoGradedQuestions: autoGradedCount,
+          correctAnswers: correctCount,
+          manualCompleted: _manualCompleted.length,
         ),
       );
       return;
@@ -243,6 +247,12 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     required bool isCorrect,
     required QuizQuestion question,
   }) async {
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final dialogDuration = AppMotionSpec.chooseDuration(
+      context,
+      AppMotionSpec.feedbackEnter,
+      AppMotionSpec.feedbackEnterReduced,
+    );
     final dialogColor = isCorrect
         ? const Color(0xFFDFF5E6)
         : const Color(0xFFFFE2DD);
@@ -253,81 +263,115 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: dialogColor,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                  color: isCorrect
-                      ? const Color(0xFF2EAD63)
-                      : const Color(0xFFE45832),
-                  size: 56,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: dialogDuration,
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              final scale = reduceMotion ? 1.0 : (0.94 + (0.06 * value));
+              final shakeOffset = !isCorrect && !reduceMotion
+                  ? (1 - value) * 12
+                  : 0.0;
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(shakeOffset, 0),
+                  child: Transform.scale(scale: scale, child: child),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  isCorrect ? 'Betul' : 'Salah',
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF1D3557),
-                  ),
+              );
+            },
+            child: ConfettiCelebration(
+              active: isCorrect,
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: dialogColor,
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                const SizedBox(height: 8),
-                if (isCorrect)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.star_rounded, color: Color(0xFFF4B400)),
-                      SizedBox(width: 4),
-                      Icon(
-                        Icons.sentiment_satisfied_rounded,
-                        color: Color(0xFFF4B400),
-                        size: 34,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    MascotWidget(
+                      assetPath: 'assets/aminPage3.png',
+                      width: 74,
+                      height: 74,
+                      state: isCorrect
+                          ? MascotState.celebrate
+                          : MascotState.errorReact,
+                      speech: isCorrect ? 'Tahniah!' : 'Jom cuba lagi!',
+                    ),
+                    const SizedBox(height: 8),
+                    Icon(
+                      isCorrect
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      color: isCorrect ? AppColors.success : AppColors.danger,
+                      size: 56,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      isCorrect ? 'Betul' : 'Salah',
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textPrimary,
                       ),
-                      SizedBox(width: 4),
-                      Icon(Icons.star_rounded, color: Color(0xFFF4B400)),
+                    ),
+                    const SizedBox(height: 8),
+                    if (isCorrect)
+                      Column(
+                        children: const [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.star_rounded,
+                                color: AppColors.secondary,
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.sentiment_satisfied_rounded,
+                                color: AppColors.secondary,
+                                size: 34,
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.star_rounded,
+                                color: AppColors.secondary,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 6),
+                          XPAnimation(amount: 10),
+                        ],
+                      )
+                    else
+                      const Icon(
+                        Icons.sentiment_dissatisfied_rounded,
+                        color: Color(0xFFE45832),
+                        size: 38,
+                      ),
+                    if (question.explanation.trim().isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        question.explanation,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2F4858),
+                        ),
+                      ),
                     ],
-                  )
-                else
-                  const Icon(
-                    Icons.sentiment_dissatisfied_rounded,
-                    color: Color(0xFFE45832),
-                    size: 38,
-                  ),
-                if (question.explanation.trim().isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    question.explanation,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF2F4858),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
+                    const SizedBox(height: 14),
+                    AnimatedKidButton(
+                      label: 'Seterusnya',
+                      icon: Icons.arrow_forward_rounded,
+                      onPressed: () => Navigator.pop(context),
                       backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
                     ),
-                    child: const Text(
-                      'Seterusnya',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -336,11 +380,19 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   }
 
   Future<void> _submitCurrent() async {
+    final gamification = GamificationScope.of(context);
     final question = _currentQuestion;
     if (!question.isAutoGraded) {
       setState(() {
         _manualCompleted.add(question.id);
       });
+      await ProgressTracker.instance.recordQuizSubmission(
+        isAutoGraded: false,
+        isCorrect: false,
+        questionGoal: QuizBank.questions.length,
+      );
+      gamification.awardXp(4, reason: 'Soalan subjektif disiapkan');
+      gamification.updateStreak(success: true);
       await _goNext();
       return;
     }
@@ -349,6 +401,19 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     setState(() {
       _autoResults[question.id] = isCorrect;
     });
+    await ProgressTracker.instance.recordQuizSubmission(
+      isAutoGraded: true,
+      isCorrect: isCorrect,
+      questionGoal: QuizBank.questions.length,
+    );
+    if (isCorrect) {
+      gamification.awardXp(10, reason: 'Jawapan kuiz betul');
+      gamification.updateStreak(success: true);
+      gamification.awardStars(1);
+    } else {
+      gamification.awardXp(2, reason: 'Teruskan mencuba');
+      gamification.updateStreak(success: false);
+    }
 
     await _showFeedbackDialog(isCorrect: isCorrect, question: question);
     if (!mounted) {
@@ -745,105 +810,99 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicator(
-                        value: (_currentIndex + 1) / _questions.length,
-                        minHeight: 10,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _levelColor(question.level),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    Row(
                       children: [
-                        Icon(
-                          Icons.star_rounded,
-                          size: 18,
-                          color: Colors.white.withValues(alpha: 0.9),
+                        Expanded(
+                          child: StarProgressBar(
+                            value: (_currentIndex + 1) / _questions.length,
+                            showLabel: false,
+                            starCount: 3,
+                          ),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _levelLabel(question.level),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _levelColor(question.level),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.star_rounded,
+                                size: 18,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _levelLabel(question.level),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Hai ${widget.name}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF1D3557),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(height: 14),
                     Text(
-                      question.title,
+                      'Hai ${widget.name}',
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0E7490),
+                        fontSize: 16,
+                        color: Color(0xFF1D3557),
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      question.prompt,
-                      style: const TextStyle(fontSize: 16, height: 1.35),
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            question.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0E7490),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            question.prompt,
+                            style: const TextStyle(fontSize: 16, height: 1.35),
+                          ),
+                          _buildImageReference(question),
+                        ],
+                      ),
                     ),
-                    _buildImageReference(question),
+                    const SizedBox(height: 12),
+                    _buildQuestionInput(question),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: _buildQuestionInput(question),
-                ),
-              ),
               const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _canSubmit(question) ? _submitCurrent : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFC300),
-                    foregroundColor: Colors.black87,
-                  ),
-                  child: Text(
-                    actionLabel,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
+              AnimatedKidButton(
+                label: actionLabel,
+                icon: Icons.play_circle_fill_rounded,
+                onPressed: _canSubmit(question) ? _submitCurrent : null,
+                backgroundColor: const Color(0xFFFFC300),
+                foregroundColor: Colors.black87,
               ),
             ],
           ),

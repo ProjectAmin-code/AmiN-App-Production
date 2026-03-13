@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/design/app_design_tokens.dart';
+import '../../shared/gamification/gamification.dart';
+import '../../shared/motion/app_motion_navigation.dart';
 import '../models/quiz_level.dart';
 import 'quiz_shell_screen.dart';
 
@@ -54,84 +57,80 @@ class QuizResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nextLevel = _nextLevel;
+    final gamification = GamificationScope.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEEF9FF),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEEF9FF),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
           'Keputusan Kuiz',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tahniah, $name!',
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF1D3557),
+            ConfettiCelebration(
+              active: true,
+              child: LessonCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const MascotWidget(
+                          assetPath: 'assets/aminPage3.png',
+                          width: 62,
+                          height: 62,
+                          state: MascotState.celebrate,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Tahniah, $name!',
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text('Jumlah soalan: $totalQuestions'),
-                  Text('Soalan auto-markah: $autoGradedQuestions'),
-                  Text('Jawapan betul (auto): $correctAnswers'),
-                  Text('Skor auto: $_autoPercent%'),
-                  Text('Soalan manual ditanda siap: $manualCompleted'),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: const [
-                      Icon(Icons.star_rounded, color: Color(0xFFF4B400)),
-                      Icon(
-                        Icons.sentiment_satisfied_rounded,
-                        color: Color(0xFFF4B400),
-                        size: 32,
-                      ),
-                      Icon(Icons.star_rounded, color: Color(0xFFF4B400)),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Text('Jumlah soalan: $totalQuestions'),
+                    Text('Soalan auto-markah: $autoGradedQuestions'),
+                    Text('Jawapan betul (auto): $correctAnswers'),
+                    Text('Skor auto: $_autoPercent%'),
+                    Text('Soalan manual ditanda siap: $manualCompleted'),
+                    const SizedBox(height: 10),
+                    StarProgressBar(value: _autoPercent / 100),
+                    const SizedBox(height: 8),
+                    const XPAnimation(amount: 20),
+                  ],
+                ),
               ),
             ),
             const Spacer(),
             if (nextLevel != null)
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            QuizShellScreen(name: name, level: nextLevel),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFC300),
-                    foregroundColor: const Color(0xFF1D3557),
-                  ),
-                  child: Text(
-                    _nextLevelLabel(nextLevel),
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
+              AnimatedKidButton(
+                label: _nextLevelLabel(nextLevel),
+                icon: Icons.arrow_upward_rounded,
+                onPressed: () {
+                  gamification.unlockLevel(label: _nextLevelLabel(nextLevel));
+                  pushReplacementAdaptive(
+                    context,
+                    QuizShellScreen(name: name, level: nextLevel),
+                  );
+                },
+                backgroundColor: AppColors.secondary,
+                foregroundColor: AppColors.textPrimary,
               ),
             if (nextLevel != null) const SizedBox(height: 8),
             SizedBox(

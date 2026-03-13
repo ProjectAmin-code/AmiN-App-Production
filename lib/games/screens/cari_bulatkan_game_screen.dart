@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/gamification/gamification.dart';
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/progress/progress_tracker.dart';
+
 class CariBulatkanGameScreen extends StatefulWidget {
   const CariBulatkanGameScreen({super.key});
 
@@ -29,6 +33,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
   final GlobalKey _gridKey = GlobalKey();
   final Set<String> _foundWords = <String>{};
   final Set<String> _foundCells = <String>{};
+  bool _gameRecorded = false;
 
   List<_Cell> _currentPath = <_Cell>[];
   _Cell? _startCell;
@@ -117,16 +122,28 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
       });
 
       if (_foundWords.length == _targetsByPlacement.length) {
+        if (!_gameRecorded) {
+          _gameRecorded = true;
+          ProgressTracker.instance.recordGameSession(
+            starsEarned: _foundWords.length,
+            starsPossible: _targetsByPlacement.length,
+          );
+          final gamification = GamificationScope.of(context);
+          gamification.awardXp((_foundWords.length * 5).clamp(10, 40));
+          gamification.awardStars(2);
+          gamification.grantReward(
+            title: 'Cari & Bulatkan Selesai',
+            message: 'Anda berjaya melengkapkan pencarian perkataan.',
+            coins: 8,
+          );
+        }
         Future<void>.delayed(const Duration(milliseconds: 300), () {
           if (!mounted) {
             return;
           }
-          Navigator.pushReplacement(
+          pushReplacementAdaptive(
             context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  CariBulatkanResultScreen(foundWords: _foundWords.length),
-            ),
+            CariBulatkanResultScreen(foundWords: _foundWords.length),
           );
         });
       }
@@ -300,55 +317,60 @@ class CariBulatkanResultScreen extends StatelessWidget {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Hebat!',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF1D3557),
+          child: ConfettiCelebration(
+            active: true,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const MascotWidget(
+                  assetPath: 'assets/aminPage3.png',
+                  width: 84,
+                  height: 84,
+                  state: MascotState.celebrate,
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Anda berjaya jumpa $foundWords/5 perkataan.',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                const Text(
+                  'Hebat!',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1D3557),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Icon(
-                Icons.sentiment_satisfied_rounded,
-                size: 44,
-                color: Color(0xFFF4B400),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
+                const SizedBox(height: 10),
+                Text(
+                  'Anda berjaya jumpa $foundWords/5 perkataan.',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Icon(
+                  Icons.sentiment_satisfied_rounded,
+                  size: 44,
+                  color: Color(0xFFF4B400),
+                ),
+                const SizedBox(height: 24),
+                AnimatedKidButton(
+                  label: 'Main Lagi',
+                  icon: Icons.refresh_rounded,
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    pushReplacementAdaptive(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const CariBulatkanGameScreen(),
-                      ),
+                      const CariBulatkanGameScreen(),
                     );
                   },
-                  child: const Text('Main Lagi'),
                 ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Kembali ke Main'),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Kembali ke Main'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -3,6 +3,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../shared/gamification/gamification.dart';
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/progress/progress_tracker.dart';
+
 class PilihPantasGameScreen extends StatefulWidget {
   const PilihPantasGameScreen({super.key});
 
@@ -34,7 +39,8 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   late DateTime _endTime;
   int _stars = 0;
   int _queueIndex = 0;
-  bool _showStar = false;
+  int _starBurstTick = 0;
+  int _attempts = 0;
   List<String> _queue = <String>[];
 
   String get _currentWord => _queue[_queueIndex];
@@ -50,11 +56,23 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
       }
       if (DateTime.now().isAfter(_endTime)) {
         _ticker.cancel();
-        Navigator.pushReplacement(
+        ProgressTracker.instance.recordGameSession(
+          starsEarned: _stars,
+          starsPossible: _attempts <= 0 ? 1 : _attempts,
+        );
+        final gamification = GamificationScope.of(context);
+        gamification.awardXp((_stars * 2).clamp(4, 40));
+        gamification.awardStars(_stars > 0 ? 1 : 0);
+        if (_stars >= 5) {
+          gamification.grantReward(
+            title: 'Ganjaran Pilih Pantas',
+            message: 'Prestasi hebat dalam masa pantas!',
+            coins: 5,
+          );
+        }
+        pushReplacementAdaptive(
           context,
-          MaterialPageRoute(
-            builder: (_) => PilihPantasResultScreen(stars: _stars),
-          ),
+          PilihPantasResultScreen(stars: _stars),
         );
       } else {
         setState(() {});
@@ -93,17 +111,14 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
 
   void _answer(bool chooseMen) {
     final hasMen = _listWithMen.contains(_currentWord);
+    _attempts += 1;
     if (chooseMen == hasMen) {
       setState(() {
         _stars += 1;
-        _showStar = true;
+        _starBurstTick += 1;
       });
-      Future<void>.delayed(const Duration(milliseconds: 260), () {
-        if (!mounted) {
-          return;
-        }
-        setState(() => _showStar = false);
-      });
+      final gamification = GamificationScope.of(context);
+      gamification.awardXp(3, reason: 'Padanan tepat');
     }
     _advanceWord();
   }
@@ -160,73 +175,47 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
               ),
               const SizedBox(height: 14),
               Expanded(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 220),
-                        child: Text(
-                          _currentWord,
-                          key: ValueKey(_currentWord),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 46,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF1D3557),
-                          ),
+                child: StarBurstOverlay(
+                  burstKey: _starBurstTick,
+                  child: Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      child: Text(
+                        _currentWord,
+                        key: ValueKey(_currentWord),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 46,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1D3557),
                         ),
                       ),
                     ),
-                    if (_showStar)
-                      const Align(
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.star_rounded,
-                          size: 64,
-                          color: Color(0xFFF4B400),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () => _answer(true),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2A9D8F),
-                        ),
-                        child: const Text(
-                          'Ada meN-',
-                          style: TextStyle(fontWeight: FontWeight.w900),
-                        ),
-                      ),
+                    child: AnimatedKidButton(
+                      label: 'Ada meN-',
+                      onPressed: () => _answer(true),
+                      backgroundColor: const Color(0xFF2A9D8F),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: SizedBox(
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () => _answer(false),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8D99AE),
-                        ),
-                        child: const Text(
-                          'Tiada meN-',
-                          style: TextStyle(fontWeight: FontWeight.w900),
-                        ),
-                      ),
+                    child: AnimatedKidButton(
+                      label: 'Tiada meN-',
+                      onPressed: () => _answer(false),
+                      backgroundColor: const Color(0xFF8D99AE),
                     ),
                   ),
                 ],
@@ -251,66 +240,71 @@ class PilihPantasResultScreen extends StatelessWidget {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Pilih Pantas Tamat',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF1D3557),
+          child: ConfettiCelebration(
+            active: true,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const MascotWidget(
+                  assetPath: 'assets/aminPage3.png',
+                  width: 82,
+                  height: 82,
+                  state: MascotState.celebrate,
                 ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.star_rounded,
-                    color: Color(0xFFF4B400),
-                    size: 34,
+                const Text(
+                  'Pilih Pantas Tamat',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1D3557),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '$stars',
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFF4B400),
+                      size: 34,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Icon(
-                Icons.sentiment_satisfied_rounded,
-                size: 44,
-                color: Color(0xFFF4B400),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PilihPantasGameScreen(),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$stars',
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w900,
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Icon(
+                  Icons.sentiment_satisfied_rounded,
+                  size: 44,
+                  color: Color(0xFFF4B400),
+                ),
+                const SizedBox(height: 24),
+                AnimatedKidButton(
+                  label: 'Main Lagi',
+                  icon: Icons.refresh_rounded,
+                  onPressed: () {
+                    pushReplacementAdaptive(
+                      context,
+                      const PilihPantasGameScreen(),
                     );
                   },
-                  child: const Text('Main Lagi'),
                 ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Kembali ke Main'),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Kembali ke Main'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

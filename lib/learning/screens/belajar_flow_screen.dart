@@ -2,6 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_spec.dart';
+import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/gamification/gamification.dart';
+import '../../shared/progress/progress_tracker.dart';
 import '../services/amin_tts_service.dart';
 import 'learning_flow_screen.dart';
 
@@ -79,9 +84,26 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _speakCurrent());
+      duration: AppMotionSpec.pulse,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProgressTracker.instance.updateBelajarStep(
+        reachedStep: _index + 1,
+        totalSteps: _steps.length,
+      );
+      _speakCurrent();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotionSpec.reduceMotion(context)) {
+      _pulseController.stop();
+      _pulseController.value = 0;
+    } else if (!_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    }
   }
 
   @override
@@ -110,18 +132,30 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
   }
 
   void _next() {
+    final gamification = GamificationScope.of(context);
     if (_index == _steps.length - 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => LearningFlowScreen(name: widget.name),
-        ),
+      ProgressTracker.instance.updateBelajarStep(
+        reachedStep: _steps.length,
+        totalSteps: _steps.length,
       );
+      gamification.awardXp(15, reason: 'Belajar asas selesai');
+      gamification.awardStars(2);
+      gamification.grantReward(
+        title: 'Langkah Belajar Lengkap',
+        message: 'Anda telah menyelesaikan pengenalan imbuhan.',
+      );
+      pushReplacementAdaptive(context, LearningFlowScreen(name: widget.name));
       return;
     }
     setState(() {
       _index += 1;
     });
+    gamification.awardXp(6, reason: 'Langkah belajar ${_index + 1}');
+    gamification.updateStreak(success: true);
+    ProgressTracker.instance.updateBelajarStep(
+      reachedStep: _index + 1,
+      totalSteps: _steps.length,
+    );
     _speakCurrent();
   }
 
@@ -173,17 +207,17 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
                 ),
                 Expanded(
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 280),
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.04, 0),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
+                    duration: AppMotionSpec.chooseDuration(
+                      context,
+                      AppMotionSpec.switcher,
+                      AppMotionSpec.switcherReduced,
                     ),
+                    transitionBuilder: (child, animation) =>
+                        buildAdaptiveSwitcherTransition(
+                          context: context,
+                          animation: animation,
+                          child: child,
+                        ),
                     child: Container(
                       key: ValueKey(_current.id),
                       width: double.infinity,
@@ -280,35 +314,27 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
                           ),
                           SizedBox(
                             width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _next,
-                              style: ElevatedButton.styleFrom(
+                            child: AnimatedBuilder(
+                              animation: _pulseController,
+                              builder: (context, child) {
+                                final reduceMotion = AppMotionSpec.reduceMotion(
+                                  context,
+                                );
+                                final angle = reduceMotion
+                                    ? 0.0
+                                    : math.sin(_pulseController.value * math.pi) *
+                                        0.02;
+                                return Transform.rotate(
+                                  angle: angle,
+                                  child: child,
+                                );
+                              },
+                              child: AnimatedKidButton(
+                                label: 'Teruskan',
+                                icon: Icons.arrow_forward_rounded,
+                                onPressed: _next,
                                 backgroundColor: const Color(0xFFFFC300),
                                 foregroundColor: const Color(0xFF1D3557),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: AnimatedBuilder(
-                                animation: _pulseController,
-                                builder: (context, child) {
-                                  final angle =
-                                      math.sin(
-                                        _pulseController.value * math.pi,
-                                      ) *
-                                      0.04;
-                                  return Transform.rotate(
-                                    angle: angle,
-                                    child: Text(
-                                      'Teruskan',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  );
-                                },
                               ),
                             ),
                           ),

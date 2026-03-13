@@ -1,37 +1,20 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/gamification/gamification.dart';
 import '../models/quiz_level.dart';
 import 'quiz_shell_screen.dart';
 
-class QuizLevelGatewayScreen extends StatefulWidget {
-  const QuizLevelGatewayScreen({super.key, required this.name});
+class QuizLevelGatewayScreen extends StatelessWidget {
+  const QuizLevelGatewayScreen({
+    super.key,
+    required this.name,
+    this.characterAdapter = const NativeAnimatedCharacterAdapter(),
+  });
 
   final String name;
-
-  @override
-  State<QuizLevelGatewayScreen> createState() => _QuizLevelGatewayScreenState();
-}
-
-class _QuizLevelGatewayScreenState extends State<QuizLevelGatewayScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
+  final AnimatedCharacterAdapter characterAdapter;
 
   Widget _levelCard({
     required BuildContext context,
@@ -41,78 +24,62 @@ class _QuizLevelGatewayScreenState extends State<QuizLevelGatewayScreen>
     required Color color,
     required QuizLevel level,
   }) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => QuizShellScreen(name: widget.name, level: level),
+    return Hero(
+      tag: 'hero-quiz-$title',
+      child: BounceTapCard(
+        onTap: () {
+          final gamification = GamificationScope.of(context);
+          gamification.awardXp(10, reason: 'Pilih $title');
+          pushAdaptive(context, QuizShellScreen(name: name, level: level));
+        },
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
-        );
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x22000000),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, child) {
-                final scale = 1 + (_pulseController.value * 0.08);
-                return Transform.scale(scale: scale, child: child);
-              },
-              child: Row(
-                children: List.generate(
-                  stars,
-                  (index) => const Icon(
-                    Icons.star_rounded,
-                    color: Color(0xFFFFE066),
-                    size: 24,
-                  ),
+          child: Row(
+            children: [
+              PulsingStars(count: stars),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        height: 1,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      height: 1,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white),
-          ],
+              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white),
+            ],
+          ),
         ),
       ),
     );
@@ -138,22 +105,11 @@ class _QuizLevelGatewayScreenState extends State<QuizLevelGatewayScreen>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AnimatedBuilder(
-                      animation: _pulseController,
-                      builder: (context, child) {
-                        final offset =
-                            math.sin(_pulseController.value * math.pi) * 2;
-                        return Transform.translate(
-                          offset: Offset(0, offset),
-                          child: child,
-                        );
-                      },
-                      child: Image.asset(
-                        'assets/aminPage3.png',
-                        width: 98,
-                        height: 98,
-                        fit: BoxFit.contain,
-                      ),
+                    characterAdapter.buildCharacter(
+                      context: context,
+                      assetPath: 'assets/aminPage3.png',
+                      width: 98,
+                      height: 98,
                     ),
                     const SizedBox(width: 8),
                     Expanded(

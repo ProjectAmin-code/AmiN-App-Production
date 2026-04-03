@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'gamification_controller.dart';
 import 'gamification_event.dart';
+import '../settings/app_settings_service.dart';
 import 'widgets/gamification_widgets.dart';
 
 class GamificationOverlayHost extends StatefulWidget {
@@ -17,7 +18,8 @@ class GamificationOverlayHost extends StatefulWidget {
   final Widget child;
 
   @override
-  State<GamificationOverlayHost> createState() => _GamificationOverlayHostState();
+  State<GamificationOverlayHost> createState() =>
+      _GamificationOverlayHostState();
 }
 
 class _GamificationOverlayHostState extends State<GamificationOverlayHost> {
@@ -72,14 +74,14 @@ class _GamificationOverlayHostState extends State<GamificationOverlayHost> {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      children: [
-        widget.child,
-        if (_active != null) _buildOverlay(_active!),
-      ],
+      children: [widget.child, if (_active != null) _buildOverlay(_active!)],
     );
   }
 
   Widget _buildOverlay(GamificationEvent event) {
+    if (!AppSettingsService.instance.gamificationOverlaysEnabled) {
+      return const SizedBox.shrink();
+    }
     switch (event.type) {
       case GamificationEventType.xp:
         return Align(
@@ -98,26 +100,7 @@ class _GamificationOverlayHostState extends State<GamificationOverlayHost> {
           ),
         );
       case GamificationEventType.stars:
-        return Align(
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 90),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star_rounded, color: Color(0xFFFFB020)),
-                const SizedBox(width: 4),
-                Text(
-                  '+${event.amount} Bintang',
-                  style: const TextStyle(
-                    color: Color(0xFF1D3557),
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return const SizedBox.shrink();
       case GamificationEventType.levelUnlock:
         return RewardPopup(
           title: event.title.isEmpty ? 'Naik Level!' : event.title,

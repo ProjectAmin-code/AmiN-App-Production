@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/navigation/app_screen_wiring.dart';
 import '../../shared/progress/progress_tracker.dart';
 
 class CariBulatkanGameScreen extends StatefulWidget {
@@ -30,7 +31,6 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
     'MENGEMAS': List.generate(5, (i) => _Cell(6, i + 2)),
   };
 
-  final GlobalKey _gridKey = GlobalKey();
   final Set<String> _foundWords = <String>{};
   final Set<String> _foundCells = <String>{};
   bool _gameRecorded = false;
@@ -38,8 +38,8 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
   List<_Cell> _currentPath = <_Cell>[];
   _Cell? _startCell;
 
-  _Cell? _positionToCell(Offset globalPosition) {
-    final box = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+  _Cell? _positionToCell(BuildContext targetContext, Offset globalPosition) {
+    final box = targetContext.findRenderObject() as RenderBox?;
     if (box == null) {
       return null;
     }
@@ -127,6 +127,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
           ProgressTracker.instance.recordGameSession(
             starsEarned: _foundWords.length,
             starsPossible: _targetsByPlacement.length,
+            lessonId: 'M005_CariBulatkan',
           );
           final gamification = GamificationScope.of(context);
           gamification.awardXp((_foundWords.length * 5).clamp(10, 40));
@@ -190,78 +191,87 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
-              GestureDetector(
-                onPanStart: (details) {
-                  final start = _positionToCell(details.globalPosition);
-                  if (start == null) {
-                    return;
-                  }
-                  setState(() {
-                    _startCell = start;
-                    _currentPath = <_Cell>[start];
-                  });
-                },
-                onPanUpdate: (details) {
-                  final start = _startCell;
-                  final end = _positionToCell(details.globalPosition);
-                  if (start == null || end == null) {
-                    return;
-                  }
-                  setState(() => _currentPath = _buildLine(start, end));
-                },
-                onPanEnd: (_) => _finishSelection(),
-                child: Container(
-                  key: _gridKey,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFD2E7F8)),
-                  ),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Column(
-                      children: List.generate(7, (row) {
-                        return Expanded(
-                          child: Row(
-                            children: List.generate(7, (col) {
-                              final key = '${row}_$col';
-                              final isCurrent = currentKeys.contains(key);
-                              final isFound = _foundCells.contains(key);
-                              return Expanded(
-                                child: Container(
-                                  margin: const EdgeInsets.all(2),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isFound
-                                        ? const Color(0xFFC4FFD8)
-                                        : isCurrent
-                                        ? const Color(0xFFFFE59F)
-                                        : const Color(0xFFF7FBFF),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: isFound
-                                          ? const Color(0xFF2A9D8F)
-                                          : const Color(0xFFD6E4F1),
+              Builder(
+                builder: (gestureContext) {
+                  return GestureDetector(
+                    onPanStart: (details) {
+                      final start = _positionToCell(
+                        gestureContext,
+                        details.globalPosition,
+                      );
+                      if (start == null) {
+                        return;
+                      }
+                      setState(() {
+                        _startCell = start;
+                        _currentPath = <_Cell>[start];
+                      });
+                    },
+                    onPanUpdate: (details) {
+                      final start = _startCell;
+                      final end = _positionToCell(
+                        gestureContext,
+                        details.globalPosition,
+                      );
+                      if (start == null || end == null) {
+                        return;
+                      }
+                      setState(() => _currentPath = _buildLine(start, end));
+                    },
+                    onPanEnd: (_) => _finishSelection(),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFD2E7F8)),
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: Column(
+                          children: List.generate(7, (row) {
+                            return Expanded(
+                              child: Row(
+                                children: List.generate(7, (col) {
+                                  final key = '${row}_$col';
+                                  final isCurrent = currentKeys.contains(key);
+                                  final isFound = _foundCells.contains(key);
+                                  return Expanded(
+                                    child: Container(
+                                      margin: const EdgeInsets.all(2),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isFound
+                                            ? const Color(0xFFC4FFD8)
+                                            : isCurrent
+                                            ? const Color(0xFFFFE59F)
+                                            : const Color(0xFFF7FBFF),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: isFound
+                                              ? const Color(0xFF2A9D8F)
+                                              : const Color(0xFFD6E4F1),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _grid[row][col],
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFF1D3557),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: Text(
-                                    _grid[row][col],
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1D3557),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        );
-                      }),
+                                  );
+                                }),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -365,7 +375,7 @@ class CariBulatkanResultScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => goToMainMenu(context),
                     child: const Text('Kembali ke Main'),
                   ),
                 ),

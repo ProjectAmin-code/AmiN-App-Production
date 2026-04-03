@@ -1,16 +1,51 @@
-# aminapp
+# AmiN Learning Platform
 
-A new Flutter project.
+This repository now includes the complete student sync platform:
 
-## Getting Started
+1. Flutter mobile app (`/lib`)
+2. FastAPI + PostgreSQL backend (`/backend`)
+3. Next.js admin dashboard (`/dashboard`)
 
-This project is a starting point for a Flutter application.
+## Mobile App (Flutter)
 
-A few resources to get you started if this is your first Flutter project:
+The app now syncs with event-based APIs:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- `POST /api/students` for child registration with local UUID
+- `POST /api/progress` for lesson/game/quiz progress updates
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Legacy snapshot payload compatibility is still retained through the backend.
+
+### Run
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Backend API (FastAPI)
+
+See [`backend/README.md`](backend/README.md) for setup.
+
+Core endpoints:
+
+- `POST /api/students`
+- `POST /api/progress`
+- `GET /api/students` (admin auth)
+- `GET /api/students/{userId}` (admin auth)
+- `GET /api/progress/{userId}` (admin auth)
+- `GET /api/dashboard/summary` (admin auth)
+- `POST /api/admin/login`
+- `POST /api/admin/logout`
+- `GET /api/admin/me`
+
+## Admin Dashboard (Next.js)
+
+See [`dashboard/README.md`](dashboard/README.md) for setup.
+
+Pages:
+
+- `/login`
+- `/dashboard`
+- `/students`
+- `/students/[userId]`
+- `/progress`

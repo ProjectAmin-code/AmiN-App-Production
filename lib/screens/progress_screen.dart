@@ -116,7 +116,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 _progressTile(
                   title: 'Main',
                   subtitle:
-                      'Bintang: ${snapshot.gameStarsEarned}/${snapshot.gameStarsPossible} (${snapshot.gameSessionsCompleted} sesi)',
+                      'Skor aktiviti: ${snapshot.gameStarsEarned}/${snapshot.gameStarsPossible} (${snapshot.gameSessionsCompleted} sesi)',
                   value: snapshot.gameRatio,
                   color: const Color(0xFFE76F51),
                 ),
@@ -159,7 +159,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Endpoint: ${ProgressSyncService.instance.endpoint}',
+            'Base URL: ${ProgressSyncService.instance.baseUri}',
+            style: const TextStyle(
+              color: Color(0xFF4A5568),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'User ID: ${_tracker.userId.isEmpty ? '(belum dijana)' : _tracker.userId}',
             style: const TextStyle(
               color: Color(0xFF4A5568),
               fontWeight: FontWeight.w600,

@@ -12,8 +12,13 @@ val newBuildDir: Directory =
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
+    // Keep build output relocation only for modules inside this repo.
+    // External plugins from Pub cache can be on another drive on Windows,
+    // and forcing buildDir relocation breaks Kotlin incremental caches.
+    if (project.projectDir.absolutePath.startsWith(rootDir.absolutePath, true)) {
+        val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
+        project.layout.buildDirectory.value(newSubprojectBuildDir)
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")

@@ -1,14 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../shared/motion/app_motion_navigation.dart';
+import '../../core/navigation/app_routes.dart';
+import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
-import '../../shared/gamification/gamification.dart';
 import '../../shared/progress/progress_tracker.dart';
-import '../../quiz/models/quiz_level.dart';
-import '../../quiz/screens/quiz_shell_screen.dart';
+import '../../shared/settings/app_settings_service.dart';
 import '../models/learning_models.dart';
 import '../services/amin_tts_service.dart';
 
@@ -27,7 +27,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   late final List<LearningStep> _steps;
 
   int _currentIndex = 0;
-  bool _voiceEnabled = true;
+  bool _voiceEnabled = AppSettingsService.instance.voiceOverEnabled;
 
   LearningStep get _currentStep => _steps[_currentIndex];
   bool get _isLastStep => _currentIndex == _steps.length - 1;
@@ -74,42 +74,53 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     await AminTtsService.instance.speak(_currentStep.voiceScript);
   }
 
-  void _toggleVoice() {
+  Future<void> _toggleVoice() async {
     setState(() {
       _voiceEnabled = !_voiceEnabled;
     });
+    await AppSettingsService.instance.setVoiceOverEnabled(_voiceEnabled);
     if (_voiceEnabled) {
-      _speakCurrentStep();
+      await _speakCurrentStep();
     } else {
-      AminTtsService.instance.stop();
+      await AminTtsService.instance.stop();
     }
   }
 
-  void _goBack() {
+  Future<void> _goBack() async {
+    await AminTtsService.instance.stop();
+    if (!mounted) {
+      return;
+    }
     if (_currentIndex == 0) {
-      Navigator.pop(context);
+      context.go(AppRoutes.s003MainMenu);
       return;
     }
     setState(() => _currentIndex -= 1);
-    _speakCurrentStep();
+    await _speakCurrentStep();
   }
 
-  void _goNext() {
+  Future<void> _goNext() async {
     final gamification = GamificationScope.of(context);
     if (_isLastStep) {
+      await AminTtsService.instance.stop();
+      if (!mounted) {
+        return;
+      }
+      context.go(AppRoutes.s003MainMenu);
+      return;
+    }
+    await AminTtsService.instance.stop();
+    if (!mounted) {
       return;
     }
     setState(() => _currentIndex += 1);
     gamification.awardXp(8, reason: 'Belajar ${_currentStep.id}');
     gamification.updateStreak(success: true);
-    if ((_currentIndex + 1) % 4 == 0) {
-      gamification.awardStars(1);
-    }
     ProgressTracker.instance.updateLearningStep(
       reachedStep: _currentIndex + 1,
       totalSteps: _steps.length,
     );
-    _speakCurrentStep();
+    await _speakCurrentStep();
   }
 
   Future<void> _openHotspot(LearningHotspot hotspot) async {
@@ -653,7 +664,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _buildQuizGatewayStep() {
+  Widget _buildCompletionStep() {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -685,7 +696,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     ],
                   ),
                   child: const Text(
-                    'Pilih tahap kuiz untuk bermula!',
+                    'Tahniah! Anda selesai modul Belajar.',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -697,92 +708,37 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ],
           ),
           const SizedBox(height: 14),
-          _levelCard(
-            title: 'Tahap Mudah',
-            subtitle: 'Soalan asas imbuhan meN-',
-            starCount: 1,
-            color: const Color(0xFF2A9D8F),
-            level: QuizLevel.easy,
-          ),
-          _levelCard(
-            title: 'Tahap Sederhana',
-            subtitle: 'Ayat dan situasi harian',
-            starCount: 2,
-            color: const Color(0xFFF4A261),
-            level: QuizLevel.medium,
-          ),
-          _levelCard(
-            title: 'Tahap Tinggi',
-            subtitle: 'Soalan mencabar dan konteks panjang',
-            starCount: 3,
-            color: const Color(0xFFE76F51),
-            level: QuizLevel.hard,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _levelCard({
-    required String title,
-    required String subtitle,
-    required int starCount,
-    required Color color,
-    required QuizLevel level,
-  }) {
-    return BounceTapCard(
-      onTap: () {
-        pushAdaptive(context, QuizShellScreen(name: widget.name, level: level));
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x22000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            PulsingStars(
-              count: starCount,
-              size: 26,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
               color: Colors.white,
-              spacing: 0,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+            child: const Text(
+              'Teruskan ke Menu Utama untuk pilih aktiviti seterusnya.',
+              style: TextStyle(
+                color: Color(0xFF1D3557),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          AnimatedKidButton(
+            label: 'Kembali ke Main',
+            icon: Icons.home_rounded,
+            onPressed: () => context.go(AppRoutes.s003MainMenu),
+            backgroundColor: const Color(0xFF2A9D8F),
+          ),
+        ],
       ),
     );
   }
@@ -798,7 +754,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       case LearningStepType.summary:
         return _buildSummaryStep(step);
       case LearningStepType.quizGateway:
-        return _buildQuizGatewayStep();
+        return _buildCompletionStep();
     }
   }
 
@@ -853,21 +809,23 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                               child: AnimatedBuilder(
                                 animation: _pulseController,
                                 builder: (context, child) {
-                                  final reduceMotion = AppMotionSpec.reduceMotion(
-                                    context,
-                                  );
+                                  final reduceMotion =
+                                      AppMotionSpec.reduceMotion(context);
                                   final angle = reduceMotion
                                       ? 0.0
-                                      : math.sin(_pulseController.value * math.pi) *
-                                          0.02;
+                                      : math.sin(
+                                              _pulseController.value * math.pi,
+                                            ) *
+                                            0.02;
                                   return Transform.rotate(
                                     angle: angle,
                                     child: child,
                                   );
                                 },
                                 child: AnimatedKidButton(
-                                  label:
-                                      _isLastStep ? 'Selesai' : step.buttonText,
+                                  label: _isLastStep
+                                      ? 'Selesai'
+                                      : step.buttonText,
                                   icon: Icons.arrow_forward_rounded,
                                   onPressed: _goNext,
                                   backgroundColor: const Color(0xFFFFC300),
@@ -1301,7 +1259,7 @@ List<LearningStep> _buildSteps() {
     ),
     LearningStep(
       id: 'S021',
-      title: 'Pilih Tahap Kuiz',
+      title: 'Selesai Belajar',
       type: LearningStepType.quizGateway,
       backgroundTop: Color(0xFFE6F2FF),
       backgroundBottom: Color(0xFFCFE5FF),

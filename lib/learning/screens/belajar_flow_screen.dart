@@ -1,12 +1,15 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/navigation/app_routes.dart';
+import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
-import '../../shared/gamification/gamification.dart';
 import '../../shared/progress/progress_tracker.dart';
+import '../../shared/settings/app_settings_service.dart';
 import '../services/amin_tts_service.dart';
 import 'learning_flow_screen.dart';
 
@@ -23,7 +26,7 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
   int _index = 0;
-  bool _voiceEnabled = true;
+  bool _voiceEnabled = AppSettingsService.instance.voiceOverEnabled;
 
   final List<_BelajarStep> _steps = const [
     _BelajarStep(
@@ -120,33 +123,34 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
     await AminTtsService.instance.speak(_current.voiceScript);
   }
 
-  void _toggleVoice() {
+  Future<void> _toggleVoice() async {
     setState(() {
       _voiceEnabled = !_voiceEnabled;
     });
+    await AppSettingsService.instance.setVoiceOverEnabled(_voiceEnabled);
     if (_voiceEnabled) {
-      _speakCurrent();
+      await _speakCurrent();
     } else {
-      AminTtsService.instance.stop();
+      await AminTtsService.instance.stop();
     }
   }
 
-  void _next() {
+  Future<void> _next() async {
     final gamification = GamificationScope.of(context);
     if (_index == _steps.length - 1) {
+      await AminTtsService.instance.stop();
+      if (!mounted) {
+        return;
+      }
       ProgressTracker.instance.updateBelajarStep(
         reachedStep: _steps.length,
         totalSteps: _steps.length,
       );
       gamification.awardXp(15, reason: 'Belajar asas selesai');
-      gamification.awardStars(2);
-      gamification.grantReward(
-        title: 'Langkah Belajar Lengkap',
-        message: 'Anda telah menyelesaikan pengenalan imbuhan.',
-      );
       pushReplacementAdaptive(context, LearningFlowScreen(name: widget.name));
       return;
     }
+    await AminTtsService.instance.stop();
     setState(() {
       _index += 1;
     });
@@ -156,7 +160,26 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
       reachedStep: _index + 1,
       totalSteps: _steps.length,
     );
-    _speakCurrent();
+    await _speakCurrent();
+  }
+
+  Future<void> _goBack() async {
+    await AminTtsService.instance.stop();
+    if (!mounted) {
+      return;
+    }
+    if (_index == 0) {
+      context.go(AppRoutes.s003MainMenu);
+      return;
+    }
+    setState(() {
+      _index -= 1;
+    });
+    ProgressTracker.instance.updateBelajarStep(
+      reachedStep: _index + 1,
+      totalSteps: _steps.length,
+    );
+    await _speakCurrent();
   }
 
   @override
@@ -179,7 +202,7 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _goBack,
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     ),
                     Expanded(
@@ -322,8 +345,10 @@ class _BelajarFlowScreenState extends State<BelajarFlowScreen>
                                 );
                                 final angle = reduceMotion
                                     ? 0.0
-                                    : math.sin(_pulseController.value * math.pi) *
-                                        0.02;
+                                    : math.sin(
+                                            _pulseController.value * math.pi,
+                                          ) *
+                                          0.02;
                                 return Transform.rotate(
                                   angle: angle,
                                   child: child,

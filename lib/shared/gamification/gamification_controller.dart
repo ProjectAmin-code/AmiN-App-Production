@@ -48,7 +48,9 @@ class GamificationController extends ChangeNotifier {
         type: GamificationEventType.streak,
         amount: _streak,
         title: 'Streak $_streak',
-        message: success ? 'Hebat! Teruskan konsisten.' : 'Cuba lagi, anda boleh!',
+        message: success
+            ? 'Hebat! Teruskan konsisten.'
+            : 'Cuba lagi, anda boleh!',
       ),
     );
     notifyListeners();
@@ -59,25 +61,11 @@ class GamificationController extends ChangeNotifier {
       return;
     }
     _stars += amount;
-    _queue.add(
-      GamificationEvent(
-        type: GamificationEventType.stars,
-        amount: amount,
-        title: '+$amount Bintang',
-      ),
-    );
     notifyListeners();
   }
 
   void unlockLevel({required String label}) {
-    _queue.add(
-      GamificationEvent(
-        type: GamificationEventType.levelUnlock,
-        title: 'Level Dibuka',
-        label: label,
-      ),
-    );
-    notifyListeners();
+    // Level popups are intentionally disabled for uninterrupted learning flow.
   }
 
   void grantReward({
@@ -85,15 +73,7 @@ class GamificationController extends ChangeNotifier {
     String message = '',
     int coins = 0,
   }) {
-    _queue.add(
-      GamificationEvent(
-        type: GamificationEventType.reward,
-        title: title,
-        message: message,
-        amount: coins,
-      ),
-    );
-    notifyListeners();
+    // Reward popups are intentionally disabled for uninterrupted learning flow.
   }
 
   void _maybeUnlockLevel() {
@@ -102,12 +82,5 @@ class GamificationController extends ChangeNotifier {
       return;
     }
     _level = nextLevel;
-    _queue.add(
-      GamificationEvent(
-        type: GamificationEventType.levelUnlock,
-        title: 'Naik Level!',
-        label: 'Level $_level',
-      ),
-    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/audio/answer_audio_cue.dart';
 import '../../shared/design/app_design_tokens.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
@@ -218,9 +219,18 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
   Future<void> _goNext() async {
     if (_isLastQuestion) {
-      await ProgressTracker.instance.recordQuizSessionCompleted();
       final autoGradedCount = _questions.where((q) => q.isAutoGraded).length;
       final correctCount = _autoResults.values.where((result) => result).length;
+      final quizPercent = autoGradedCount == 0
+          ? 100
+          : ((correctCount / autoGradedCount) * 100).round();
+      final levelSuffix = widget.level == null
+          ? 'ALL'
+          : _levelLabel(widget.level!).toUpperCase();
+      await ProgressTracker.instance.recordQuizSessionCompleted(
+        lessonId: 'QUIZ_LEVEL_$levelSuffix',
+        score: quizPercent,
+      );
       if (!mounted) {
         return;
       }
@@ -321,27 +331,12 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                     if (isCorrect)
                       Column(
                         children: const [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.star_rounded,
-                                color: AppColors.secondary,
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.sentiment_satisfied_rounded,
-                                color: AppColors.secondary,
-                                size: 34,
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.star_rounded,
-                                color: AppColors.secondary,
-                              ),
-                            ],
+                          Icon(
+                            Icons.sentiment_satisfied_rounded,
+                            color: AppColors.secondary,
+                            size: 34,
                           ),
-                          SizedBox(height: 6),
+                          SizedBox(height: 8),
                           XPAnimation(amount: 10),
                         ],
                       )
@@ -390,6 +385,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         isAutoGraded: false,
         isCorrect: false,
         questionGoal: QuizBank.questions.length,
+        lessonId: question.id,
+        score: 100,
       );
       gamification.awardXp(4, reason: 'Soalan subjektif disiapkan');
       gamification.updateStreak(success: true);
@@ -405,14 +402,17 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       isAutoGraded: true,
       isCorrect: isCorrect,
       questionGoal: QuizBank.questions.length,
+      lessonId: question.id,
+      score: isCorrect ? 100 : 0,
     );
     if (isCorrect) {
       gamification.awardXp(10, reason: 'Jawapan kuiz betul');
       gamification.updateStreak(success: true);
-      gamification.awardStars(1);
+      await AnswerAudioCue.playCorrect();
     } else {
       gamification.awardXp(2, reason: 'Teruskan mencuba');
       gamification.updateStreak(success: false);
+      await AnswerAudioCue.playWrong();
     }
 
     await _showFeedbackDialog(isCorrect: isCorrect, question: question);
@@ -545,7 +545,12 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
           key: ValueKey(question.id),
           initialValue: _typedAnswers[question.id] ?? '',
           onChanged: (value) {
-            _typedAnswers[question.id] = value;
+            if (_typedAnswers[question.id] == value) {
+              return;
+            }
+            setState(() {
+              _typedAnswers[question.id] = value;
+            });
           },
           decoration: InputDecoration(
             hintText: 'Taip jawapan anda di sini',

@@ -7,6 +7,7 @@ class AminTtsService {
 
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
+  int _session = 0;
 
   Future<void> init() async {
     if (_initialized) {
@@ -23,8 +24,15 @@ class AminTtsService {
     if (text.trim().isEmpty) {
       return;
     }
+    final token = ++_session;
     await init();
+    if (token != _session) {
+      return;
+    }
     await _tts.stop();
+    if (token != _session) {
+      return;
+    }
     await _tts.speak(text);
   }
 
@@ -32,12 +40,28 @@ class AminTtsService {
     if (first.trim().isEmpty || second.trim().isEmpty) {
       return;
     }
+    final token = ++_session;
     await init();
+    if (token != _session) {
+      return;
+    }
     await _tts.stop();
+    if (token != _session) {
+      return;
+    }
     await _tts.speak(first);
+    if (token != _session) {
+      return;
+    }
     await Future<void>.delayed(const Duration(milliseconds: 320));
+    if (token != _session) {
+      return;
+    }
     await _tts.speak(second);
   }
 
-  Future<void> stop() => _tts.stop();
+  Future<void> stop() async {
+    _session += 1;
+    await _tts.stop();
+  }
 }

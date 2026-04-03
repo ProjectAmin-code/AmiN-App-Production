@@ -1,64 +1,79 @@
-# Progress API Contract
+# Student Sync API Contract
 
-## Endpoint
+## 1) Register Student
+
+- `POST /api/students`
+
+Request:
+
+```json
+{
+  "userId": "uuid-v4",
+  "name": "child_name",
+  "createdAt": "2026-03-14T12:30:00.000Z",
+  "updatedAt": "2026-03-14T12:30:00.000Z"
+}
+```
+
+Behavior:
+
+- Upsert by `userId`
+- Update `name`, `updatedAt`, and `lastSeen`
+
+## 2) Upsert Progress
+
 - `POST /api/progress`
 
-## Request Body
+Request:
+
+```json
+{
+  "userId": "uuid-v4",
+  "lessonId": "S006",
+  "status": "completed",
+  "score": 80,
+  "updatedAt": "2026-03-14T12:45:00.000Z"
+}
+```
+
+Behavior:
+
+- Upsert by `(userId, lessonId)`
+- Update student `lastSeen`
+
+## 3) Admin Read APIs (Auth Required)
+
+- `GET /api/students`
+- `GET /api/students/{userId}`
+- `GET /api/progress/{userId}`
+- `GET /api/dashboard/summary`
+
+## 4) Admin Auth APIs
+
+- `POST /api/admin/login`
+- `POST /api/admin/logout`
+- `GET /api/admin/me`
+
+## 5) Legacy Compatibility
+
+`POST /api/progress` also accepts temporary legacy payload:
+
 ```json
 {
   "userName": "AmiN",
   "capturedAtUtc": "2026-03-13T10:20:30.000Z",
   "progress": {
-    "onboardingReached": 3,
-    "onboardingTotal": 3,
-    "belajarReached": 3,
-    "belajarTotal": 3,
-    "learningReached": 8,
-    "learningTotal": 15,
-    "quizAnswered": 12,
-    "quizAutoCorrect": 9,
-    "quizAutoTotal": 10,
-    "quizQuestionGoal": 32,
-    "quizSessionsCompleted": 1,
-    "gameStarsEarned": 14,
-    "gameStarsPossible": 20,
-    "gameSessionsCompleted": 3,
-    "lastUpdatedUtcMillis": 1773397230000,
     "onboardingRatio": 1.0,
-    "belajarRatio": 0.61,
+    "belajarRatio": 0.7,
     "quizRatio": 0.56,
-    "gameRatio": 0.70,
-    "overallRatio": 0.62
+    "gameRatio": 0.70
   }
 }
 ```
 
-## Minimal Node.js (Express) Handler
-```js
-app.post('/api/progress', async (req, res) => {
-  const payload = req.body;
-  // TODO: validate + persist in DB
-  // Example: await db.collection('progress').insertOne(payload)
-  res.status(200).json({ ok: true });
-});
-```
+It is mapped to canonical lesson IDs:
 
-## Minimal FastAPI Handler
-```python
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Dict, Any
-
-app = FastAPI()
-
-class ProgressPayload(BaseModel):
-    userName: str
-    capturedAtUtc: str
-    progress: Dict[str, Any]
-
-@app.post("/api/progress")
-async def save_progress(payload: ProgressPayload):
-    # TODO: validate + persist in DB
-    return {"ok": True}
-```
-
+- `ONBOARDING`
+- `BELAJAR`
+- `QUIZ`
+- `GAMES`

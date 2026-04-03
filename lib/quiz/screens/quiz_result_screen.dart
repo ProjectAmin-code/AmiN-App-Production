@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../shared/design/app_design_tokens.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/navigation/app_screen_wiring.dart';
 import '../models/quiz_level.dart';
 import 'quiz_shell_screen.dart';
 
@@ -137,8 +138,7 @@ class QuizResultScreen extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: OutlinedButton(
-                onPressed: () =>
-                    Navigator.popUntil(context, (route) => route.isFirst),
+                onPressed: () => goToMainMenu(context),
                 child: const Text('Menu Utama'),
               ),
             ),

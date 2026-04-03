@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/navigation/app_screen_wiring.dart';
 import '../../shared/progress/progress_tracker.dart';
 
 class PilihPantasGameScreen extends StatefulWidget {
@@ -59,6 +60,7 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
         ProgressTracker.instance.recordGameSession(
           starsEarned: _stars,
           starsPossible: _attempts <= 0 ? 1 : _attempts,
+          lessonId: 'M003_PilihPantas',
         );
         final gamification = GamificationScope.of(context);
         gamification.awardXp((_stars * 2).clamp(4, 40));
@@ -299,7 +301,7 @@ class PilihPantasResultScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => goToMainMenu(context),
                     child: const Text('Kembali ke Main'),
                   ),
                 ),

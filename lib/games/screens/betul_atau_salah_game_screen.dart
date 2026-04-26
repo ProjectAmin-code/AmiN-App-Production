@@ -1,0 +1,640 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+import '../../shared/gamification/gamification.dart';
+import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_spec.dart';
+import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/navigation/app_screen_wiring.dart';
+import '../../shared/progress/progress_tracker.dart';
+import '../widgets/game_completion_template.dart';
+
+class BetulAtauSalahGameScreen extends StatefulWidget {
+  const BetulAtauSalahGameScreen({super.key});
+
+  @override
+  State<BetulAtauSalahGameScreen> createState() =>
+      _BetulAtauSalahGameScreenState();
+}
+
+enum _TrueFalseChoice { betul, salah }
+
+class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
+  // Flip this to false for a quick rollback of the intro modal experience.
+  static const bool _enableIntroCoachOverlay = true;
+  static const String _introInstructionScript =
+      'Arahan: Tentukan sama ada perkataan ini betul atau salah.';
+  static const String _introMascotAsset =
+      'assets/Action Figures/AmiN pointing right.svg';
+
+  static const List<String> _correctWords = [
+    'menutup',
+    'memeriksa',
+    'menyerap',
+    'mengarang',
+    'menyimpan',
+    'mengira',
+    'memohon',
+    'menabung',
+  ];
+
+  static const List<String> _incorrectWords = [
+    'mengkutip',
+    'mensambut',
+    'mepegang',
+    'mengtolak',
+    'mesusun',
+    'menpadam',
+    'mengkupas',
+  ];
+
+  final Random _random = Random();
+  late List<_TrueFalseItem> _roundWords;
+  int _currentIndex = 0;
+  int _score = 0;
+  int _burstKey = 0;
+  bool _isLocked = false;
+  bool? _lastAnswerCorrect;
+  _TrueFalseChoice? _selectedChoice;
+  String _feedbackText = '';
+  Timer? _nextWordTimer;
+  Timer? _introWordTimer;
+  bool _showIntroOverlay = _enableIntroCoachOverlay;
+  bool _introOverlayVisible = false;
+  bool _introClosing = false;
+  bool _introIsTyping = false;
+  List<String> _introWords = const <String>[];
+  int _visibleIntroWordCount = 0;
+  int _introTypingSession = 0;
+
+  _TrueFalseItem get _currentWord => _roundWords[_currentIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _roundWords = _buildRoundWords();
+    if (_showIntroOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_showIntroOverlay) {
+          return;
+        }
+        unawaited(_startIntroCoachSequence());
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nextWordTimer?.cancel();
+    _introWordTimer?.cancel();
+    super.dispose();
+  }
+
+  List<_TrueFalseItem> _buildRoundWords() {
+    final words = <_TrueFalseItem>[
+      ..._correctWords.map(
+        (word) => _TrueFalseItem(word: word, isCorrect: true),
+      ),
+      ..._incorrectWords.map(
+        (word) => _TrueFalseItem(word: word, isCorrect: false),
+      ),
+    ]..shuffle(_random);
+    return words;
+  }
+
+  Future<void> _startIntroCoachSequence() async {
+    if (!mounted || !_showIntroOverlay) {
+      return;
+    }
+    final words = _introInstructionScript
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .toList();
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    _introWordTimer?.cancel();
+    _introTypingSession += 1;
+    setState(() {
+      _introOverlayVisible = true;
+      _introWords = words;
+      _visibleIntroWordCount = reduceMotion ? words.length : 0;
+      _introIsTyping = !reduceMotion && words.isNotEmpty;
+    });
+
+    if (words.isEmpty) {
+      return;
+    }
+    if (reduceMotion) {
+      return;
+    }
+    _animateIntroWordsSilently(words, _introTypingSession);
+  }
+
+  String get _introTypedText {
+    if (_introWords.isEmpty) {
+      return '';
+    }
+    final clampedCount = _visibleIntroWordCount.clamp(0, _introWords.length);
+    return _introWords.take(clampedCount).join(' ');
+  }
+
+  void _animateIntroWordsSilently(List<String> words, int token) {
+    final wordStepDuration = AppMotionSpec.chooseDuration(
+      context,
+      const Duration(milliseconds: 140),
+      const Duration(milliseconds: 80),
+    );
+    _introWordTimer = Timer.periodic(wordStepDuration, (timer) {
+      if (!mounted || !_showIntroOverlay || token != _introTypingSession) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_visibleIntroWordCount < words.length) {
+          _visibleIntroWordCount += 1;
+        } else {
+          _introIsTyping = false;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  Future<void> _closeIntroOverlay() async {
+    if (_introClosing) {
+      return;
+    }
+    _introTypingSession += 1;
+    _introWordTimer?.cancel();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _introClosing = true;
+      _introOverlayVisible = false;
+    });
+    await Future<void>.delayed(
+      AppMotionSpec.chooseDuration(
+        context,
+        const Duration(milliseconds: 220),
+        const Duration(milliseconds: 120),
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showIntroOverlay = false;
+      _introClosing = false;
+    });
+  }
+
+  Future<void> _submitAnswer(_TrueFalseChoice choice) async {
+    if (_isLocked || _showIntroOverlay) {
+      return;
+    }
+
+    final isCorrect =
+        (choice == _TrueFalseChoice.betul) == _currentWord.isCorrect;
+    setState(() {
+      _isLocked = true;
+      _selectedChoice = choice;
+      _lastAnswerCorrect = isCorrect;
+      _feedbackText = isCorrect ? 'Betul!' : 'Cuba lagi!';
+      if (isCorrect) {
+        _score += 1;
+        _burstKey += 1;
+      }
+    });
+
+    _nextWordTimer?.cancel();
+    _nextWordTimer = Timer(
+      AppMotionSpec.chooseDuration(
+        context,
+        const Duration(milliseconds: 1100),
+        const Duration(milliseconds: 550),
+      ),
+      _moveNext,
+    );
+  }
+
+  void _moveNext() {
+    _nextWordTimer?.cancel();
+    if (_currentIndex >= _roundWords.length - 1) {
+      _finishRound();
+      return;
+    }
+    setState(() {
+      _currentIndex += 1;
+      _isLocked = false;
+      _selectedChoice = null;
+      _lastAnswerCorrect = null;
+      _feedbackText = '';
+    });
+  }
+
+  void _finishRound() {
+    ProgressTracker.instance.recordGameSession(
+      starsEarned: _score,
+      starsPossible: _roundWords.length,
+      lessonId: 'M006_BetulSalah',
+    );
+    final gamification = GamificationScope.of(context);
+    gamification.awardXp((_score * 2).clamp(8, 36), reason: 'Betul atau Salah');
+    gamification.awardStars(_score >= 12 ? 2 : (_score >= 8 ? 1 : 0));
+
+    pushReplacementAdaptive(
+      context,
+      BetulAtauSalahResultScreen(score: _score, total: _roundWords.length),
+    );
+  }
+
+  Color _buttonColor(_TrueFalseChoice choice) {
+    const baseBetul = Color(0xFF34C759);
+    const baseSalah = Color(0xFFFF6B6B);
+    if (!_isLocked || _selectedChoice != choice) {
+      return choice == _TrueFalseChoice.betul ? baseBetul : baseSalah;
+    }
+    return _lastAnswerCorrect == true
+        ? const Color(0xFF34C759)
+        : const Color(0xFFFF6B6B);
+  }
+
+  Widget _choiceButton({
+    required String label,
+    required _TrueFalseChoice choice,
+  }) {
+    return Expanded(
+      child: AnimatedContainer(
+        duration: AppMotionSpec.chooseDuration(
+          context,
+          const Duration(milliseconds: 180),
+          const Duration(milliseconds: 120),
+        ),
+        curve: Curves.easeOutCubic,
+        child: AnimatedKidButton(
+          label: label,
+          onPressed: _isLocked ? null : () => _submitAnswer(choice),
+          backgroundColor: _buttonColor(choice),
+          foregroundColor: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntroSpeechBubble(BuildContext context) {
+    final showAction = !_introIsTyping;
+    const actionLabel = 'Jom mula!';
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFDDE9F4), width: 2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 16,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 84),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    _introTypedText.isEmpty ? '...' : _introTypedText,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      height: 1.25,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1D3557),
+                    ),
+                  ),
+                ),
+              ),
+              if (showAction) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 170,
+                    child: AnimatedKidButton(
+                      label: actionLabel,
+                      onPressed: _closeIntroOverlay,
+                      icon: Icons.play_arrow_rounded,
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        Positioned(
+          right: -8,
+          bottom: 26,
+          child: Transform.rotate(
+            angle: pi / 4,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFDDE9F4), width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIntroOverlay(BuildContext context) {
+    final modalDuration = AppMotionSpec.chooseDuration(
+      context,
+      const Duration(milliseconds: 280),
+      const Duration(milliseconds: 160),
+    );
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        ignoring: !_showIntroOverlay,
+        child: AnimatedOpacity(
+          opacity: _introOverlayVisible ? 1 : 0,
+          duration: modalDuration,
+          curve: Curves.easeOutCubic,
+          child: Container(
+            color: const Color(0xB3000000),
+            child: SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 700;
+                  final mascot = MascotWidget(
+                    assetPath: _introMascotAsset,
+                    width: isNarrow ? 200 : 260,
+                    height: isNarrow ? 200 : 260,
+                    state: MascotState.encourage,
+                  );
+                  final speechBubble = _buildIntroSpeechBubble(context);
+
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 920),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: isNarrow ? double.infinity : 760,
+                              child: speechBubble,
+                            ),
+                            const SizedBox(height: 16),
+                            mascot,
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonLift = MediaQuery.sizeOf(context).height * 0.03;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background/bg_img_for_main2.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: SafeArea(
+              child: Container(
+                color: const Color(0x59FFFFFF),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 22),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFD6E4F1),
+                              ),
+                            ),
+                            child: Text(
+                              'â­$_score / ${_roundWords.length}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Betul atau Salah?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1D3557),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Center(
+                          child: FractionallySizedBox(
+                            heightFactor: 0.5,
+                            widthFactor: 1,
+                            child: StarBurstOverlay(
+                              burstKey: _burstKey,
+                              child: Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: const Color(0xFFDDE9F4),
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x1A000000),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: AnimatedSwitcher(
+                                  duration: AppMotionSpec.chooseDuration(
+                                    context,
+                                    const Duration(milliseconds: 220),
+                                    const Duration(milliseconds: 140),
+                                  ),
+                                  transitionBuilder: (child, animation) {
+                                    return buildAdaptiveSwitcherTransition(
+                                      context: context,
+                                      animation: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: Text(
+                                    _currentWord.word,
+                                    key: ValueKey(_currentWord.word),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF1D3557),
+                                      height: 1.05,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        height: 34,
+                        child: Text(
+                          _feedbackText,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: _lastAnswerCorrect == true
+                                ? const Color(0xFF0B6B58)
+                                : const Color(0xFFE45832),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: buttonLift),
+                        child: Row(
+                          children: [
+                            _choiceButton(
+                              label: 'Betul',
+                              choice: _TrueFalseChoice.betul,
+                            ),
+                            const SizedBox(width: 10),
+                            _choiceButton(
+                              label: 'Salah',
+                              choice: _TrueFalseChoice.salah,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_showIntroOverlay) _buildIntroOverlay(context),
+        ],
+      ),
+    );
+  }
+}
+
+class BetulAtauSalahResultScreen extends StatelessWidget {
+  const BetulAtauSalahResultScreen({
+    super.key,
+    required this.score,
+    required this.total,
+  });
+
+  final int score;
+  final int total;
+
+  String get _statusTitle {
+    if (score >= 12) {
+      return 'Hebat!';
+    }
+    if (score >= 8) {
+      return 'Bagus!';
+    }
+    return 'Cuba lagi!';
+  }
+
+  String get _statusSubtitle {
+    if (score >= 12) {
+      return 'Anda berjaya!';
+    }
+    if (score >= 8) {
+      return 'Teruskan usaha!';
+    }
+    return 'Boleh cuba sekali lagi.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GameCompletionTemplate(
+      score: score,
+      total: total,
+      statusTitle: _statusTitle,
+      statusSubtitle: _statusSubtitle,
+      confettiActive: score >= 12,
+      completionText: 'Anda telah menamatkan permainan Betul atau Salah.',
+      onPlayAgain: () {
+        pushReplacementAdaptive(context, const BetulAtauSalahGameScreen());
+      },
+      onMainMenu: () => goToMainMenu(context),
+    );
+  }
+}
+
+class _TrueFalseItem {
+  const _TrueFalseItem({required this.word, required this.isCorrect});
+
+  final String word;
+  final bool isCorrect;
+}

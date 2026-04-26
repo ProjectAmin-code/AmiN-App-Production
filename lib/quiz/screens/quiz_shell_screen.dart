@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../core/audio/answer_audio_cue.dart';
@@ -6,11 +8,17 @@ import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/progress/progress_tracker.dart';
+import '../../shared/widgets/adaptive_asset_image.dart';
+import '../constants/quiz_tokens.dart';
 import '../data/quiz_bank.dart';
+import '../logic/quiz_logic.dart';
+import '../logic/quiz_level_utils.dart';
+import '../logic/quiz_shuffle.dart';
 import '../models/quiz_interaction_type.dart';
 import '../models/quiz_level.dart';
 import '../models/quiz_option.dart';
 import '../models/quiz_question.dart';
+import '../widgets/quiz_input_builders.dart';
 import 'quiz_result_screen.dart';
 
 class QuizShellScreen extends StatefulWidget {
@@ -32,8 +40,37 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   final Map<String, List<String?>> _dragSelections = <String, List<String?>>{};
   final Map<String, bool> _autoResults = <String, bool>{};
   final Set<String> _manualCompleted = <String>{};
+  final Map<String, List<QuizOption>> _optionOrder =
+      <String, List<QuizOption>>{};
+  final Map<String, List<String>> _matchingChoiceOrder =
+      <String, List<String>>{};
+  final Map<String, List<String>> _dragChoiceOrder = <String, List<String>>{};
+  final Random _screenLoadRandom = Random();
+  static const String _firstQuestionWithSeparatedMOptions = 'EK1';
+  // Easy removal switch for bypass controls: set to false for normal flow.
+  static const bool _enableAnswerBypass = true;
 
   int _currentIndex = 0;
+
+  bool _startsWithM(QuizOption option) =>
+      option.label.trim().toLowerCase().startsWith('m');
+
+  bool _isEasyCompactQuestion(QuizQuestion question) =>
+      question.level == QuizLevel.easy && question.id != 'EK1';
+
+  List<QuizOption> _jumbledOptionsForLoad(QuizQuestion question) {
+    if (question.id == _firstQuestionWithSeparatedMOptions) {
+      return shuffleForLoadWithSeparatedGroup<QuizOption>(
+        items: question.options,
+        random: _screenLoadRandom,
+        shouldBeSeparated: _startsWithM,
+      );
+    }
+    return shuffleForLoad<QuizOption>(
+      items: question.options,
+      random: _screenLoadRandom,
+    );
+  }
 
   @override
   void initState() {
@@ -43,35 +80,35 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     _questions = widget.level == null
         ? allQuestions
         : allQuestions.where((q) => q.level == widget.level).toList();
+    for (final question in _questions) {
+      _optionOrder[question.id] =
+          (question.shuffleOptions ||
+              question.id == _firstQuestionWithSeparatedMOptions)
+          ? _jumbledOptionsForLoad(question)
+          : question.options;
+      _matchingChoiceOrder[question.id] = question.shuffleChoices
+          ? shuffleForLoad<String>(
+              items: question.matchingChoices,
+              random: _screenLoadRandom,
+            )
+          : question.matchingChoices;
+      _dragChoiceOrder[question.id] = question.shuffleChoices
+          ? shuffleForLoad<String>(
+              items: question.dragChoices,
+              random: _screenLoadRandom,
+            )
+          : question.dragChoices;
+    }
   }
 
   QuizQuestion get _currentQuestion => _questions[_currentIndex];
   bool get _isLastQuestion => _currentIndex == _questions.length - 1;
 
-  String _levelLabel(QuizLevel level) {
-    switch (level) {
-      case QuizLevel.easy:
-        return 'Mudah';
-      case QuizLevel.medium:
-        return 'Sederhana';
-      case QuizLevel.hard:
-        return 'Tinggi';
-    }
-  }
-
-  Color _levelColor(QuizLevel level) {
-    switch (level) {
-      case QuizLevel.easy:
-        return const Color(0xFF2EAD63);
-      case QuizLevel.medium:
-        return const Color(0xFFF4A52E);
-      case QuizLevel.hard:
-        return const Color(0xFFE45832);
-    }
-  }
-
   Set<String> _selectedFor(QuizQuestion question) =>
       _selectedOptionIds[question.id] ?? <String>{};
+
+  List<QuizOption> _optionsFor(QuizQuestion question) =>
+      _optionOrder[question.id] ?? question.options;
 
   List<String?> _matchingFor(QuizQuestion question) {
     return _matchingSelections.putIfAbsent(
@@ -85,6 +122,25 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       question.id,
       () => List<String?>.filled(question.dragTargets.length, null),
     );
+  }
+
+  List<String> _matchingChoicesFor(QuizQuestion question, int index) {
+    if (question.matchingChoicesByTarget.isNotEmpty) {
+      return question.matchingChoicesByTarget[index].toList(growable: false);
+    }
+
+    return _matchingChoiceOrder[question.id] ?? question.matchingChoices;
+  }
+
+  List<String> _dragChoicesFor(QuizQuestion question) {
+    final choices = _dragChoiceOrder[question.id] ?? question.dragChoices;
+    if (question.allowRepeatedChoices) {
+      return choices;
+    }
+    final selectedValues = _dragFor(question).whereType<String>().toList();
+    return choices
+        .where((choice) => !selectedValues.contains(choice))
+        .toList(growable: false);
   }
 
   void _setSingleChoice(QuizQuestion question, String value) {
@@ -115,6 +171,13 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
   void _setDragChoice(QuizQuestion question, int index, String value) {
     final current = _dragFor(question).toList();
+    if (question.allowRepeatedChoices) {
+      current[index] = value;
+      setState(() {
+        _dragSelections[question.id] = current;
+      });
+      return;
+    }
     final oldValue = current[index];
     final duplicateIndex = current.indexOf(value);
     if (duplicateIndex != -1) {
@@ -134,14 +197,6 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     });
   }
 
-  String _normalize(String input) {
-    return input
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9\s-]'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
-
   bool _evaluateAutoQuestion(QuizQuestion question) {
     if (question.correctOptionIds.isNotEmpty) {
       final selected = _selectedFor(question);
@@ -150,17 +205,25 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     }
 
     if (question.acceptableTextAnswers.isNotEmpty) {
-      final typed = _normalize(_typedAnswers[question.id] ?? '');
+      final rawTyped = _typedAnswers[question.id] ?? '';
+      final typed = normalizeQuizText(rawTyped);
       if (typed.isEmpty) {
         return false;
       }
 
       if (question.acceptableTextAnswers.length == 1) {
-        return typed == _normalize(question.acceptableTextAnswers.first);
+        return typed == normalizeQuizText(question.acceptableTextAnswers.first);
+      }
+
+      if (question.id == 'HK10') {
+        return matchesCommaSeparatedAnswers(
+          rawTyped,
+          question.acceptableTextAnswers,
+        );
       }
 
       final requiredAnswers = question.acceptableTextAnswers
-          .map(_normalize)
+          .map(normalizeQuizText)
           .toList(growable: false);
       return requiredAnswers.every(typed.contains);
     }
@@ -172,8 +235,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         return false;
       }
       for (var i = 0; i < question.matchingAnswers.length; i++) {
-        if (_normalize(selected[i]!) !=
-            _normalize(question.matchingAnswers[i])) {
+        if (normalizeQuizText(selected[i]!) !=
+            normalizeQuizText(question.matchingAnswers[i])) {
           return false;
         }
       }
@@ -187,7 +250,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         return false;
       }
       for (var i = 0; i < question.dragAnswers.length; i++) {
-        if (_normalize(selected[i]!) != _normalize(question.dragAnswers[i])) {
+        if (normalizeQuizText(selected[i]!) !=
+            normalizeQuizText(question.dragAnswers[i])) {
           return false;
         }
       }
@@ -219,14 +283,25 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
   Future<void> _goNext() async {
     if (_isLastQuestion) {
-      final autoGradedCount = _questions.where((q) => q.isAutoGraded).length;
-      final correctCount = _autoResults.values.where((result) => result).length;
+      final scoredQuestions = _questions.where(
+        (q) => q.isAutoGraded && !q.isBonus,
+      );
+      final bonusQuestions = _questions.where(
+        (q) => q.isAutoGraded && q.isBonus,
+      );
+      final autoGradedCount = scoredQuestions.length;
+      final correctCount = scoredQuestions
+          .where((question) => _autoResults[question.id] == true)
+          .length;
+      final bonusCorrectCount = bonusQuestions
+          .where((question) => _autoResults[question.id] == true)
+          .length;
       final quizPercent = autoGradedCount == 0
           ? 100
           : ((correctCount / autoGradedCount) * 100).round();
       final levelSuffix = widget.level == null
           ? 'ALL'
-          : _levelLabel(widget.level!).toUpperCase();
+          : quizLevelTrackingSuffix(widget.level!);
       await ProgressTracker.instance.recordQuizSessionCompleted(
         lessonId: 'QUIZ_LEVEL_$levelSuffix',
         score: quizPercent,
@@ -239,10 +314,11 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         QuizResultScreen(
           name: widget.name,
           level: widget.level,
-          totalQuestions: _questions.length,
+          totalQuestions: autoGradedCount,
           autoGradedQuestions: autoGradedCount,
           correctAnswers: correctCount,
           manualCompleted: _manualCompleted.length,
+          bonusCorrectAnswers: bonusCorrectCount,
         ),
       );
       return;
@@ -253,11 +329,22 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     });
   }
 
+  void _goPrevious() {
+    if (_currentIndex == 0) {
+      return;
+    }
+    setState(() {
+      _currentIndex -= 1;
+    });
+  }
+
   Future<void> _showFeedbackDialog({
     required bool isCorrect,
     required QuizQuestion question,
   }) async {
     final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final imageSize = (screenHeight * 0.20).clamp(120.0, 220.0);
     final dialogDuration = AppMotionSpec.chooseDuration(
       context,
       AppMotionSpec.feedbackEnter,
@@ -293,76 +380,51 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
             child: ConfettiCelebration(
               active: isCorrect,
               child: Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: dialogColor,
-                  borderRadius: BorderRadius.circular(18),
+                  color: dialogColor.withValues(alpha: 0.95),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    MascotWidget(
-                      assetPath: 'assets/aminPage3.png',
-                      width: 74,
-                      height: 74,
-                      state: isCorrect
-                          ? MascotState.celebrate
-                          : MascotState.errorReact,
-                      speech: isCorrect ? 'Tahniah!' : 'Jom cuba lagi!',
+                    AdaptiveAssetImage(
+                      assetPath: isCorrect
+                          ? 'assets/Action Figures/AmiN answer correct.svg'
+                          : 'assets/Action Figures/AmiN answer wrong.svg',
+                      width: imageSize,
+                      height: imageSize,
+                      fit: BoxFit.contain,
                     ),
-                    const SizedBox(height: 8),
-                    Icon(
-                      isCorrect
-                          ? Icons.check_circle_rounded
-                          : Icons.cancel_rounded,
-                      color: isCorrect ? AppColors.success : AppColors.danger,
-                      size: 56,
-                    ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
                     Text(
-                      isCorrect ? 'Betul' : 'Salah',
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.textPrimary,
+                      isCorrect
+                          ? (question.correctFeedback.trim().isNotEmpty
+                                ? question.correctFeedback
+                                : 'Tahniah! Jawapan anda betul.')
+                          : (question.wrongFeedback.trim().isNotEmpty
+                                ? question.wrongFeedback
+                                : 'Cuba lagi. Semak jawapan anda.'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: QuizTokens.headingTextSize,
+                        fontWeight: FontWeight.w800,
+                        color: isCorrect
+                            ? const Color(0xFF0B6B58)
+                            : const Color(0xFFB42318),
+                        height: 1.3,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    if (isCorrect)
-                      Column(
-                        children: const [
-                          Icon(
-                            Icons.sentiment_satisfied_rounded,
-                            color: AppColors.secondary,
-                            size: 34,
-                          ),
-                          SizedBox(height: 8),
-                          XPAnimation(amount: 10),
-                        ],
-                      )
-                    else
-                      const Icon(
-                        Icons.sentiment_dissatisfied_rounded,
-                        color: Color(0xFFE45832),
-                        size: 38,
-                      ),
-                    if (question.explanation.trim().isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        question.explanation,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF2F4858),
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 14),
-                    AnimatedKidButton(
-                      label: 'Seterusnya',
-                      icon: Icons.arrow_forward_rounded,
-                      onPressed: () => Navigator.pop(context),
-                      backgroundColor: const Color(0xFF2563EB),
+                    SizedBox(
+                      width: double.infinity,
+                      child: AnimatedKidButton(
+                        label: question.submitLabel ?? 'Seterusnya',
+                        icon: Icons.arrow_forward_rounded,
+                        onPressed: () => Navigator.pop(context),
+                        backgroundColor: const Color(0xFF2563EB),
+                        labelFontSize: QuizTokens.buttonTextSize,
+                      ),
                     ),
                   ],
                 ),
@@ -388,13 +450,32 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         lessonId: question.id,
         score: 100,
       );
-      gamification.awardXp(4, reason: 'Soalan subjektif disiapkan');
+      gamification.awardXp(
+        4,
+        reason: 'Soalan subjektif disiapkan',
+        showOverlay: false,
+      );
       gamification.updateStreak(success: true);
       await _goNext();
       return;
     }
 
     final isCorrect = _evaluateAutoQuestion(question);
+    await _processAutoSubmission(
+      question: question,
+      isCorrect: isCorrect,
+      correctReason: 'Jawapan kuiz betul',
+      wrongReason: 'Teruskan mencuba',
+    );
+  }
+
+  Future<void> _processAutoSubmission({
+    required QuizQuestion question,
+    required bool isCorrect,
+    required String correctReason,
+    required String wrongReason,
+  }) async {
+    final gamification = GamificationScope.of(context);
     setState(() {
       _autoResults[question.id] = isCorrect;
     });
@@ -406,11 +487,11 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       score: isCorrect ? 100 : 0,
     );
     if (isCorrect) {
-      gamification.awardXp(10, reason: 'Jawapan kuiz betul');
+      gamification.awardXp(10, reason: correctReason, showOverlay: false);
       gamification.updateStreak(success: true);
       await AnswerAudioCue.playCorrect();
     } else {
-      gamification.awardXp(2, reason: 'Teruskan mencuba');
+      gamification.awardXp(2, reason: wrongReason, showOverlay: false);
       gamification.updateStreak(success: false);
       await AnswerAudioCue.playWrong();
     }
@@ -423,6 +504,51 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   }
 
   Widget _buildImageReference(QuizQuestion question) {
+    if (question.imageAssetPath != null &&
+        question.imageAssetPath!.trim().isNotEmpty) {
+      final isEasyCompact = _isEasyCompactQuestion(question);
+      final isLargeHardImage = const {'HK1', 'HK12'}.contains(question.id);
+      final usesHardStyleImageSizing =
+          question.level == QuizLevel.hard || question.level == QuizLevel.easy;
+      final screenHeight = MediaQuery.sizeOf(context).height;
+      final imageHeight = isLargeHardImage
+          ? (screenHeight * 0.52).clamp(320.0, 620.0)
+          : usesHardStyleImageSizing
+          ? (screenHeight * 0.36).clamp(240.0, 460.0)
+          : isEasyCompact
+          ? (screenHeight * 0.13).clamp(82.0, 124.0)
+          : (screenHeight * 0.24).clamp(170.0, 280.0);
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(
+          top: (isLargeHardImage || usesHardStyleImageSizing)
+              ? 12
+              : (isEasyCompact ? 6 : 12),
+        ),
+        padding: EdgeInsets.all(
+          (isLargeHardImage || usesHardStyleImageSizing)
+              ? 0
+              : (isEasyCompact ? 6 : 10),
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF2D9A9)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            width: double.infinity,
+            height: imageHeight,
+            child: AdaptiveAssetImage(
+              assetPath: question.imageAssetPath!,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      );
+    }
+
     if (question.imageReferences.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -439,111 +565,47 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.asset(
-                'assets/classroom_background.jpg',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: const Color(0xFFE6ECF3),
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.image_rounded, size: 44),
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
           const Text(
             'Rujukan Gambar',
-            style: TextStyle(fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: QuizTokens.headingTextSize,
+            ),
           ),
           const SizedBox(height: 4),
-          ...question.imageReferences.map((line) => Text('- $line')),
+          ...question.imageReferences.map(
+            (line) => Text(
+              '- $line',
+              style: const TextStyle(fontSize: QuizTokens.headingTextSize),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMultiSelectInput(QuizQuestion question) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: question.options.map((option) {
-        final selected = _selectedFor(question).contains(option.id);
-        return FilterChip(
-          label: Text(option.label),
-          selected: selected,
-          selectedColor: const Color(0xFFB8ECFF),
-          onSelected: (_) => _toggleMultiChoice(question, option),
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+  Widget _buildQuestionInput(QuizQuestion question) {
+    switch (question.interactionType) {
+      case QuizInteractionType.multiSelect:
+        return buildQuizMultiSelectInput(
+          question: question,
+          options: _optionsFor(question),
+          selectedIds: _selectedFor(question),
+          onToggle: (option) => _toggleMultiChoice(question, option),
         );
-      }).toList(),
-    );
-  }
-
-  Widget _buildSingleChoiceInput(QuizQuestion question) {
-    final selected = _selectedFor(question);
-    final selectedValue = selected.isEmpty ? null : selected.first;
-    return Column(
-      children: question.options
-          .map(
-            (option) => InkWell(
-              onTap: () => _setSingleChoice(question, option.id),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: selectedValue == option.id
-                      ? const Color(0xFFD8F3FF)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: selectedValue == option.id
-                        ? const Color(0xFF0E7490)
-                        : const Color(0xFFD9D9D9),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      selectedValue == option.id
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      color: selectedValue == option.id
-                          ? const Color(0xFF0E7490)
-                          : Colors.grey,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        option.label,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  Widget _buildTextInput(QuizQuestion question) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          key: ValueKey(question.id),
-          initialValue: _typedAnswers[question.id] ?? '',
+      case QuizInteractionType.singleChoice:
+        final selected = _selectedFor(question);
+        final selectedValue = selected.isEmpty ? null : selected.first;
+        return buildQuizSingleChoiceInput(
+          options: _optionsFor(question),
+          selectedValue: selectedValue,
+          onSelect: (value) => _setSingleChoice(question, value),
+          questionId: question.id,
+        );
+      case QuizInteractionType.textInput:
+        return buildQuizTextInput(
+          question: question,
+          currentValue: _typedAnswers[question.id] ?? '',
           onChanged: (value) {
             if (_typedAnswers[question.id] == value) {
               return;
@@ -552,254 +614,180 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
               _typedAnswers[question.id] = value;
             });
           },
-          decoration: InputDecoration(
-            hintText: 'Taip jawapan anda di sini',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          minLines: 2,
-          maxLines: 4,
-        ),
-        if (question.helperLines.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          ...question.helperLines.map(
-            (line) => Text(
-              line,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF4A5568),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
+        );
+      case QuizInteractionType.matching:
+        return buildQuizMatchingInput(
+          question: question,
+          selected: _matchingFor(question),
+          choicesForIndex: (index) => _matchingChoicesFor(question, index),
+          onChanged: (index, value) =>
+              _setMatchingChoice(question, index, value),
+        );
+      case QuizInteractionType.dragDrop:
+        return buildQuizDragInput(
+          question: question,
+          selected: _dragFor(question),
+          availableChoices: _dragChoicesFor(question),
+          onSetChoice: (index, value) => _setDragChoice(question, index, value),
+          onClearChoice: (index) => _clearDragChoice(question, index),
+        );
+    }
   }
 
-  Widget _buildMatchingInput(QuizQuestion question) {
-    final selected = _matchingFor(question);
-    final choices = question.matchingChoices;
+  Widget _buildHighlightedBody(QuizQuestion question) {
+    if (question.bodyText.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return Column(
-      children: List.generate(question.matchingLeft.length, (index) {
-        final leftText = question.matchingLeft[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFDDE6EF)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                leftText,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1D3557),
-                ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: selected[index],
-                hint: const Text('Pilih padanan'),
-                items: choices
-                    .map(
-                      (choice) => DropdownMenuItem<String>(
-                        value: choice,
-                        child: Text(choice),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) =>
-                    _setMatchingChoice(question, index, value),
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ],
+    final bodyTextSize = QuizTokens.headingTextSize;
+    final bodyTextAlign = question.id == 'MK5'
+        ? TextAlign.justify
+        : TextAlign.start;
+
+    if (question.highlightedBodyPhrases.isEmpty) {
+      return Text(
+        question.bodyText,
+        textAlign: bodyTextAlign,
+        style: TextStyle(
+          fontSize: bodyTextSize,
+          height: 1.5,
+          color: const Color(0xFF0F172A),
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    }
+
+    final spans = <TextSpan>[];
+    var remaining = question.bodyText;
+    while (remaining.isNotEmpty) {
+      final nextMatch = question.highlightedBodyPhrases
+          .map((phrase) {
+            final index = remaining.indexOf(phrase);
+            return index == -1 ? null : (phrase: phrase, index: index);
+          })
+          .whereType<({String phrase, int index})>()
+          .fold<({String phrase, int index})?>(
+            null,
+            (best, current) =>
+                best == null || current.index < best.index ? current : best,
+          );
+
+      if (nextMatch == null) {
+        spans.add(
+          TextSpan(
+            text: remaining,
+            style: TextStyle(
+              fontSize: bodyTextSize,
+              height: 1.5,
+              color: const Color(0xFF0F172A),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         );
-      }),
-    );
-  }
+        break;
+      }
 
-  Widget _buildDragInput(QuizQuestion question) {
-    final selected = _dragFor(question);
-    final selectedValues = selected.whereType<String>().toList();
-    final availableChoices = question.dragChoices
-        .where((choice) => !selectedValues.contains(choice))
-        .toList(growable: false);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ...availableChoices.map(
-              (choice) => Draggable<String>(
-                data: choice,
-                feedback: Material(
-                  color: Colors.transparent,
-                  child: _choiceChip(choice, active: true),
-                ),
-                childWhenDragging: _choiceChip(choice, active: false),
-                child: _choiceChip(choice, active: true),
-              ),
+      if (nextMatch.index > 0) {
+        spans.add(
+          TextSpan(
+            text: remaining.substring(0, nextMatch.index),
+            style: TextStyle(
+              fontSize: bodyTextSize,
+              height: 1.5,
+              color: const Color(0xFF0F172A),
+              fontWeight: FontWeight.w600,
             ),
-            if (availableChoices.isEmpty)
-              const Text(
-                'Semua pilihan telah digunakan.',
-                style: TextStyle(
-                  color: Color(0xFF4A5568),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-          ],
+          ),
+        );
+      }
+
+      spans.add(
+        TextSpan(
+          text: nextMatch.phrase,
+          style: TextStyle(
+            fontSize: bodyTextSize,
+            height: 1.5,
+            color: AppColors.danger,
+            fontWeight: FontWeight.w800,
+            decoration: TextDecoration.underline,
+            decorationColor: AppColors.danger,
+          ),
         ),
-        const SizedBox(height: 12),
-        ...List.generate(question.dragTargets.length, (index) {
-          final target = question.dragTargets[index];
-          final assigned = selected[index];
-
-          return DragTarget<String>(
-            onAcceptWithDetails: (details) {
-              _setDragChoice(question, index, details.data);
-            },
-            builder: (context, candidateData, rejectedData) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: candidateData.isNotEmpty
-                        ? const Color(0xFF0EA5E9)
-                        : const Color(0xFFDDE6EF),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      target,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1D3557),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: assigned == null
-                                  ? const Color(0xFFF3F7FB)
-                                  : const Color(0xFFDFF4FF),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              assigned ?? 'Lepaskan pilihan di sini',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: assigned == null
-                                    ? const Color(0xFF6B7280)
-                                    : const Color(0xFF0E7490),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (assigned != null) ...[
-                          const SizedBox(width: 8),
-                          IconButton(
-                            onPressed: () => _clearDragChoice(question, index),
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _choiceChip(String text, {required bool active}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFFFFC74D) : const Color(0xFFFFE6A8),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF1D3557),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuestionInput(QuizQuestion question) {
-    switch (question.interactionType) {
-      case QuizInteractionType.multiSelect:
-        return _buildMultiSelectInput(question);
-      case QuizInteractionType.singleChoice:
-        return _buildSingleChoiceInput(question);
-      case QuizInteractionType.textInput:
-        return _buildTextInput(question);
-      case QuizInteractionType.matching:
-        return _buildMatchingInput(question);
-      case QuizInteractionType.dragDrop:
-        return _buildDragInput(question);
+      );
+      remaining = remaining.substring(
+        nextMatch.index + nextMatch.phrase.length,
+      );
     }
+
+    return RichText(textAlign: bodyTextAlign, text: TextSpan(children: spans));
+  }
+
+  Widget _buildBodyCard(QuizQuestion question) {
+    if (question.bodyText.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final isEasyCompact = _isEasyCompactQuestion(question);
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(top: isEasyCompact ? 6 : 12),
+      padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: _buildHighlightedBody(question),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Kuiz')),
-        body: const Center(child: Text('Tiada soalan untuk tahap ini.')),
+        appBar: AppBar(
+          title: const Text(
+            'Kuiz',
+            style: TextStyle(fontSize: QuizTokens.headingTextSize),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            'Tiada soalan untuk tahap ini.',
+            style: TextStyle(fontSize: QuizTokens.headingTextSize),
+          ),
+        ),
       );
     }
 
     final question = _currentQuestion;
-    final actionLabel = _isLastQuestion
-        ? 'Selesai Kuiz'
-        : question.isAutoGraded
-        ? 'Semak dan Seterusnya'
-        : 'Tandakan Siap dan Seterusnya';
+    final isEasyCompact = _isEasyCompactQuestion(question);
+    final hasInlineImage = (question.imageAssetPath?.trim().isNotEmpty ?? false);
+    final isWideImageQuestion =
+        hasInlineImage &&
+        (question.level == QuizLevel.hard || question.level == QuizLevel.easy);
+    final questionHeaderTextSize = QuizTokens.headingTextSize;
+    final verticalPagePadding = isEasyCompact ? 12.0 : 16.0;
+    final horizontalPagePadding = isWideImageQuestion
+        ? 8.0
+        : (isEasyCompact ? 12.0 : 16.0);
+    final actionLabel =
+        question.submitLabel ??
+        (_isLastQuestion
+            ? 'Selesai Kuiz'
+            : question.isAutoGraded
+            ? 'Semak dan Seterusnya'
+            : 'Tandakan Siap dan Seterusnya');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF7FF),
+      backgroundColor: quizLevelBackground(question.level),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEAF7FF),
+        backgroundColor: quizLevelBackground(question.level),
         elevation: 0,
         title: Text(
           'Kuiz ${_currentIndex + 1}/${_questions.length}',
           style: const TextStyle(
+            fontSize: QuizTokens.headingTextSize,
             color: Colors.black87,
             fontWeight: FontWeight.w700,
           ),
@@ -811,58 +799,94 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPagePadding,
+            verticalPagePadding,
+            horizontalPagePadding,
+            verticalPagePadding,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: ListView(
                   padding: EdgeInsets.zero,
+                  physics: isEasyCompact && !isWideImageQuestion
+                      ? const NeverScrollableScrollPhysics()
+                      : null,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: StarProgressBar(
-                            value: (_currentIndex + 1) / _questions.length,
-                            showLabel: false,
-                            starCount: 3,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: (_currentIndex + 1) / _questions.length,
+                        minHeight: isEasyCompact ? 8 : 10,
+                        backgroundColor: const Color(0xFFE2E8F0),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          quizLevelColor(question.level),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: isEasyCompact ? 8 : 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isEasyCompact ? 10 : 12,
+                          vertical: isEasyCompact ? 6 : 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: quizLevelColor(question.level),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          quizLevelLabel(question.level),
+                          style: TextStyle(
+                            fontSize: isEasyCompact ? 14 : 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _levelColor(question.level),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.star_rounded,
-                                size: 18,
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _levelLabel(question.level),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: isEasyCompact ? 8 : 14),
+                    if (question.isBonus && !isEasyCompact) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF4CF),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFF3CE73)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.workspace_premium_rounded,
+                              color: Color(0xFF8A5A00),
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Bahagian Bonus',
+                                style: TextStyle(
+                                  fontSize: QuizTokens.headingTextSize,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF8A5A00),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     Text(
-                      'Hai ${widget.name}',
+                      'Hai, ${widget.name}',
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: QuizTokens.headingTextSize,
                         color: Color(0xFF1D3557),
                         fontWeight: FontWeight.w700,
                       ),
@@ -870,7 +894,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                     const SizedBox(height: 10),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(14),
+                      padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
@@ -880,34 +904,78 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                         children: [
                           Text(
                             question.title,
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style: TextStyle(
+                              fontSize: questionHeaderTextSize,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF0E7490),
+                              color: const Color(0xFF0E7490),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: isEasyCompact ? 4 : 6),
                           Text(
                             question.prompt,
-                            style: const TextStyle(fontSize: 16, height: 1.35),
+                            style: TextStyle(
+                              fontSize: questionHeaderTextSize,
+                              height: 1.35,
+                            ),
                           ),
                           _buildImageReference(question),
+                          _buildBodyCard(question),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildQuestionInput(question),
-                    const SizedBox(height: 12),
+                    SizedBox(height: isEasyCompact ? 8 : 12),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(isEasyCompact ? 10 : 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.96),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: QuizTokens.answerPanelBorder),
+                      ),
+                      child: _buildQuestionInput(question),
+                    ),
+                    SizedBox(height: isEasyCompact ? 8 : 12),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
+              if (_enableAnswerBypass) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _currentIndex == 0 ? null : _goPrevious,
+                        icon: const Icon(Icons.skip_previous_rounded),
+                        label: const Text('Pintas Sebelum'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _goNext(),
+                        icon: const Icon(Icons.skip_next_rounded),
+                        label: const Text('Pintas Seterusnya'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
               AnimatedKidButton(
                 label: actionLabel,
                 icon: Icons.play_circle_fill_rounded,
                 onPressed: _canSubmit(question) ? _submitCurrent : null,
                 backgroundColor: const Color(0xFFFFC300),
                 foregroundColor: Colors.black87,
+                labelFontSize: QuizTokens.buttonTextSize,
               ),
             ],
           ),

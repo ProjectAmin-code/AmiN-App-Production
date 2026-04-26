@@ -78,56 +78,73 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ],
             ),
           ),
-          body: SingleChildScrollView(
+          body: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Kemajuan pembelajaran ${widget.name}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final contentWidth = constraints.maxWidth;
+                return SizedBox.expand(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: contentWidth,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kemajuan pembelajaran ${widget.name}',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            _progressTile(
+                              title: 'Onboarding',
+                              subtitle:
+                                  'Langkah awal: ${snapshot.onboardingReached}/${snapshot.onboardingTotal}',
+                              value: snapshot.onboardingRatio,
+                              color: const Color(0xFF4C78A8),
+                            ),
+                            _progressTile(
+                              title: 'Belajar',
+                              subtitle:
+                                  'Modul selesai: ${snapshot.totalLearningReached}/${snapshot.totalLearningSteps}',
+                              value: snapshot.belajarRatio,
+                              color: const Color(0xFF2A9D8F),
+                            ),
+                            _progressTile(
+                              title: 'Kuiz',
+                              subtitle:
+                                  'Soalan: ${snapshot.quizAnswered}/${snapshot.quizQuestionGoal} | Ketepatan: ${snapshot.quizAccuracyPercent}%',
+                              value: snapshot.quizRatio,
+                              color: const Color(0xFFF4A261),
+                            ),
+                            _progressTile(
+                              title: 'Main',
+                              subtitle:
+                                  'Skor aktiviti: ${snapshot.gameStarsEarned}/${snapshot.gameStarsPossible} (${snapshot.gameSessionsCompleted} sesi)',
+                              value: snapshot.gameRatio,
+                              color: const Color(0xFFE76F51),
+                            ),
+                            _progressTile(
+                              title: 'Keseluruhan',
+                              subtitle: 'Skor kemajuan semasa',
+                              value: snapshot.overallRatio,
+                              color: const Color(0xFF1D3557),
+                            ),
+                            _syncCard(snapshot),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                _progressTile(
-                  title: 'Onboarding',
-                  subtitle:
-                      'Langkah awal: ${snapshot.onboardingReached}/${snapshot.onboardingTotal}',
-                  value: snapshot.onboardingRatio,
-                  color: const Color(0xFF4C78A8),
-                ),
-                _progressTile(
-                  title: 'Belajar',
-                  subtitle:
-                      'Modul selesai: ${snapshot.totalLearningReached}/${snapshot.totalLearningSteps}',
-                  value: snapshot.belajarRatio,
-                  color: const Color(0xFF2A9D8F),
-                ),
-                _progressTile(
-                  title: 'Kuiz',
-                  subtitle:
-                      'Soalan: ${snapshot.quizAnswered}/${snapshot.quizQuestionGoal} | Ketepatan: ${snapshot.quizAccuracyPercent}%',
-                  value: snapshot.quizRatio,
-                  color: const Color(0xFFF4A261),
-                ),
-                _progressTile(
-                  title: 'Main',
-                  subtitle:
-                      'Skor aktiviti: ${snapshot.gameStarsEarned}/${snapshot.gameStarsPossible} (${snapshot.gameSessionsCompleted} sesi)',
-                  value: snapshot.gameRatio,
-                  color: const Color(0xFFE76F51),
-                ),
-                _progressTile(
-                  title: 'Keseluruhan',
-                  subtitle: 'Skor kemajuan semasa',
-                  value: snapshot.overallRatio,
-                  color: const Color(0xFF1D3557),
-                ),
-                _syncCard(snapshot),
-              ],
+                );
+              },
             ),
           ),
         );

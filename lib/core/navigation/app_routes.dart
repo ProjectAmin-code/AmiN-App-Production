@@ -7,7 +7,10 @@ class AppRoutes {
   static const String settings = '/settings';
 
   static const String belajar = '/belajar';
+  static const String belajarLesson = '/belajar/:lessonId';
   static const String kuiz = '/kuiz';
   static const String mainGame = '/main';
   static const String kemajuan = '/kemajuan';
+
+  static String belajarLessonPath(String lessonId) => '/belajar/$lessonId';
 }

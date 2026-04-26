@@ -147,7 +147,8 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                           AminMotion.smile,
                         },
                         backend: AminCharacterBackend.auto,
-                        placeholderAsset: 'assets/aminPage2.png',
+                        placeholderAsset:
+                            'assets/Action Figures/AmiN thinking.svg',
                       ),
                       SizedBox(height: isCompact ? 10 : 16),
                       const LessonCard(
@@ -267,6 +268,7 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                           onPressed: _recoverMode ? _recoverByUserId : _goNext,
                           backgroundColor: AppColors.secondary,
                           foregroundColor: AppColors.textPrimary,
+                          labelFontSize: _recoverMode ? 18 : 20,
                         ),
                       ),
                     ],

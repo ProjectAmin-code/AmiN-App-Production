@@ -17,12 +17,29 @@ class QuizQuestion {
     this.helperLines = const [],
     this.matchingLeft = const [],
     this.matchingChoices = const [],
+    this.matchingChoicesByTarget = const [],
     this.matchingAnswers = const [],
     this.dragTargets = const [],
     this.dragChoices = const [],
     this.dragAnswers = const [],
     this.isAutoGraded = true,
     this.explanation = '',
+    this.imageAssetPath,
+    this.imageAspectRatio,
+    this.bodyText = '',
+    this.highlightedBodyPhrases = const [],
+    this.shuffleOptions = false,
+    this.shuffleChoices = false,
+    this.dropPlaceholder = 'Lepaskan pilihan di sini',
+    this.dropdownPlaceholder = 'Pilih padanan',
+    this.correctFeedback = '',
+    this.wrongFeedback = '',
+    this.submitLabel,
+    this.isBonus = false,
+    this.showExplanationInFeedback = true,
+    this.allowRepeatedChoices = false,
+    this.showChoicesExhaustedText = true,
+    this.enforceUniqueMatchingChoices = true,
   });
 
   final String id;
@@ -38,10 +55,27 @@ class QuizQuestion {
   final List<String> helperLines;
   final List<String> matchingLeft;
   final List<String> matchingChoices;
+  final List<List<String>> matchingChoicesByTarget;
   final List<String> matchingAnswers;
   final List<String> dragTargets;
   final List<String> dragChoices;
   final List<String> dragAnswers;
   final bool isAutoGraded;
   final String explanation;
+  final String? imageAssetPath;
+  final double? imageAspectRatio;
+  final String bodyText;
+  final List<String> highlightedBodyPhrases;
+  final bool shuffleOptions;
+  final bool shuffleChoices;
+  final String dropPlaceholder;
+  final String dropdownPlaceholder;
+  final String correctFeedback;
+  final String wrongFeedback;
+  final String? submitLabel;
+  final bool isBonus;
+  final bool showExplanationInFeedback;
+  final bool allowRepeatedChoices;
+  final bool showChoicesExhaustedText;
+  final bool enforceUniqueMatchingChoices;
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../widgets/adaptive_asset_image.dart';
 import 'app_motion_spec.dart';
 
 abstract class AnimatedCharacterAdapter {
@@ -28,7 +29,12 @@ class NativeAnimatedCharacterAdapter extends AnimatedCharacterAdapter {
     BoxFit fit = BoxFit.contain,
   }) {
     return BreathingCharacter(
-      child: Image.asset(assetPath, width: width, height: height, fit: fit),
+      child: AdaptiveAssetImage(
+        assetPath: assetPath,
+        width: width,
+        height: height,
+        fit: fit,
+      ),
     );
   }
 }

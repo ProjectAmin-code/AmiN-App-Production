@@ -1,0 +1,9 @@
+export '../../../learning/belajar/widgets/belajar_animated_content.dart';
+export '../../../learning/belajar/widgets/belajar_character.dart';
+export '../../../learning/belajar/widgets/belajar_header.dart';
+export '../../../learning/belajar/widgets/belajar_indicator_row.dart';
+export '../../../learning/belajar/widgets/belajar_info_box.dart';
+export '../../../learning/belajar/widgets/belajar_paragraph.dart';
+export '../../../learning/belajar/widgets/belajar_primary_button.dart';
+export '../../../learning/belajar/widgets/belajar_table.dart';
+export '../../../learning/belajar/widgets/belajar_title.dart';

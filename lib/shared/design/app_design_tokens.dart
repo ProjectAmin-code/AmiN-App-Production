@@ -30,19 +30,11 @@ class AppShadows {
   const AppShadows._();
 
   static const List<BoxShadow> soft = [
-    BoxShadow(
-      color: Color(0x1A0B2748),
-      blurRadius: 12,
-      offset: Offset(0, 5),
-    ),
+    BoxShadow(color: Color(0x1A0B2748), blurRadius: 12, offset: Offset(0, 5)),
   ];
 
   static const List<BoxShadow> floaty = [
-    BoxShadow(
-      color: Color(0x220B2748),
-      blurRadius: 16,
-      offset: Offset(0, 8),
-    ),
+    BoxShadow(color: Color(0x220B2748), blurRadius: 16, offset: Offset(0, 8)),
   ];
 }
 
@@ -60,9 +52,7 @@ class AppTypography {
   const AppTypography._();
 
   static const List<String> fallbackFamilies = [
-    'Fredoka',
-    'Nunito',
-    'Baloo',
+    'Poppins',
     'Roboto',
     'Noto Sans',
     'Arial',
@@ -70,7 +60,10 @@ class AppTypography {
 
   static TextTheme buildTextTheme(TextTheme base) {
     TextStyle withFallback(TextStyle style) {
-      return style.copyWith(fontFamilyFallback: fallbackFamilies);
+      return style.copyWith(
+        fontFamily: 'Poppins',
+        fontFamilyFallback: fallbackFamilies,
+      );
     }
 
     return TextTheme(
@@ -94,6 +87,7 @@ class AppTypography {
       ),
       titleLarge: withFallback(
         base.titleLarge!.copyWith(
+          fontSize: 20,
           fontWeight: FontWeight.w800,
           color: AppColors.textPrimary,
         ),
@@ -112,12 +106,14 @@ class AppTypography {
       ),
       bodyLarge: withFallback(
         base.bodyLarge!.copyWith(
+          fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
       ),
       bodyMedium: withFallback(
         base.bodyMedium!.copyWith(
+          fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
@@ -129,7 +125,7 @@ class AppTypography {
         ),
       ),
       labelLarge: withFallback(
-        base.labelLarge!.copyWith(fontWeight: FontWeight.w800),
+        base.labelLarge!.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       labelMedium: withFallback(
         base.labelMedium!.copyWith(fontWeight: FontWeight.w700),

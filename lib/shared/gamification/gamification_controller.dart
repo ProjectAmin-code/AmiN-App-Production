@@ -24,19 +24,21 @@ class GamificationController extends ChangeNotifier {
     return _queue.removeAt(0);
   }
 
-  void awardXp(int amount, {String reason = ''}) {
+  void awardXp(int amount, {String reason = '', bool showOverlay = true}) {
     if (amount <= 0) {
       return;
     }
     _totalXp += amount;
-    _queue.add(
-      GamificationEvent(
-        type: GamificationEventType.xp,
-        amount: amount,
-        title: '+$amount XP',
-        message: reason,
-      ),
-    );
+    if (showOverlay) {
+      _queue.add(
+        GamificationEvent(
+          type: GamificationEventType.xp,
+          amount: amount,
+          title: '+$amount Mata',
+          message: reason,
+        ),
+      );
+    }
     _maybeUnlockLevel();
     notifyListeners();
   }

@@ -6,6 +6,7 @@ import 'package:rive/rive.dart' as rive;
 
 import '../../shared/design/app_design_tokens.dart';
 import '../../shared/motion/app_motion_spec.dart';
+import '../../shared/widgets/adaptive_asset_image.dart';
 
 enum AminMotion {
   idleBreathing,
@@ -51,9 +52,9 @@ class AminCharacter extends StatefulWidget {
   static String defaultAssetForPose(AminPose pose) {
     switch (pose) {
       case AminPose.schoolUniform:
-        return 'assets/aminPage1.png';
+        return 'assets/Action Figures/AmiN Pointing.svg';
       case AminPose.redTshirt:
-        return 'assets/aminPage3.png';
+        return 'assets/Icon/AmiN for APP Pic.min.svg';
     }
   }
 
@@ -196,8 +197,8 @@ class _AminCharacterState extends State<AminCharacter>
   }
 
   Widget _placeholderImage(String assetPath) {
-    return Image.asset(
-      assetPath,
+    return AdaptiveAssetImage(
+      assetPath: assetPath,
       fit: widget.fit,
       errorBuilder: (context, error, stackTrace) {
         return Container(

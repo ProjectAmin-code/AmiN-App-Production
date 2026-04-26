@@ -53,9 +53,9 @@ class _Screen0State extends State<Screen0> {
       return;
     }
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter your name')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Please enter your name')));
   }
 
   @override
@@ -70,13 +70,16 @@ class _Screen0State extends State<Screen0> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
+            final scale = (constraints.maxHeight / 780)
+                .clamp(0.78, 1.0)
+                .toDouble();
+            return Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxWidth: 560,
-                    minHeight: constraints.maxHeight - 24,
+                    maxHeight: constraints.maxHeight - 24,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -86,32 +89,35 @@ class _Screen0State extends State<Screen0> {
                         starCount: 3,
                         showLabel: false,
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14 * scale),
                       SizedBox(
-                        height: 280,
+                        height: 280 * scale,
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
                             Positioned(
                               left: 0,
-                              top: 18,
-                              child: const MascotWidget(
-                                assetPath: 'assets/aminPage0.png',
-                                width: 220,
-                                height: 220,
+                              top: 18 * scale,
+                              child: MascotWidget(
+                                assetPath:
+                                    'assets/Action Figures/AmiN First Screen.svg',
+                                width: 220 * scale,
+                                height: 220 * scale,
                                 state: MascotState.encourage,
                               ),
                             ),
                             Positioned(
                               right: 0,
-                              top: 82,
+                              top: 82 * scale,
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 260),
-                                child: const LessonCard(
+                                constraints: BoxConstraints(
+                                  maxWidth: 260 * scale,
+                                ),
+                                child: LessonCard(
                                   child: Text(
                                     'Hai! Siapa nama awak?',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 18 * scale,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -121,7 +127,7 @@ class _Screen0State extends State<Screen0> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12 * scale),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: ClipRRect(
@@ -143,11 +149,11 @@ class _Screen0State extends State<Screen0> {
                               child: Column(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.fromLTRB(
+                                    padding: EdgeInsets.fromLTRB(
                                       20,
+                                      20 * scale,
                                       20,
-                                      20,
-                                      12,
+                                      12 * scale,
                                     ),
                                     child: TextField(
                                       controller: _nameController,
@@ -156,12 +162,14 @@ class _Screen0State extends State<Screen0> {
                                       decoration: InputDecoration(
                                         hintText: 'Taip nama awak di sini',
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(15),
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
                                         ),
                                         filled: true,
                                         fillColor: Colors.white,
                                       ),
-                                      style: const TextStyle(fontSize: 18),
+                                      style: TextStyle(fontSize: 18 * scale),
                                     ),
                                   ),
                                   Padding(
@@ -175,11 +183,13 @@ class _Screen0State extends State<Screen0> {
                                       foregroundColor: AppColors.textPrimary,
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 10),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 10 * scale,
+                                    ),
                                     child: Text(
                                       'Guna nama panggilan sahaja',
-                                      style: TextStyle(fontSize: 14),
+                                      style: TextStyle(fontSize: 14 * scale),
                                     ),
                                   ),
                                 ],
@@ -188,7 +198,6 @@ class _Screen0State extends State<Screen0> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
                     ],
                   ),
                 ),

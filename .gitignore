@@ -1,55 +1,94 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
+# ----------------------------
+# OS / Editor / IDE
+# ----------------------------
 .DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.code-workspace
 .atom/
-.build/
-.buildlog/
 .history
 .svn/
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+.idea/
 *.iml
 *.ipr
 *.iws
-.idea/
+.vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# ----------------------------
+# Logs / temp
+# ----------------------------
+*.log
+tmp_*
+project_tree_full.txt
+quiz_analysis_output.*
+quiz_recommended_32.*
+quiz_image_reference_map.md
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ----------------------------
+# Flutter / Dart
+# ----------------------------
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
-.pub-cache/
+.packages
 .pub/
+.pub-cache/
+build/
 /build/
+coverage/
 /coverage/
+**/doc/api/
 
-# Symbolication related
+# Symbolication / obfuscation
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# ----------------------------
+# Android
+# ----------------------------
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
 /android/app/debug
 /android/app/profile
 /android/app/release
 
-# Backend (FastAPI)
-/backend/.venv/
-/backend/.pytest_cache/
-/backend/__pycache__/
+# ----------------------------
+# iOS / macOS Flutter generated
+# ----------------------------
+**/ios/Flutter/.last_build_id
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
+ios/.symlinks/
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/.symlinks/
 
-# Dashboard (Next.js)
-/dashboard/node_modules/
-/dashboard/.next/
-/dashboard/out/
+# ----------------------------
+# Linux / Windows Flutter generated
+# ----------------------------
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# ----------------------------
+# Node / dashboard
+# ----------------------------
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+dashboard/.turbo/
+
+# ----------------------------
+# Secrets / local env
+# ----------------------------
+.env
+*.env

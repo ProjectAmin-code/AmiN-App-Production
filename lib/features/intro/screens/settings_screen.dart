@@ -195,7 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               SwitchListTile(
                 value: settings.gamificationOverlaysEnabled,
                 title: const Text('Popup Ganjaran'),
-                subtitle: const Text('Paparkan popup XP/streak di skrin'),
+                subtitle: const Text('Paparkan popup ganjaran/streak di skrin'),
                 onChanged: settings.setGamificationOverlaysEnabled,
               ),
               const SizedBox(height: 8),

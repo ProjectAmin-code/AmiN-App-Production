@@ -51,6 +51,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: AppRoutes.belajarLesson,
+        pageBuilder: (context, state) {
+          return _animatedPage(
+            context: context,
+            state: state,
+            child: BelajarFlowScreen(name: _resolvedUserName),
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.kuiz,
         pageBuilder: (context, state) {
           return _animatedPage(

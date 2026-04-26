@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 
-enum LearningStepType { table, changeCards, situation, summary, quizGateway }
+enum LearningStepType {
+  equationExamples,
+  arrowExamples,
+  table,
+  changeCards,
+  situation,
+  summary,
+  quizGateway,
+}
 
 class LearningRuleRow {
   const LearningRuleRow({required this.cells});
@@ -8,16 +16,60 @@ class LearningRuleRow {
   final List<String> cells;
 }
 
+class LearningEquationExample {
+  const LearningEquationExample({
+    required this.left,
+    required this.middle,
+    required this.right,
+    this.leftColor = const Color(0xFFFACC15),
+    this.middleColor = const Color(0xFF0EA5E9),
+    this.rightColor = const Color(0xFF4CAF50),
+  });
+
+  final String left;
+  final String middle;
+  final String right;
+  final Color leftColor;
+  final Color middleColor;
+  final Color rightColor;
+}
+
+class LearningColorLegend {
+  const LearningColorLegend({
+    required this.color,
+    required this.name,
+    required this.description,
+  });
+
+  final Color color;
+  final String name;
+  final String description;
+}
+
+class LearningArrowRow {
+  const LearningArrowRow({
+    required this.letter,
+    required this.baseWord,
+    required this.derivedWord,
+  });
+
+  final String letter;
+  final String baseWord;
+  final String derivedWord;
+}
+
 class LearningChangeCard {
   const LearningChangeCard({
     required this.letter,
     required this.example,
     required this.note,
+    this.accentColor = const Color(0xFF0B7285),
   });
 
   final String letter;
   final String example;
   final String note;
+  final Color accentColor;
 }
 
 class LearningHotspot {
@@ -27,6 +79,7 @@ class LearningHotspot {
     required this.derivedWord,
     required this.alignment,
     this.icon = Icons.star_rounded,
+    this.ruleNote = '',
   });
 
   final String label;
@@ -34,6 +87,7 @@ class LearningHotspot {
   final String derivedWord;
   final Alignment alignment;
   final IconData icon;
+  final String ruleNote;
 }
 
 class LearningSummaryCard {
@@ -64,6 +118,16 @@ class LearningStep {
     this.changeCards = const [],
     this.hotspots = const [],
     this.summaryCards = const [],
+    this.sceneImageAsset = '',
+    this.instructionTitle = '',
+    this.instructionBody = '',
+    this.exampleSubheading = '',
+    this.equationExamples = const [],
+    this.colorLegends = const [],
+    this.highlightedLetters = const [],
+    this.afterHighlightLine = '',
+    this.arrowRows = const [],
+    this.highlightedPrefix = 'me',
   });
 
   final String id;
@@ -80,4 +144,14 @@ class LearningStep {
   final List<LearningChangeCard> changeCards;
   final List<LearningHotspot> hotspots;
   final List<LearningSummaryCard> summaryCards;
+  final String sceneImageAsset;
+  final String instructionTitle;
+  final String instructionBody;
+  final String exampleSubheading;
+  final List<LearningEquationExample> equationExamples;
+  final List<LearningColorLegend> colorLegends;
+  final List<String> highlightedLetters;
+  final String afterHighlightLine;
+  final List<LearningArrowRow> arrowRows;
+  final String highlightedPrefix;
 }

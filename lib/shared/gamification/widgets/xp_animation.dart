@@ -7,7 +7,7 @@ class XPAnimation extends StatelessWidget {
   const XPAnimation({
     super.key,
     required this.amount,
-    this.label = 'XP',
+    this.label = 'Mata',
   });
 
   final int amount;
@@ -40,7 +40,7 @@ class XPAnimation extends StatelessWidget {
           boxShadow: AppShadows.soft,
         ),
         child: Text(
-          '+$amount $label',
+          '+$amount${label.trim().isEmpty ? '' : ' $label'}',
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,

@@ -15,6 +15,7 @@ class AnimatedKidButton extends StatefulWidget {
     this.backgroundColor = AppColors.primary,
     this.foregroundColor = Colors.white,
     this.height = 54,
+    this.labelFontSize = 18,
     this.heroTag,
   });
 
@@ -24,6 +25,7 @@ class AnimatedKidButton extends StatefulWidget {
   final Color backgroundColor;
   final Color foregroundColor;
   final double height;
+  final double labelFontSize;
   final String? heroTag;
 
   @override
@@ -86,23 +88,35 @@ class _AnimatedKidButtonState extends State<AnimatedKidButton>
             borderRadius: BorderRadius.circular(AppRadii.sm),
             onTap: _handleTap,
             child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.icon != null) ...[
-                    Icon(widget.icon, color: widget.foregroundColor, size: 20),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    widget.label,
-                    style: TextStyle(
-                      color: widget.foregroundColor,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.icon != null) ...[
+                        Icon(
+                          widget.icon,
+                          color: widget.foregroundColor,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        widget.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: widget.foregroundColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: widget.labelFontSize,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

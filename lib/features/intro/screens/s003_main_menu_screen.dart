@@ -61,8 +61,8 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
                     ),
                   ),
                   const AminCharacter(
-                    width: 190,
-                    height: 190,
+                    width: 300,
+                    height: 300,
                     pose: AminPose.redTshirt,
                     motions: <AminMotion>{
                       AminMotion.idleBreathing,
@@ -70,17 +70,56 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
                       AminMotion.pointDown,
                     },
                     backend: AminCharacterBackend.auto,
-                    placeholderAsset: 'assets/aminPage3.png',
+                    placeholderAsset:
+                        'assets/Action Figures/AmiN pointing both fingers down.svg',
                   ),
                   const SizedBox(height: 8),
                   LessonCard(
-                    child: Text(
-                      'Pilih aktiviti anda, $_displayName',
-                      style: const TextStyle(
-                        fontSize: 24,
+                    child: const Text(
+                      'Pilih aktiviti anda',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 28,
                         fontWeight: FontWeight.w900,
                         color: AppColors.textPrimary,
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  LessonCard(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.badge_rounded,
+                          color: Color(0xFF1D3557),
+                          size: 26,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Profil Murid',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _displayName,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -88,8 +127,8 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
                     children: [
                       Expanded(
                         child: _menuButton(
-                          title: 'Belajar',
-                          subtitle: 'Asas imbuhan',
+                          title: 'Kenali imbuhan',
+                          subtitle: 'Belajar',
                           color: const Color(0xFF3B82F6),
                           icon: Icons.menu_book_rounded,
                           onTap: () => _openFlow(AppRoutes.belajar),
@@ -112,8 +151,8 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
                     children: [
                       Expanded(
                         child: _menuButton(
-                          title: 'Main',
-                          subtitle: 'Permainan kata',
+                          title: 'Permainan perkataan',
+                          subtitle: 'Main',
                           color: const Color(0xFFFF7F22),
                           icon: Icons.sports_esports_rounded,
                           onTap: () => _openFlow(AppRoutes.mainGame),
@@ -151,17 +190,20 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
       onTap: onTap,
       backgroundColor: color,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-      child: SizedBox(
-        height: 108,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 122),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 38),
+            Icon(icon, color: Colors.white, size: 34),
             const SizedBox(height: 8),
             Text(
               title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 17,
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
               ),

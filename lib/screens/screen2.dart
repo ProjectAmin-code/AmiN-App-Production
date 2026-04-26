@@ -4,6 +4,7 @@ import '../shared/design/app_design_tokens.dart';
 import '../shared/gamification/gamification.dart';
 import '../shared/motion/app_motion_navigation.dart';
 import '../shared/progress/progress_tracker.dart';
+import '../shared/widgets/lesson_bottom_decoration_zone.dart';
 import 'screen3.dart'; // Import Screen3
 
 class Screen2 extends StatefulWidget {
@@ -43,6 +44,9 @@ class _Screen2State extends State<Screen2> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final scale = (constraints.maxHeight / 760)
+                .clamp(0.8, 1.0)
+                .toDouble();
             return Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
@@ -75,32 +79,51 @@ class _Screen2State extends State<Screen2> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14 * scale),
                       Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              const LessonCard(
-                                child: Text(
-                                  'Saya akan bantu awak belajar imbuhan awalan meN- dengan cara yang seronok dan mudah!',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                        child: LayoutBuilder(
+                          builder: (context, bodyConstraints) {
+                            return SingleChildScrollView(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: bodyConstraints.maxHeight,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    LessonCard(
+                                      child: Text(
+                                        'Saya akan bantu awak belajar imbuhan awalan meN- dengan cara yang seronok dan mudah!',
+                                        style: TextStyle(
+                                          fontSize: 24 * scale,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 12 * scale),
+                                    // Reserve a stable decoration zone so the
+                                    // character never overlaps CTA spacing.
+                                    LessonBottomDecorationZone(
+                                      viewportHeight: constraints.maxHeight,
+                                      viewportWidth: constraints.maxWidth,
+                                      preferredSize: 260 * scale,
+                                      preferredReservedHeight: 178 * scale,
+                                      decorationBuilder: (size) => MascotWidget(
+                                        assetPath:
+                                            'assets/Action Figures/AmiN thinking.svg',
+                                        width: size,
+                                        height: size,
+                                        state: MascotState.encourage,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              const MascotWidget(
-                                assetPath: 'assets/aminPage2.png',
-                                width: 260,
-                                height: 260,
-                                state: MascotState.encourage,
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10 * scale),
                       SizedBox(
                         width: double.infinity,
                         child: AnimatedKidButton(

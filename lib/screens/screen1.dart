@@ -4,6 +4,8 @@ import '../shared/design/app_design_tokens.dart';
 import '../shared/gamification/gamification.dart';
 import '../shared/motion/app_motion_navigation.dart';
 import '../shared/progress/progress_tracker.dart';
+import '../shared/widgets/adaptive_asset_image.dart';
+import '../shared/widgets/lesson_bottom_decoration_zone.dart';
 import 'screen2.dart'; // Import Screen2
 
 class Screen1 extends StatefulWidget {
@@ -38,8 +40,8 @@ class _Screen1State extends State<Screen1> {
       body: Stack(
         children: [
           SizedBox.expand(
-            child: Image.asset(
-              'assets/classroom_background.jpg',
+            child: AdaptiveAssetImage(
+              assetPath: 'assets/Belajar/AmiN di dalam kelas.svg',
               fit: BoxFit.cover,
             ),
           ),
@@ -57,6 +59,9 @@ class _Screen1State extends State<Screen1> {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
+                final scale = (constraints.maxHeight / 760)
+                    .clamp(0.8, 1.0)
+                    .toDouble();
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: Center(
@@ -83,28 +88,52 @@ class _Screen1State extends State<Screen1> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12 * scale),
                           Expanded(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  _speechBubble('Hi semua! Saya AmiN.'),
-                                  const SizedBox(height: 14),
-                                  _speechBubble(
-                                    'Selamat datang ke Kelas Imbuhan Awalan meN-.',
+                            child: LayoutBuilder(
+                              builder: (context, bodyConstraints) {
+                                return SingleChildScrollView(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: bodyConstraints.maxHeight,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        _speechBubble(
+                                          'Hi semua! Saya AmiN.',
+                                          fontSize: 22 * scale,
+                                        ),
+                                        SizedBox(height: 14 * scale),
+                                        _speechBubble(
+                                          'Selamat datang ke Kelas Imbuhan Awalan meN-.',
+                                          fontSize: 22 * scale,
+                                        ),
+                                        SizedBox(height: 12 * scale),
+                                        // Reserve a stable decoration zone so the
+                                        // character never pushes into the CTA area.
+                                        LessonBottomDecorationZone(
+                                          viewportHeight: constraints.maxHeight,
+                                          viewportWidth: constraints.maxWidth,
+                                          preferredSize: 240 * scale,
+                                          preferredReservedHeight: 170 * scale,
+                                          decorationBuilder: (size) => MascotWidget(
+                                            assetPath:
+                                                'assets/Action Figures/AmiN First Screen.svg',
+                                            width: size,
+                                            height: size,
+                                            state: MascotState.idle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(height: 18),
-                                  const MascotWidget(
-                                    assetPath: 'assets/aminPage1.png',
-                                    width: 240,
-                                    height: 240,
-                                    state: MascotState.idle,
-                                  ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10 * scale),
                           SizedBox(
                             width: double.infinity,
                             child: AnimatedKidButton(
@@ -129,11 +158,11 @@ class _Screen1State extends State<Screen1> {
     );
   }
 
-  Widget _speechBubble(String text) {
+  Widget _speechBubble(String text, {required double fontSize}) {
     return LessonCard(
       child: Text(
         text,
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
       ),
     );
   }

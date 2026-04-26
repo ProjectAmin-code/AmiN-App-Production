@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../motion/app_motion_spec.dart';
 import '../../motion/app_motion_widgets.dart';
+import '../../widgets/adaptive_asset_image.dart';
 
 enum MascotState {
   idle,
@@ -64,8 +65,8 @@ class _MascotWidgetState extends State<MascotWidget>
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.asset(
-      widget.assetPath,
+    final image = AdaptiveAssetImage(
+      assetPath: widget.assetPath,
       width: widget.width,
       height: widget.height,
       fit: BoxFit.contain,

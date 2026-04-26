@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
+import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
 import '../../shared/navigation/app_screen_wiring.dart';
 import '../../shared/progress/progress_tracker.dart';
+import '../widgets/game_completion_template.dart';
 
 class PilihPantasGameScreen extends StatefulWidget {
   const PilihPantasGameScreen({super.key});
@@ -16,300 +18,618 @@ class PilihPantasGameScreen extends StatefulWidget {
   State<PilihPantasGameScreen> createState() => _PilihPantasGameScreenState();
 }
 
+enum _PantasChoice { hasPrefix, noPrefix }
+
 class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
-  static const List<String> _listWithMen = [
-    'membaca',
-    'menulis',
-    'melukis',
-    'menyapu',
-    'memotong',
-    'mengangkat',
+  // Flip this to false for a quick rollback of the intro modal experience.
+  static const bool _enableIntroCoachOverlay = true;
+  static const String _introInstructionScript =
+      'Arahan: Pilih sama ada perkataan berikut mempunyai imbuhan meN- atau tidak.';
+  static const String _introMascotAsset =
+      'assets/Action Figures/AmiN pointing right.svg';
+
+  static const List<String> _withMenPrefix = [
+    'Meneroka',
+    'Melayan',
+    'Mengukus',
+    'Menangkap',
+    'Menambah',
+    'Menghias',
   ];
 
-  static const List<String> _listWithoutMen = [
-    'buku',
-    'pensel',
-    'bola',
-    'minum',
-    'makan',
-    'tidur',
+  static const List<String> _withoutMenPrefix = [
+    'Menara',
+    'Pelihara',
+    'Pancing',
+    'Melayu',
+    'Selam',
+    'Catat',
   ];
 
-  late Timer _ticker;
   final Random _random = Random();
-  late DateTime _endTime;
-  int _stars = 0;
-  int _queueIndex = 0;
-  int _starBurstTick = 0;
-  int _attempts = 0;
-  List<String> _queue = <String>[];
 
-  String get _currentWord => _queue[_queueIndex];
+  late List<_WordItem> _roundWords;
+  int _currentIndex = 0;
+  int _score = 0;
+  int _burstKey = 0;
+  bool _isLocked = false;
+  bool? _lastAnswerCorrect;
+  _PantasChoice? _selectedChoice;
+  String _feedbackText = '';
+  Timer? _nextWordTimer;
+  Timer? _introWordTimer;
+  bool _showIntroOverlay = _enableIntroCoachOverlay;
+  bool _introOverlayVisible = false;
+  bool _introClosing = false;
+  bool _introIsTyping = false;
+  List<String> _introWords = const <String>[];
+  int _visibleIntroWordCount = 0;
+  int _introTypingSession = 0;
+
+  _WordItem get _currentWord => _roundWords[_currentIndex];
 
   @override
   void initState() {
     super.initState();
-    _queue = _buildRoundQueue();
-    _endTime = DateTime.now().add(const Duration(seconds: 25));
-    _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) {
-      if (!mounted) {
-        return;
-      }
-      if (DateTime.now().isAfter(_endTime)) {
-        _ticker.cancel();
-        ProgressTracker.instance.recordGameSession(
-          starsEarned: _stars,
-          starsPossible: _attempts <= 0 ? 1 : _attempts,
-          lessonId: 'M003_PilihPantas',
-        );
-        final gamification = GamificationScope.of(context);
-        gamification.awardXp((_stars * 2).clamp(4, 40));
-        gamification.awardStars(_stars > 0 ? 1 : 0);
-        if (_stars >= 5) {
-          gamification.grantReward(
-            title: 'Ganjaran Pilih Pantas',
-            message: 'Prestasi hebat dalam masa pantas!',
-            coins: 5,
-          );
+    _startNewRound();
+    if (_showIntroOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_showIntroOverlay) {
+          return;
         }
-        pushReplacementAdaptive(
-          context,
-          PilihPantasResultScreen(stars: _stars),
-        );
-      } else {
-        setState(() {});
-      }
-    });
+        unawaited(_startIntroCoachSequence());
+      });
+    }
   }
 
   @override
   void dispose() {
-    _ticker.cancel();
+    _nextWordTimer?.cancel();
+    _introWordTimer?.cancel();
     super.dispose();
   }
 
-  List<String> _buildRoundQueue() {
-    final all = [..._listWithMen, ..._listWithoutMen];
-    all.shuffle(_random);
-    return all;
+  void _startNewRound() {
+    final words = <_WordItem>[
+      ..._withMenPrefix.map(
+        (word) => _WordItem(word: word, hasMenPrefix: true),
+      ),
+      ..._withoutMenPrefix.map(
+        (word) => _WordItem(word: word, hasMenPrefix: false),
+      ),
+    ]..shuffle(_random);
+    _roundWords = words;
   }
 
-  void _advanceWord() {
-    if (_queueIndex < _queue.length - 1) {
-      setState(() => _queueIndex += 1);
+  Future<void> _startIntroCoachSequence() async {
+    if (!mounted || !_showIntroOverlay) {
       return;
     }
-    final previous = _queue.last;
-    final nextQueue = _buildRoundQueue();
-    if (nextQueue.first == previous && nextQueue.length > 1) {
-      final first = nextQueue.removeAt(0);
-      nextQueue.add(first);
-    }
+    final words = _introInstructionScript
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .toList();
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    _introWordTimer?.cancel();
+    _introTypingSession += 1;
     setState(() {
-      _queue = nextQueue;
-      _queueIndex = 0;
+      _introOverlayVisible = true;
+      _introWords = words;
+      _visibleIntroWordCount = reduceMotion ? words.length : 0;
+      _introIsTyping = !reduceMotion && words.isNotEmpty;
+    });
+
+    if (words.isEmpty) {
+      return;
+    }
+    if (reduceMotion) {
+      return;
+    }
+    _animateIntroWordsSilently(words, _introTypingSession);
+  }
+
+  String get _introTypedText {
+    if (_introWords.isEmpty) {
+      return '';
+    }
+    final clampedCount = _visibleIntroWordCount.clamp(0, _introWords.length);
+    return _introWords.take(clampedCount).join(' ');
+  }
+
+  void _animateIntroWordsSilently(List<String> words, int token) {
+    final wordStepDuration = AppMotionSpec.chooseDuration(
+      context,
+      const Duration(milliseconds: 140),
+      const Duration(milliseconds: 80),
+    );
+    _introWordTimer = Timer.periodic(wordStepDuration, (timer) {
+      if (!mounted || !_showIntroOverlay || token != _introTypingSession) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_visibleIntroWordCount < words.length) {
+          _visibleIntroWordCount += 1;
+        } else {
+          _introIsTyping = false;
+          timer.cancel();
+        }
+      });
     });
   }
 
-  void _answer(bool chooseMen) {
-    final hasMen = _listWithMen.contains(_currentWord);
-    _attempts += 1;
-    if (chooseMen == hasMen) {
-      setState(() {
-        _stars += 1;
-        _starBurstTick += 1;
-      });
-      final gamification = GamificationScope.of(context);
-      gamification.awardXp(3, reason: 'Padanan tepat');
+  Future<void> _closeIntroOverlay() async {
+    if (_introClosing) {
+      return;
     }
-    _advanceWord();
+    _introTypingSession += 1;
+    _introWordTimer?.cancel();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _introClosing = true;
+      _introOverlayVisible = false;
+    });
+    await Future<void>.delayed(
+      AppMotionSpec.chooseDuration(
+        context,
+        const Duration(milliseconds: 220),
+        const Duration(milliseconds: 120),
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showIntroOverlay = false;
+      _introClosing = false;
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final totalMs = 25000;
-    final remainingMs = _endTime
-        .difference(DateTime.now())
-        .inMilliseconds
-        .clamp(0, totalMs);
-    final progress = remainingMs / totalMs;
+  Future<void> _submitAnswer(_PantasChoice choice) async {
+    if (_isLocked || _showIntroOverlay) {
+      return;
+    }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFDFF3FF),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'Pilih Pantas',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1D3557),
-                      ),
-                    ),
-                  ),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 3,
-                          color: const Color(0xFF2A9D8F),
-                        ),
-                      ),
-                      const Icon(Icons.timer_rounded, size: 16),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Expanded(
-                child: StarBurstOverlay(
-                  burstKey: _starBurstTick,
-                  child: Container(
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
-                      child: Text(
-                        _currentWord,
-                        key: ValueKey(_currentWord),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 46,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF1D3557),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: AnimatedKidButton(
-                      label: 'Ada meN-',
-                      onPressed: () => _answer(true),
-                      backgroundColor: const Color(0xFF2A9D8F),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: AnimatedKidButton(
-                      label: 'Tiada meN-',
-                      onPressed: () => _answer(false),
-                      backgroundColor: const Color(0xFF8D99AE),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+    final correct =
+        (choice == _PantasChoice.hasPrefix) == _currentWord.hasMenPrefix;
+    setState(() {
+      _isLocked = true;
+      _selectedChoice = choice;
+      _lastAnswerCorrect = correct;
+      _feedbackText = correct ? 'Betul!' : 'Cuba lagi!';
+      if (correct) {
+        _score += 1;
+        _burstKey += 1;
+      }
+    });
+
+    _nextWordTimer?.cancel();
+    _nextWordTimer = Timer(
+      AppMotionSpec.chooseDuration(
+        context,
+        const Duration(milliseconds: 1100),
+        const Duration(milliseconds: 550),
+      ),
+      _moveNext,
+    );
+  }
+
+  void _moveNext() {
+    _nextWordTimer?.cancel();
+    if (_currentIndex >= _roundWords.length - 1) {
+      _finishRound();
+      return;
+    }
+
+    setState(() {
+      _currentIndex += 1;
+      _isLocked = false;
+      _selectedChoice = null;
+      _lastAnswerCorrect = null;
+      _feedbackText = '';
+    });
+  }
+
+  void _finishRound() {
+    ProgressTracker.instance.recordGameSession(
+      starsEarned: _score,
+      starsPossible: _roundWords.length,
+      lessonId: 'M003_PilihPantas',
+    );
+    final gamification = GamificationScope.of(context);
+    gamification.awardXp((_score * 2).clamp(6, 30), reason: 'Pilih Pantas');
+    gamification.awardStars(_score >= 10 ? 2 : (_score >= 6 ? 1 : 0));
+
+    pushReplacementAdaptive(
+      context,
+      PilihPantasResultScreen(score: _score, total: _roundWords.length),
+    );
+  }
+
+  Color _buttonColor(_PantasChoice choice) {
+    const baseHasPrefix = Color(0xFF34C759);
+    const baseNoPrefix = Color(0xFFFF6B6B);
+    if (!_isLocked || _selectedChoice != choice) {
+      return choice == _PantasChoice.hasPrefix ? baseHasPrefix : baseNoPrefix;
+    }
+    return _lastAnswerCorrect == true
+        ? const Color(0xFF34C759)
+        : const Color(0xFFFF6B6B);
+  }
+
+  Widget _choiceButton({required String label, required _PantasChoice choice}) {
+    return Expanded(
+      child: AnimatedContainer(
+        duration: AppMotionSpec.chooseDuration(
+          context,
+          const Duration(milliseconds: 180),
+          const Duration(milliseconds: 120),
+        ),
+        curve: Curves.easeOutCubic,
+        child: AnimatedKidButton(
+          label: label,
+          onPressed: _isLocked ? null : () => _submitAnswer(choice),
+          backgroundColor: _buttonColor(choice),
+          foregroundColor: Colors.white,
         ),
       ),
     );
   }
-}
 
-class PilihPantasResultScreen extends StatelessWidget {
-  const PilihPantasResultScreen({super.key, required this.stars});
+  Widget _buildIntroSpeechBubble(BuildContext context) {
+    final showAction = !_introIsTyping;
+    const actionLabel = 'Jom mula!';
 
-  final int stars;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6D9),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: ConfettiCelebration(
-            active: true,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const MascotWidget(
-                  assetPath: 'assets/aminPage3.png',
-                  width: 82,
-                  height: 82,
-                  state: MascotState.celebrate,
-                ),
-                const Text(
-                  'Pilih Pantas Tamat',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF1D3557),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFDDE9F4), width: 2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 16,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 84),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    _introTypedText.isEmpty ? '...' : _introTypedText,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      height: 1.25,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1D3557),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      color: Color(0xFFF4B400),
-                      size: 34,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$stars',
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                const Icon(
-                  Icons.sentiment_satisfied_rounded,
-                  size: 44,
-                  color: Color(0xFFF4B400),
-                ),
-                const SizedBox(height: 24),
-                AnimatedKidButton(
-                  label: 'Main Lagi',
-                  icon: Icons.refresh_rounded,
-                  onPressed: () {
-                    pushReplacementAdaptive(
-                      context,
-                      const PilihPantasGameScreen(),
-                    );
-                  },
-                ),
+              ),
+              if (showAction) ...[
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => goToMainMenu(context),
-                    child: const Text('Kembali ke Main'),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 170,
+                    child: AnimatedKidButton(
+                      label: actionLabel,
+                      onPressed: _closeIntroOverlay,
+                      icon: Icons.play_arrow_rounded,
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                    ),
                   ),
                 ),
               ],
+            ],
+          ),
+        ),
+        Positioned(
+          right: -8,
+          bottom: 26,
+          child: Transform.rotate(
+            angle: pi / 4,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFDDE9F4), width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIntroOverlay(BuildContext context) {
+    final modalDuration = AppMotionSpec.chooseDuration(
+      context,
+      const Duration(milliseconds: 280),
+      const Duration(milliseconds: 160),
+    );
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        ignoring: !_showIntroOverlay,
+        child: AnimatedOpacity(
+          opacity: _introOverlayVisible ? 1 : 0,
+          duration: modalDuration,
+          curve: Curves.easeOutCubic,
+          child: Container(
+            color: const Color(0xB3000000),
+            child: SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 700;
+                  final mascot = MascotWidget(
+                    assetPath: _introMascotAsset,
+                    width: isNarrow ? 200 : 260,
+                    height: isNarrow ? 200 : 260,
+                    state: MascotState.encourage,
+                  );
+                  final speechBubble = _buildIntroSpeechBubble(context);
+
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 920),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: isNarrow ? double.infinity : 760,
+                              child: speechBubble,
+                            ),
+                            const SizedBox(height: 16),
+                            mascot,
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonLift = MediaQuery.sizeOf(context).height * 0.03;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background/bg_img_for_main1.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: SafeArea(
+              child: Container(
+                color: const Color(0x59FFFFFF),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 22),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFD6E4F1),
+                              ),
+                            ),
+                            child: Text(
+                              'â­$_score / ${_roundWords.length}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1D3557),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Pilih Pantas',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1D3557),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Center(
+                          child: FractionallySizedBox(
+                            heightFactor: 0.5,
+                            widthFactor: 1,
+                            child: StarBurstOverlay(
+                              burstKey: _burstKey,
+                              child: Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: const Color(0xFFDDE9F4),
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x1A000000),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: AnimatedSwitcher(
+                                  duration: AppMotionSpec.chooseDuration(
+                                    context,
+                                    const Duration(milliseconds: 220),
+                                    const Duration(milliseconds: 140),
+                                  ),
+                                  transitionBuilder: (child, animation) {
+                                    return buildAdaptiveSwitcherTransition(
+                                      context: context,
+                                      animation: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: Text(
+                                    _currentWord.word,
+                                    key: ValueKey(_currentWord.word),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF1D3557),
+                                      height: 1.05,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        height: 34,
+                        child: Text(
+                          _feedbackText,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: _lastAnswerCorrect == true
+                                ? const Color(0xFF0B6B58)
+                                : const Color(0xFFE45832),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: buttonLift),
+                        child: Row(
+                          children: [
+                            _choiceButton(
+                              label: 'Ada imbuhan meN-',
+                              choice: _PantasChoice.hasPrefix,
+                            ),
+                            const SizedBox(width: 10),
+                            _choiceButton(
+                              label: 'Tiada imbuhan meN-',
+                              choice: _PantasChoice.noPrefix,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_showIntroOverlay) _buildIntroOverlay(context),
+        ],
+      ),
+    );
+  }
+}
+
+class PilihPantasResultScreen extends StatelessWidget {
+  const PilihPantasResultScreen({
+    super.key,
+    required this.score,
+    required this.total,
+  });
+
+  final int score;
+  final int total;
+
+  String get _statusTitle {
+    if (score >= 10) {
+      return 'Hebat!';
+    }
+    if (score >= 6) {
+      return 'Bagus!';
+    }
+    return 'Cuba lagi!';
+  }
+
+  String get _statusSubtitle {
+    if (score >= 10) {
+      return 'Anda berjaya!';
+    }
+    if (score >= 6) {
+      return 'Teruskan usaha!';
+    }
+    return 'Boleh cuba sekali lagi.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GameCompletionTemplate(
+      score: score,
+      total: total,
+      statusTitle: _statusTitle,
+      statusSubtitle: _statusSubtitle,
+      confettiActive: score >= 10,
+      completionText: 'Anda telah menamatkan permainan Pilih Pantas.',
+      onPlayAgain: () {
+        pushReplacementAdaptive(context, const PilihPantasGameScreen());
+      },
+      onMainMenu: () => goToMainMenu(context),
+    );
+  }
+}
+
+class _WordItem {
+  const _WordItem({required this.word, required this.hasMenPrefix});
+
+  final String word;
+  final bool hasMenPrefix;
 }

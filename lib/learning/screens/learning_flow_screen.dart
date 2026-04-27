@@ -1429,9 +1429,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             final row = rowEntry.value;
             return TableRow(
               decoration: BoxDecoration(
-                color: rowIndex.isEven
-                    ? const Color(0xFFF6FCFF)
-                    : const Color(0xFFEFF8FF),
+                color:
+                    row.backgroundColor ??
+                    (rowIndex.isEven
+                        ? const Color(0xFFF6FCFF)
+                        : const Color(0xFFEFF8FF)),
               ),
               children: row.cells.asMap().entries.map((cellEntry) {
                 final cellIndex = cellEntry.key;
@@ -1833,6 +1835,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           card,
                           headingSize: headingSize,
                           bodySize: bodySize,
+                          useDarkerBackground: isB17,
                         ),
                       ),
                     )
@@ -1879,10 +1882,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     LearningSummaryCard card, {
     required double headingSize,
     required double bodySize,
+    required bool useDarkerBackground,
   }) {
     final accentColor = _summaryCardAccentColor(card.prefix);
+    final backgroundAlpha = useDarkerBackground ? 0.3 : 0.14;
+    final borderAlpha = useDarkerBackground ? 0.72 : 0.5;
     final boxColor = Color.alphaBlend(
-      accentColor.withValues(alpha: 0.14),
+      accentColor.withValues(alpha: backgroundAlpha),
       Colors.white,
     );
     return Container(
@@ -1890,7 +1896,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       decoration: BoxDecoration(
         color: boxColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accentColor.withValues(alpha: 0.5)),
+        border: Border.all(color: accentColor.withValues(alpha: borderAlpha)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2300,13 +2306,28 @@ List<LearningStep> _buildSteps() {
       backgroundTop: Color(0xFFFFF8D2),
       backgroundBottom: Color(0xFFFFEBB1),
       exampleSubheading: 'Contoh',
-      tableHeaders: ['Bentuk imbuhan', 'Gunakan apabila'],
+      tableHeaders: ['Awalan meN-', 'Huruf awal'],
       tableRows: [
-        LearningRuleRow(cells: ['me-', 'l, m, n, r, w, y']),
-        LearningRuleRow(cells: ['men-', 'd, j, z, sy']),
-        LearningRuleRow(cells: ['mem-', 'b, f (p gugur)']),
-        LearningRuleRow(cells: ['meng-', 'g, h, kh (k gugur)']),
-        LearningRuleRow(cells: ['menge-', 'kata dasar satu suku kata']),
+        LearningRuleRow(
+          cells: ['me-', 'l, m, n, r, w'],
+          backgroundColor: Color(0xFFA5D6A7),
+        ),
+        LearningRuleRow(
+          cells: ['mem-', 'b, f (p gugur)'],
+          backgroundColor: Color(0xFF90CAF9),
+        ),
+        LearningRuleRow(
+          cells: ['men-', 'c, d, j, z (t gugur)'],
+          backgroundColor: Color(0xFFFFB74D),
+        ),
+        LearningRuleRow(
+          cells: ['meng-', 'a, e, i, o, u, g, h \n(k gugur)'],
+          backgroundColor: Color(0xFFEF9A9A),
+        ),
+        LearningRuleRow(
+          cells: ['menge-', 'kata dasar satu suku kata'],
+          backgroundColor: Color(0xFFFFF176),
+        ),
       ],
     ),
     LearningStep(
@@ -2739,7 +2760,7 @@ List<LearningStep> _buildSteps() {
       summaryCards: [
         LearningSummaryCard(
           prefix: 'me-',
-          ruleText: 'Huruf: l, m, n, r, w, y',
+          ruleText: 'Huruf: l, m, n, r, w',
           example: 'melukis',
         ),
         LearningSummaryCard(

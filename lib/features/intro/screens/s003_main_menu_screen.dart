@@ -45,132 +45,145 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(16),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 580),
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      onPressed: () => context.push(AppRoutes.settings),
-                      icon: const Icon(Icons.settings_rounded),
-                      tooltip: 'Tetapan',
-                    ),
-                  ),
-                  const AminCharacter(
-                    width: 300,
-                    height: 300,
-                    pose: AminPose.redTshirt,
-                    motions: <AminMotion>{
-                      AminMotion.idleBreathing,
-                      AminMotion.blink,
-                      AminMotion.pointDown,
-                    },
-                    backend: AminCharacterBackend.auto,
-                    placeholderAsset:
-                        'assets/Action Figures/AmiN pointing both fingers down.svg',
-                  ),
-                  const SizedBox(height: 8),
-                  LessonCard(
-                    child: const Text(
-                      'Pilih aktiviti anda',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  LessonCard(
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.badge_rounded,
-                          color: Color(0xFF1D3557),
-                          size: 26,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(
+                              onPressed: () => context.push(AppRoutes.settings),
+                              icon: const Icon(Icons.settings_rounded),
+                              tooltip: 'Tetapan',
+                            ),
+                          ),
+                          const AminCharacter(
+                            width: 300,
+                            height: 300,
+                            pose: AminPose.redTshirt,
+                            motions: <AminMotion>{
+                              AminMotion.idleBreathing,
+                              AminMotion.blink,
+                              AminMotion.pointDown,
+                            },
+                            backend: AminCharacterBackend.auto,
+                            placeholderAsset:
+                                'assets/Action Figures/AmiN pointing both fingers down.svg',
+                          ),
+                          const SizedBox(height: 8),
+                          LessonCard(
+                            child: const Text(
+                              'Pilih aktiviti anda',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          LessonCard(
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.badge_rounded,
+                                  color: Color(0xFF1D3557),
+                                  size: 26,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Profil Murid',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        _displayName,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
                             children: [
-                              const Text(
-                                'Profil Murid',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                              Expanded(
+                                child: _menuButton(
+                                  title: 'Kenali imbuhan',
+                                  subtitle: 'Belajar',
+                                  color: const Color(0xFF3B82F6),
+                                  icon: Icons.menu_book_rounded,
+                                  onTap: () => _openFlow(AppRoutes.belajar),
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _displayName,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.textPrimary,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _menuButton(
+                                  title: 'Kuiz',
+                                  subtitle: 'Uji kefahaman',
+                                  color: AppColors.secondary,
+                                  icon: Icons.quiz_rounded,
+                                  onTap: () => _openFlow(AppRoutes.kuiz),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _menuButton(
+                                  title: 'Permainan perkataan',
+                                  subtitle: 'Main',
+                                  color: const Color(0xFFFF7F22),
+                                  icon: Icons.sports_esports_rounded,
+                                  onTap: () => _openFlow(AppRoutes.mainGame),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _menuButton(
+                                  title: 'Kemajuan',
+                                  subtitle: 'Lihat prestasi',
+                                  color: const Color(0xFF2EAD63),
+                                  icon: Icons.insights_rounded,
+                                  onTap: () => _openFlow(AppRoutes.kemajuan),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _menuButton(
-                          title: 'Kenali imbuhan',
-                          subtitle: 'Belajar',
-                          color: const Color(0xFF3B82F6),
-                          icon: Icons.menu_book_rounded,
-                          onTap: () => _openFlow(AppRoutes.belajar),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _menuButton(
-                          title: 'Kuiz',
-                          subtitle: 'Uji kefahaman',
-                          color: AppColors.secondary,
-                          icon: Icons.quiz_rounded,
-                          onTap: () => _openFlow(AppRoutes.kuiz),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _menuButton(
-                          title: 'Permainan perkataan',
-                          subtitle: 'Main',
-                          color: const Color(0xFFFF7F22),
-                          icon: Icons.sports_esports_rounded,
-                          onTap: () => _openFlow(AppRoutes.mainGame),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _menuButton(
-                          title: 'Kemajuan',
-                          subtitle: 'Lihat prestasi',
-                          color: const Color(0xFF2EAD63),
-                          icon: Icons.insights_rounded,
-                          onTap: () => _openFlow(AppRoutes.kemajuan),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),

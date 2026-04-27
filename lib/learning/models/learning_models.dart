@@ -11,9 +11,10 @@ enum LearningStepType {
 }
 
 class LearningRuleRow {
-  const LearningRuleRow({required this.cells});
+  const LearningRuleRow({required this.cells, this.backgroundColor});
 
   final List<String> cells;
+  final Color? backgroundColor;
 }
 
 class LearningEquationExample {

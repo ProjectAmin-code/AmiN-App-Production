@@ -69,7 +69,7 @@ class _S001IntroScreenState extends State<S001IntroScreen>
         children: [
           Positioned.fill(
             child: AdaptiveAssetImage(
-              assetPath: 'assets/Belajar/AmiN di dalam kelas.svg',
+              assetPath: 'assets/background/backgroundImg1.jpg',
               fit: BoxFit.cover,
             ),
           ),
@@ -140,7 +140,7 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          'Jom belajar imbuhan bersama-sama!',
+                                          'Jom belajar imbuhan bersama!',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontSize: subtitleSize,

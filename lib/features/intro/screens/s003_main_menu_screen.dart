@@ -136,8 +136,8 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
                             children: [
                               Expanded(
                                 child: _menuButton(
-                                  title: 'Kenali imbuhan',
-                                  subtitle: 'Belajar',
+                                  title: 'Belajar',
+                                  subtitle: 'Kenali imbuhan',
                                   color: const Color(0xFF3B82F6),
                                   icon: Icons.menu_book_rounded,
                                   onTap: () => _openFlow(AppRoutes.belajar),
@@ -160,8 +160,8 @@ class _S003MainMenuScreenState extends State<S003MainMenuScreen> {
                             children: [
                               Expanded(
                                 child: _menuButton(
-                                  title: 'Permainan perkataan',
-                                  subtitle: 'Main',
+                                  title: 'Main',
+                                  subtitle: 'Permainan perkataan',
                                   color: const Color(0xFFFF7F22),
                                   icon: Icons.sports_esports_rounded,
                                   onTap: () => _openFlow(AppRoutes.mainGame),

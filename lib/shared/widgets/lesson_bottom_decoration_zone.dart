@@ -17,6 +17,7 @@ class LessonBottomDecorationZone extends StatelessWidget {
     this.minSize = 92,
     this.preferredReservedHeight = 170,
     this.minReservedHeight = 90,
+    this.maxReservedHeightFraction = 0.28,
     this.hideBelowHeight = 620,
     this.hideBelowWidth = 320,
     this.collapsedSpacing = 6,
@@ -30,6 +31,7 @@ class LessonBottomDecorationZone extends StatelessWidget {
   final double minSize;
   final double preferredReservedHeight;
   final double minReservedHeight;
+  final double maxReservedHeightFraction;
   final double hideBelowHeight;
   final double hideBelowWidth;
   final double collapsedSpacing;
@@ -44,7 +46,7 @@ class LessonBottomDecorationZone extends StatelessWidget {
 
     final reservedHeight = preferredReservedHeight.clamp(
       minReservedHeight,
-      viewportHeight * 0.28,
+      viewportHeight * maxReservedHeightFraction,
     );
     final sizeFromReserve = reservedHeight - 10;
     final decorationSize = preferredSize.clamp(

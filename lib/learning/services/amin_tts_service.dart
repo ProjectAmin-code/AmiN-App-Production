@@ -7,25 +7,12 @@ class AminTtsService {
 
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
-  bool _isSpeaking = false;
   int _session = 0;
 
   Future<void> init() async {
     if (_initialized) {
       return;
     }
-    _tts.setStartHandler(() {
-      _isSpeaking = true;
-    });
-    _tts.setCompletionHandler(() {
-      _isSpeaking = false;
-    });
-    _tts.setCancelHandler(() {
-      _isSpeaking = false;
-    });
-    _tts.setErrorHandler((_) {
-      _isSpeaking = false;
-    });
     await _tts.setLanguage('ms-MY');
     await _tts.setSpeechRate(0.45);
     await _tts.setPitch(1.0);
@@ -46,7 +33,7 @@ class AminTtsService {
     if (token != _session) {
       return;
     }
-    await _speakWithRetry(text);
+    await _speakWithRetry(text, token);
   }
 
   Future<void> speakPair(String first, String second) async {
@@ -62,7 +49,7 @@ class AminTtsService {
     if (token != _session) {
       return;
     }
-    await _speakWithRetry(first);
+    await _speakWithRetry(first, token);
     if (token != _session) {
       return;
     }
@@ -70,7 +57,7 @@ class AminTtsService {
     if (token != _session) {
       return;
     }
-    await _speakWithRetry(second);
+    await _speakWithRetry(second, token);
   }
 
   Future<void> speakWords(
@@ -101,7 +88,7 @@ class AminTtsService {
         return;
       }
       onWordStart?.call(index);
-      await _speakWithRetry(sanitized[index]);
+      await _speakWithRetry(sanitized[index], token);
     }
   }
 
@@ -111,24 +98,30 @@ class AminTtsService {
   }
 
   Future<void> _safeStop() async {
-    if (!_initialized || !_isSpeaking) {
+    if (!_initialized) {
       return;
     }
     try {
       await _tts.stop();
     } catch (_) {
       // Ignore stop race/errors (e.g. engine not bound yet on Android).
-    } finally {
-      _isSpeaking = false;
     }
   }
 
-  Future<void> _speakWithRetry(String text) async {
+  Future<void> _speakWithRetry(String text, int token) async {
     final first = await _tts.speak(text);
+    if (token != _session) {
+      await _safeStop();
+      return;
+    }
     if (_isSuccess(first)) {
       return;
     }
+    await _safeStop();
     await Future<void>.delayed(const Duration(milliseconds: 120));
+    if (token != _session) {
+      return;
+    }
     await _tts.speak(text);
   }
 

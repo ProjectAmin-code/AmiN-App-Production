@@ -44,6 +44,7 @@ dependencies:
   rive: ^0.13.20
   uuid: ^4.5.1
   flutter_svg: ^2.2.0
+  audioplayers: ^6.6.0
 
 dev_dependencies:
   flutter_test:
@@ -65,11 +66,13 @@ flutter:
     - assets/
     - assets/background/
     - assets/Action Figures/
+    - assets/Action Figures/amin_parts/
     - assets/Belajar/
     - assets/Icon/
     - assets/Quiz Easy/
     - assets/Quiz Medium/
     - assets/Quiz hard/
+    - assets/audio/games_audio/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

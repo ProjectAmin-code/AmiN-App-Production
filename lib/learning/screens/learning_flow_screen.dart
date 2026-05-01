@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/navigation/app_routes.dart';
+import '../../core/responsive/responsive_utils.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
@@ -90,22 +91,32 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   @override
   void dispose() {
     _pulseController.dispose();
-    AminTtsService.instance.stop();
+    unawaited(AminTtsService.instance.stop());
     super.dispose();
   }
 
   Future<void> _speakCurrentStep() async {
-    if (!_voiceEnabled || _currentStep.voiceScript.trim().isEmpty) {
+    if (!mounted) {
       return;
     }
-    await AminTtsService.instance.speak(_currentStep.voiceScript);
+    final script = _currentStep.voiceScript.trim();
+    if (!_voiceEnabled || script.isEmpty) {
+      return;
+    }
+    await AminTtsService.instance.speak(script);
   }
 
   Future<void> _toggleVoice() async {
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _voiceEnabled = !_voiceEnabled;
     });
     await AppSettingsService.instance.setVoiceOverEnabled(_voiceEnabled);
+    if (!mounted) {
+      return;
+    }
     if (_voiceEnabled) {
       await _speakCurrentStep();
     } else {
@@ -173,14 +184,44 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     if (!mounted) {
       return;
     }
-    final reducedFont = _useReducedFontForStep(_currentStep);
-    final baseWordFontSize = reducedFont ? 28.0 : 30.0;
-    final derivedWordFontSize = reducedFont ? 32.0 : 34.0;
-    final noteFontSize = reducedFont ? 14.0 : 16.0;
     final modalFuture = showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (context) {
+        final mediaSize = MediaQuery.sizeOf(context);
+        final isLandscape = mediaSize.width > mediaSize.height;
+        final reducedFont = _useReducedFontForStep(_currentStep);
+        final horizontalInset = responsiveClamp(context, 12, 24, 56);
+        final verticalInset = math
+            .min(mediaSize.height * (isLandscape ? 0.06 : 0.10), 120)
+            .clamp(10.0, 120.0)
+            .toDouble();
+        final maxDialogWidth = math
+            .min(320.0, mediaSize.width - (horizontalInset * 2))
+            .clamp(240.0, 320.0)
+            .toDouble();
+        final maxDialogHeight = math
+            .max(220.0, mediaSize.height - (verticalInset * 2))
+            .toDouble();
+        final baseWordFontSize = responsiveClamp(
+          context,
+          22,
+          reducedFont ? 28 : 30,
+          reducedFont ? 28 : 30,
+        );
+        final derivedWordFontSize = responsiveClamp(
+          context,
+          24,
+          reducedFont ? 30 : 32,
+          reducedFont ? 32 : 34,
+        );
+        final noteFontSize = responsiveClamp(
+          context,
+          12,
+          reducedFont ? 14 : 16,
+          16,
+        );
+
         return StatefulBuilder(
           builder: (context, setModalState) {
             void revealAnswerInSameBox() {
@@ -201,9 +242,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             }
 
             return Dialog(
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 56,
-                vertical: 120,
+              insetPadding: EdgeInsets.symmetric(
+                horizontal: horizontalInset,
+                vertical: verticalInset,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(22),
@@ -212,14 +253,23 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 behavior: HitTestBehavior.opaque,
                 onTap: revealAnswerInSameBox,
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 260),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                  constraints: BoxConstraints(
+                    maxWidth: maxDialogWidth,
+                    maxHeight: maxDialogHeight,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      responsiveClamp(context, 12, 16, 16),
+                      responsiveClamp(context, 12, 14, 14),
+                      responsiveClamp(context, 12, 16, 16),
+                      responsiveClamp(context, 12, 16, 16),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           hotspot.baseWord,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: baseWordFontSize,
                             fontWeight: FontWeight.w700,
@@ -585,6 +635,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   Widget _buildHotspotStarButton({
     required LearningStep step,
     required VoidCallback onPressed,
+    required double size,
   }) {
     final useRoundedStyle = _usesRoundedHotspotStyle(step);
     final button = IconButton.filled(
@@ -596,29 +647,60 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         foregroundColor: useRoundedStyle
             ? const Color(0xFFB45309)
             : const Color(0xFF1D3557),
-        minimumSize: useRoundedStyle ? const Size(30, 30) : const Size(36, 36),
+        minimumSize: Size.square(size),
+        fixedSize: Size.square(size),
         padding: useRoundedStyle
-            ? const EdgeInsets.fromLTRB(4, 3, 4, 5)
-            : const EdgeInsets.all(6),
+            ? EdgeInsets.fromLTRB(
+                size * 0.13,
+                size * 0.10,
+                size * 0.13,
+                size * 0.16,
+              )
+            : EdgeInsets.all(size * 0.16),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         side: useRoundedStyle
             ? const BorderSide(color: Color(0xFFF59E0B), width: 1.2)
             : null,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(useRoundedStyle ? 11 : 18),
+          borderRadius: BorderRadius.circular(
+            size * (useRoundedStyle ? 0.36 : 0.5),
+          ),
         ),
         elevation: useRoundedStyle ? 2 : 0,
         shadowColor: useRoundedStyle ? const Color(0x55A16207) : null,
       ),
       icon: Icon(
         useRoundedStyle ? Icons.star : Icons.star_rounded,
-        size: useRoundedStyle ? 16 : 20,
+        size: size * (useRoundedStyle ? 0.54 : 0.56),
       ),
     );
     if (!useRoundedStyle) {
       return button;
     }
     return Padding(padding: const EdgeInsets.only(bottom: 2), child: button);
+  }
+
+  Rect _containedImageRect(Size boxSize, double imageAspectRatio) {
+    if (boxSize.width <= 0 || boxSize.height <= 0) {
+      return Rect.zero;
+    }
+
+    final boxAspectRatio = boxSize.width / boxSize.height;
+    if (boxAspectRatio > imageAspectRatio) {
+      final height = boxSize.height;
+      final width = height * imageAspectRatio;
+      return Rect.fromLTWH((boxSize.width - width) / 2, 0, width, height);
+    }
+
+    final width = boxSize.width;
+    final height = width / imageAspectRatio;
+    return Rect.fromLTWH(0, (boxSize.height - height) / 2, width, height);
+  }
+
+  Offset _pointInRectForAlignment(Rect rect, Alignment alignment) {
+    final dx = rect.left + ((alignment.x + 1) / 2) * rect.width;
+    final dy = rect.top + ((alignment.y + 1) / 2) * rect.height;
+    return Offset(dx, dy);
   }
 
   Widget _buildTopBar() {
@@ -656,15 +738,20 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _titleBubble(String text, {double fontSize = _headingFontSize}) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF1D3557),
-        fontFamily: 'Poppins',
-        fontFamilyFallback: _fontFallback,
-      ),
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize = responsiveClamp(context, 20, fontSize, 26);
+        return Text(
+          text,
+          style: TextStyle(
+            fontSize: effectiveFontSize,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1D3557),
+            fontFamily: 'Poppins',
+            fontFamilyFallback: _fontFallback,
+          ),
+        );
+      },
     );
   }
 
@@ -680,17 +767,19 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _fitScaledContent({
+  Widget _scrollableStepContent({
     required Widget child,
     Alignment alignment = Alignment.topLeft,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SizedBox.expand(
-          child: Align(
-            alignment: alignment,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.maxWidth,
+              minHeight: constraints.maxHeight,
+            ),
+            child: Align(
               alignment: alignment,
               child: SizedBox(width: constraints.maxWidth, child: child),
             ),
@@ -716,6 +805,27 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   double _stepBodyFontSize(LearningStep step) {
     return _useReducedFontForStep(step) ? _bodyFontSize - 2 : _bodyFontSize;
+  }
+
+  double _responsiveHeadingFontSize(BuildContext context, LearningStep step) {
+    return responsiveClamp(context, 20, _stepHeadingFontSize(step), 26);
+  }
+
+  double _responsiveBodyFontSize(BuildContext context, LearningStep step) {
+    return responsiveClamp(context, 15, _stepBodyFontSize(step), 20);
+  }
+
+  double _responsiveButtonFontSize(BuildContext context) {
+    return responsiveClamp(context, 16, _buttonFontSize, 20);
+  }
+
+  double _responsiveLabelFontSize(
+    BuildContext context,
+    double ideal, {
+    double min = 13,
+    double max = 22,
+  }) {
+    return responsiveClamp(context, min, ideal, max);
   }
 
   bool _isArrowEnhancedStep(LearningStep step) {
@@ -820,7 +930,15 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildEquationExamplesStep(LearningStep step) {
-    return _fitScaledContent(
+    final bodySize = _responsiveBodyFontSize(context, step);
+    final subheadingSize = _responsiveLabelFontSize(
+      context,
+      _bodyFontSize + 2,
+      min: 17,
+      max: 22,
+    );
+    final legendSize = _responsiveLabelFontSize(context, 17, min: 13, max: 17);
+    return _scrollableStepContent(
       alignment: Alignment.topCenter,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -835,8 +953,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               child: Text(
                 step.subtitle,
                 textAlign: TextAlign.justify,
-                style: const TextStyle(
-                  fontSize: _bodyFontSize,
+                style: TextStyle(
+                  fontSize: bodySize,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
@@ -851,8 +969,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               alignment: Alignment.centerLeft,
               child: Text(
                 step.exampleSubheading,
-                style: const TextStyle(
-                  fontSize: _bodyFontSize + 2,
+                style: TextStyle(
+                  fontSize: subheadingSize,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF0B7285),
                   fontFamily: 'Poppins',
@@ -922,8 +1040,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           Text(
                             '${legend.name}: ${legend.description}',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 17,
+                            style: TextStyle(
+                              fontSize: legendSize,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF334155),
                               fontFamily: 'Poppins',
@@ -943,8 +1061,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             Text(
               step.footerNote,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 17,
+              style: TextStyle(
+                fontSize: legendSize,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF334155),
                 height: 1.35,
@@ -960,7 +1078,39 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   Widget _buildArrowExamplesStep(LearningStep step) {
     final extraBottomSpacing = _extraBottomSpacingFromB09(step);
-    final content = _fitScaledContent(
+    final bodySize = _responsiveBodyFontSize(context, step);
+    final subheadingSize = _responsiveLabelFontSize(
+      context,
+      _bodyFontSize + 2,
+      min: 17,
+      max: 22,
+    );
+    final highlightSize = _responsiveLabelFontSize(
+      context,
+      20,
+      min: 15,
+      max: 20,
+    );
+    final footerSize = _responsiveLabelFontSize(context, 17, min: 13, max: 17);
+    final arrowTextSize = _responsiveLabelFontSize(
+      context,
+      20,
+      min: 15,
+      max: 20,
+    );
+    final arrowSymbolSize = _responsiveLabelFontSize(
+      context,
+      22,
+      min: 17,
+      max: 22,
+    );
+    final letterChipFontSize = _responsiveLabelFontSize(
+      context,
+      18,
+      min: 14,
+      max: 18,
+    );
+    final content = _scrollableStepContent(
       alignment: Alignment.topCenter,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -978,8 +1128,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                   Text(
                     step.subtitle,
                     textAlign: TextAlign.justify,
-                    style: const TextStyle(
-                      fontSize: _bodyFontSize,
+                    style: TextStyle(
+                      fontSize: bodySize,
                       height: 1.4,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Poppins',
@@ -989,10 +1139,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                   if (step.highlightedLetters.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text.rich(
-                      _highlightedLettersSpan(step),
+                      _highlightedLettersSpan(context, step),
                       textAlign: TextAlign.justify,
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: TextStyle(
+                        fontSize: highlightSize,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF334155),
                         height: 1.35,
@@ -1006,8 +1156,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     Text(
                       step.afterHighlightLine,
                       textAlign: TextAlign.justify,
-                      style: const TextStyle(
-                        fontSize: _bodyFontSize,
+                      style: TextStyle(
+                        fontSize: bodySize,
                         height: 1.4,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Poppins',
@@ -1023,8 +1173,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             const SizedBox(height: 12),
             Text(
               step.exampleSubheading,
-              style: const TextStyle(
-                fontSize: _bodyFontSize + 2,
+              style: TextStyle(
+                fontSize: subheadingSize,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF0B7285),
                 fontFamily: 'Poppins',
@@ -1076,8 +1226,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                                   ),
                                   child: Text(
                                     row.letter,
-                                    style: const TextStyle(
-                                      fontSize: 18,
+                                    style: TextStyle(
+                                      fontSize: letterChipFontSize,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
                                       fontFamily: 'Poppins',
@@ -1086,10 +1236,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Text(
+                                Text(
                                   '\u2192',
                                   style: TextStyle(
-                                    fontSize: 22,
+                                    fontSize: arrowSymbolSize,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF1D3557),
                                     fontFamily: 'Poppins',
@@ -1100,8 +1250,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                               ],
                               Text(
                                 row.baseWord,
-                                style: const TextStyle(
-                                  fontSize: 20,
+                                style: TextStyle(
+                                  fontSize: arrowTextSize,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF1D3557),
                                   fontFamily: 'Poppins',
@@ -1109,10 +1259,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 '\u2192',
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  fontSize: arrowSymbolSize,
                                   fontWeight: FontWeight.w900,
                                   color: Color(0xFF1D3557),
                                   fontFamily: 'Poppins',
@@ -1140,8 +1290,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             Text(
               step.footerNote,
               textAlign: TextAlign.justify,
-              style: const TextStyle(
-                fontSize: 17,
+              style: TextStyle(
+                fontSize: footerSize,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF334155),
                 height: 1.35,
@@ -1165,36 +1315,39 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  TextSpan _highlightedLettersSpan(LearningStep step) {
+  TextSpan _highlightedLettersSpan(BuildContext context, LearningStep step) {
     if (step.id == 'B09' && step.highlightedLetters.length >= 7) {
       final letters = step.highlightedLetters;
       return TextSpan(
         children: [
           const TextSpan(text: 'huruf vokal ('),
-          _coloredLetterSpan(letters[0], 0),
+          _coloredLetterSpan(context, letters[0], 0),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(letters[1], 1),
+          _coloredLetterSpan(context, letters[1], 1),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(letters[2], 2),
+          _coloredLetterSpan(context, letters[2], 2),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(letters[3], 3),
+          _coloredLetterSpan(context, letters[3], 3),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(letters[4], 4),
+          _coloredLetterSpan(context, letters[4], 4),
           const TextSpan(text: ') dan huruf konsonan ('),
-          _coloredLetterSpan(letters[5], 5),
+          _coloredLetterSpan(context, letters[5], 5),
           const TextSpan(text: ','),
-          _coloredLetterSpan(letters[6], 6),
+          _coloredLetterSpan(context, letters[6], 6),
           const TextSpan(text: ')'),
         ],
       );
     }
-    return _commaSeparatedHighlightedLetters(step.highlightedLetters);
+    return _commaSeparatedHighlightedLetters(context, step.highlightedLetters);
   }
 
-  TextSpan _commaSeparatedHighlightedLetters(List<String> letters) {
+  TextSpan _commaSeparatedHighlightedLetters(
+    BuildContext context,
+    List<String> letters,
+  ) {
     final children = <InlineSpan>[];
     for (var i = 0; i < letters.length; i++) {
-      children.add(_coloredLetterSpan(letters[i], i));
+      children.add(_coloredLetterSpan(context, letters[i], i));
       if (i < letters.length - 1) {
         children.add(const TextSpan(text: ', '));
       } else {
@@ -1204,13 +1357,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return TextSpan(children: children);
   }
 
-  TextSpan _coloredLetterSpan(String text, int index) {
+  TextSpan _coloredLetterSpan(BuildContext context, String text, int index) {
     return TextSpan(
       text: text,
       style: TextStyle(
         color: _highlightColorForIndex(index),
         fontWeight: FontWeight.w900,
-        fontSize: 22,
+        fontSize: _responsiveLabelFontSize(context, 22, min: 17, max: 22),
       ),
     );
   }
@@ -1237,11 +1390,12 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     String prefix, {
     required Color prefixColor,
   }) {
+    final fontSize = _responsiveLabelFontSize(context, 20, min: 15, max: 20);
     if (prefix.isEmpty || !word.startsWith(prefix)) {
       return Text(
         word,
-        style: const TextStyle(
-          fontSize: 20,
+        style: TextStyle(
+          fontSize: fontSize,
           fontWeight: FontWeight.w700,
           color: Color(0xFF1D3557),
           fontFamily: 'Poppins',
@@ -1260,8 +1414,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           TextSpan(text: word.substring(prefix.length)),
         ],
       ),
-      style: const TextStyle(
-        fontSize: 20,
+      style: TextStyle(
+        fontSize: fontSize,
         fontWeight: FontWeight.w700,
         color: Color(0xFF1D3557),
         fontFamily: 'Poppins',
@@ -1271,6 +1425,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _equationChip(String text, Color color) {
+    final fontSize = _responsiveLabelFontSize(context, 18, min: 14, max: 18);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 3),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -1280,9 +1435,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       ),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 18,
+          fontSize: fontSize,
           fontWeight: FontWeight.w800,
           fontFamily: 'Poppins',
           fontFamilyFallback: _fontFallback,
@@ -1292,13 +1447,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _equationSymbol(String symbol) {
+    final fontSize = _responsiveLabelFontSize(context, 23, min: 17, max: 23);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         symbol,
-        style: const TextStyle(
+        style: TextStyle(
           color: Color(0xFF1D3557),
-          fontSize: 23,
+          fontSize: fontSize,
           fontWeight: FontWeight.w900,
           fontFamily: 'Poppins',
           fontFamilyFallback: _fontFallback,
@@ -1308,7 +1464,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildTableStep(LearningStep step) {
-    return _fitScaledContent(
+    final bodySize = _responsiveBodyFontSize(context, step);
+    final subheadingSize = _responsiveLabelFontSize(
+      context,
+      _bodyFontSize + 2,
+      min: 17,
+      max: 22,
+    );
+    return _scrollableStepContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1319,8 +1482,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               child: Text(
                 step.subtitle,
                 textAlign: TextAlign.justify,
-                style: const TextStyle(
-                  fontSize: _bodyFontSize,
+                style: TextStyle(
+                  fontSize: bodySize,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
@@ -1332,8 +1495,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             const SizedBox(height: 12),
             Text(
               step.exampleSubheading,
-              style: const TextStyle(
-                fontSize: _bodyFontSize + 2,
+              style: TextStyle(
+                fontSize: subheadingSize,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF0B7285),
                 fontFamily: 'Poppins',
@@ -1347,8 +1510,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             const SizedBox(height: 12),
             Text(
               step.footerNote,
-              style: const TextStyle(
-                fontSize: _bodyFontSize,
+              style: TextStyle(
+                fontSize: bodySize,
                 height: 1.4,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF2F4858),
@@ -1386,6 +1549,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   Widget _tableCard(LearningStep step) {
     final columnWidths = _tableColumnWidths(step.tableHeaders.length);
+    final tableFontSize = _responsiveBodyFontSize(context, step);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1412,9 +1576,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     ),
                     child: Text(
                       header,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: _bodyFontSize,
+                        fontSize: tableFontSize,
                         fontWeight: FontWeight.w800,
                         fontFamily: 'Poppins',
                         fontFamilyFallback: _fontFallback,
@@ -1460,8 +1624,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     ),
                     child: Text(
                       cell,
-                      style: const TextStyle(
-                        fontSize: _bodyFontSize,
+                      style: TextStyle(
+                        fontSize: tableFontSize,
                         fontWeight: FontWeight.w600,
                         height: 1.3,
                         fontFamily: 'Poppins',
@@ -1479,7 +1643,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildChangeCardsStep(LearningStep step) {
-    return _fitScaledContent(
+    final bodySize = _responsiveBodyFontSize(context, step);
+    final letterSize = _responsiveLabelFontSize(context, 24, min: 18, max: 24);
+    return _scrollableStepContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1491,8 +1657,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               child: Text(
                 step.subtitle,
                 textAlign: TextAlign.justify,
-                style: const TextStyle(
-                  fontSize: _bodyFontSize,
+                style: TextStyle(
+                  fontSize: bodySize,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
@@ -1545,10 +1711,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       alignment: Alignment.center,
                       child: Text(
                         card.letter,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
-                          fontSize: 24,
+                          fontSize: letterSize,
                         ),
                       ),
                     ),
@@ -1560,7 +1726,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           Text(
                             card.example,
                             style: TextStyle(
-                              fontSize: _bodyFontSize,
+                              fontSize: bodySize,
                               fontWeight: FontWeight.w900,
                               color: accentColor,
                               fontFamily: 'Poppins',
@@ -1570,7 +1736,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           Text(
                             card.note,
                             style: TextStyle(
-                              fontSize: _bodyFontSize,
+                              fontSize: bodySize,
                               fontWeight: FontWeight.w700,
                               color: accentColor.withValues(alpha: 0.9),
                               fontFamily: 'Poppins',
@@ -1589,8 +1755,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             Text(
               step.footerNote,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: _bodyFontSize,
+              style: TextStyle(
+                fontSize: bodySize,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1D3557),
                 fontFamily: 'Poppins',
@@ -1606,52 +1772,58 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final imageSize = math.min(constraints.maxWidth * 0.72, 280.0);
-        return Center(
-          child: TweenAnimationBuilder<double>(
-            key: ValueKey('b11-image-heading-${step.id}'),
-            tween: Tween(begin: 0, end: 1),
-            duration: AppMotionSpec.chooseDuration(
-              context,
-              const Duration(milliseconds: 420),
-              const Duration(milliseconds: 220),
-            ),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(0, (1 - value) * 16),
-                  child: child,
+        final headingSize = _responsiveHeadingFontSize(context, step);
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: TweenAnimationBuilder<double>(
+                key: ValueKey('b11-image-heading-${step.id}'),
+                tween: Tween(begin: 0, end: 1),
+                duration: AppMotionSpec.chooseDuration(
+                  context,
+                  const Duration(milliseconds: 420),
+                  const Duration(milliseconds: 220),
                 ),
-              );
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                BreathingCharacter(
-                  begin: 0.99,
-                  end: 1.03,
-                  child: AdaptiveAssetImage(
-                    assetPath:
-                        'assets/Action Figures/AmiN showing both hands.svg',
-                    width: imageSize,
-                    height: imageSize,
-                    fit: BoxFit.contain,
-                  ),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - value) * 16),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BreathingCharacter(
+                      begin: 0.99,
+                      end: 1.03,
+                      child: AdaptiveAssetImage(
+                        assetPath:
+                            'assets/Action Figures/AmiN showing both hands.svg',
+                        width: imageSize,
+                        height: imageSize,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      step.title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: headingSize,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1D3557),
+                        fontFamily: 'Poppins',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  step.title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: _headingFontSize,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D3557),
-                    fontFamily: 'Poppins',
-                    fontFamilyFallback: _fontFallback,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -1660,136 +1832,203 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildSituationStep(LearningStep step) {
-    final headingSize = _stepHeadingFontSize(step);
-    final bodySize = _stepBodyFontSize(step);
     final paragraphAlign = _useLeftAlignedParagraphs(step)
         ? TextAlign.left
         : TextAlign.justify;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (step.instructionTitle.isNotEmpty || step.instructionBody.isNotEmpty)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF5D6),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFF4D47D)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (step.instructionTitle.isNotEmpty)
-                  Text(
-                    step.instructionTitle,
-                    style: TextStyle(
-                      fontSize: headingSize,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF1D3557),
-                      fontFamily: 'Poppins',
-                      fontFamilyFallback: _fontFallback,
-                    ),
-                  ),
-                if (step.instructionBody.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    step.instructionBody,
-                    textAlign: paragraphAlign,
-                    style: TextStyle(
-                      fontSize: bodySize,
-                      height: 1.4,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF334155),
-                      fontFamily: 'Poppins',
-                      fontFamilyFallback: _fontFallback,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFE6F5FF), Color(0xFFCBEAFF)],
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (step.sceneImageAsset.isNotEmpty)
-                    AdaptiveAssetImage(
-                      assetPath: step.sceneImageAsset,
-                      fit: BoxFit.cover,
-                    ),
-                  Container(color: Colors.black.withValues(alpha: 0.08)),
-                  ...step.hotspots.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final hotspot = entry.value;
-                    return Align(
-                      alignment: _hotspotAlignmentForStep(step, hotspot),
-                      child: TweenAnimationBuilder<double>(
-                        key: ValueKey('${_currentStep.id}-hotspot-$index'),
-                        tween: Tween(begin: 0, end: 1),
-                        duration: Duration(milliseconds: 280 + (index * 100)),
-                        builder: (context, value, child) {
-                          return Opacity(
-                            opacity: value,
-                            child: Transform.scale(
-                              scale: 0.9 + (0.1 * value),
-                              child: child,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shortScreen = constraints.maxHeight < 560;
+        final headingSize = responsiveClamp(
+          context,
+          17,
+          _stepHeadingFontSize(step) - (shortScreen ? 2 : 0),
+          _stepHeadingFontSize(step),
+        );
+        final bodySize = responsiveClamp(
+          context,
+          14,
+          _stepBodyFontSize(step) - (shortScreen ? 2 : 0),
+          _stepBodyFontSize(step),
+        );
+        final instructionPadding = responsiveClamp(
+          context,
+          8,
+          shortScreen ? 10 : 12,
+          12,
+        );
+        final instructionMaxHeight =
+            constraints.maxHeight * (shortScreen ? 0.32 : 0.40);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (step.instructionTitle.isNotEmpty ||
+                step.instructionBody.isNotEmpty)
+              Container(
+                width: double.infinity,
+                margin: EdgeInsets.only(bottom: shortScreen ? 8 : 10),
+                padding: EdgeInsets.all(instructionPadding),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF5D6),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFF4D47D)),
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: instructionMaxHeight),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (step.instructionTitle.isNotEmpty)
+                          Text(
+                            step.instructionTitle,
+                            style: TextStyle(
+                              fontSize: headingSize,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF1D3557),
+                              fontFamily: 'Poppins',
+                              fontFamilyFallback: _fontFallback,
                             ),
-                          );
-                        },
-                        child: Builder(
-                          builder: (context) {
-                            final reduceMotion = AppMotionSpec.reduceMotion(
-                              context,
+                          ),
+                        if (step.instructionBody.isNotEmpty) ...[
+                          SizedBox(height: shortScreen ? 6 : 8),
+                          Text(
+                            step.instructionBody,
+                            textAlign: paragraphAlign,
+                            style: TextStyle(
+                              fontSize: bodySize,
+                              height: 1.4,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF334155),
+                              fontFamily: 'Poppins',
+                              fontFamilyFallback: _fontFallback,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFE6F5FF), Color(0xFFCBEAFF)],
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const sceneAspectRatio = 1024 / 1536;
+                      final imageRect = _containedImageRect(
+                        Size(constraints.maxWidth, constraints.maxHeight),
+                        sceneAspectRatio,
+                      );
+                      final hotspotSize = (imageRect.width * 0.085)
+                          .clamp(24.0, 38.0)
+                          .toDouble();
+
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (step.sceneImageAsset.isNotEmpty)
+                            Positioned.fromRect(
+                              rect: imageRect,
+                              child: AdaptiveAssetImage(
+                                assetPath: step.sceneImageAsset,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          Positioned.fromRect(
+                            rect: imageRect,
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.08),
+                            ),
+                          ),
+                          ...step.hotspots.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final hotspot = entry.value;
+                            final point = _pointInRectForAlignment(
+                              imageRect,
+                              _hotspotAlignmentForStep(step, hotspot),
                             );
-                            final scaleAnimation = reduceMotion
-                                ? const AlwaysStoppedAnimation(1.0)
-                                : Tween<double>(begin: 0.95, end: 1.08).animate(
-                                    CurvedAnimation(
-                                      parent: _pulseController,
-                                      curve: Curves.easeInOut,
+                            return Positioned(
+                              left: point.dx - hotspotSize / 2,
+                              top: point.dy - hotspotSize / 2,
+                              width: hotspotSize,
+                              height: hotspotSize,
+                              child: TweenAnimationBuilder<double>(
+                                key: ValueKey(
+                                  '${_currentStep.id}-hotspot-$index',
+                                ),
+                                tween: Tween(begin: 0, end: 1),
+                                duration: Duration(
+                                  milliseconds: 280 + (index * 100),
+                                ),
+                                builder: (context, value, child) {
+                                  return Opacity(
+                                    opacity: value,
+                                    child: Transform.scale(
+                                      scale: 0.9 + (0.1 * value),
+                                      child: child,
                                     ),
                                   );
-                            return ScaleTransition(
-                              scale: scaleAnimation,
-                              child: _buildHotspotStarButton(
-                                step: step,
-                                onPressed: () => _openHotspot(hotspot),
+                                },
+                                child: Builder(
+                                  builder: (context) {
+                                    final reduceMotion =
+                                        AppMotionSpec.reduceMotion(context);
+                                    final scaleAnimation = reduceMotion
+                                        ? const AlwaysStoppedAnimation(1.0)
+                                        : Tween<double>(
+                                            begin: 0.95,
+                                            end: 1.08,
+                                          ).animate(
+                                            CurvedAnimation(
+                                              parent: _pulseController,
+                                              curve: Curves.easeInOut,
+                                            ),
+                                          );
+                                    return ScaleTransition(
+                                      scale: scaleAnimation,
+                                      child: _buildHotspotStarButton(
+                                        step: step,
+                                        size: hotspotSize,
+                                        onPressed: () => _openHotspot(hotspot),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             );
-                          },
-                        ),
-                      ),
-                    );
-                  }),
-                ],
+                          }),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
   Widget _buildSummaryStep(LearningStep step) {
     final isB17 = step.id == 'B17';
     final headingSize = isB17
-        ? _headingFontSize + 1
-        : _stepHeadingFontSize(step);
-    final bodySize = isB17 ? _bodyFontSize : _stepBodyFontSize(step);
+        ? responsiveClamp(context, 20, _headingFontSize + 1, 26)
+        : _responsiveHeadingFontSize(context, step);
+    final bodySize = isB17
+        ? responsiveClamp(context, 15, _bodyFontSize, 20)
+        : _responsiveBodyFontSize(context, step);
     Widget summaryContent(BoxConstraints constraints) {
       final contentWidth = isB17
           ? constraints.maxWidth * 0.9
@@ -1870,7 +2109,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       );
     }
 
-    return _fitScaledContent(
+    return _scrollableStepContent(
       alignment: Alignment.topCenter,
       child: LayoutBuilder(
         builder: (context, constraints) => summaryContent(constraints),
@@ -1957,7 +2196,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildCompletionStep() {
-    return _fitScaledContent(
+    final bodySize = responsiveClamp(context, 15, _bodyFontSize, 20);
+    return _scrollableStepContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1987,10 +2227,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       ),
                     ],
                   ),
-                  child: const Text(
+                  child: Text(
                     'Anda telah menyelesaikan pembelajaran imbuhan meN-.',
                     style: TextStyle(
-                      fontSize: _bodyFontSize,
+                      fontSize: bodySize,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1D3557),
                       fontFamily: 'Poppins',
@@ -2016,11 +2256,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 ),
               ],
             ),
-            child: const Text(
+            child: Text(
               'Tekan butang di bawah untuk kembali ke menu utama.',
               style: TextStyle(
                 color: Color(0xFF1D3557),
-                fontSize: _bodyFontSize,
+                fontSize: bodySize,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'Poppins',
                 fontFamilyFallback: _fontFallback,
@@ -2033,7 +2273,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             icon: Icons.home_rounded,
             onPressed: () => context.go(AppRoutes.s003MainMenu),
             backgroundColor: const Color(0xFF2A9D8F),
-            labelFontSize: _buttonFontSize,
+            labelFontSize: _responsiveButtonFontSize(context),
           ),
         ],
       ),
@@ -2065,93 +2305,100 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   @override
   Widget build(BuildContext context) {
     final step = _currentStep;
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [step.backgroundTop, step.backgroundBottom],
-          ),
-        ),
-        child: SafeArea(
-          child: DefaultTextStyle.merge(
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontFamilyFallback: _fontFallback,
+    final mediaQuery = MediaQuery.of(context);
+    return MediaQuery(
+      data: mediaQuery.copyWith(textScaler: responsiveTextScaler(context)),
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [step.backgroundTop, step.backgroundBottom],
             ),
-            child: Column(
-              children: [
-                _buildTopBar(),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    child: AnimatedSwitcher(
-                      duration: AppMotionSpec.chooseDuration(
-                        context,
-                        AppMotionSpec.switcher,
-                        AppMotionSpec.switcherReduced,
-                      ),
-                      transitionBuilder: (child, animation) {
-                        return buildAdaptiveSwitcherTransition(
-                          context: context,
-                          animation: animation,
-                          child: child,
-                        );
-                      },
-                      child: Container(
-                        key: ValueKey(step.id),
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.52),
-                          borderRadius: BorderRadius.circular(18),
+          ),
+          child: SafeArea(
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontFamilyFallback: _fontFallback,
+              ),
+              child: Column(
+                children: [
+                  _buildTopBar(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: AnimatedSwitcher(
+                        duration: AppMotionSpec.chooseDuration(
+                          context,
+                          AppMotionSpec.switcher,
+                          AppMotionSpec.switcherReduced,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: _buildStepBody(step)),
-                            if (step.type != LearningStepType.quizGateway) ...[
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: AnimatedBuilder(
-                                  animation: _pulseController,
-                                  builder: (context, child) {
-                                    final reduceMotion =
-                                        AppMotionSpec.reduceMotion(context);
-                                    final angle = reduceMotion
-                                        ? 0.0
-                                        : math.sin(
-                                                _pulseController.value *
-                                                    math.pi,
-                                              ) *
-                                              0.02;
-                                    return Transform.rotate(
-                                      angle: angle,
-                                      child: child,
-                                    );
-                                  },
-                                  child: AnimatedKidButton(
-                                    label: step.buttonText,
-                                    icon: Icons.arrow_forward_rounded,
-                                    onPressed: () {
-                                      _goNext();
+                        transitionBuilder: (child, animation) {
+                          return buildAdaptiveSwitcherTransition(
+                            context: context,
+                            animation: animation,
+                            child: child,
+                          );
+                        },
+                        child: Container(
+                          key: ValueKey(step.id),
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.52),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: _buildStepBody(step)),
+                              if (step.type !=
+                                  LearningStepType.quizGateway) ...[
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: AnimatedBuilder(
+                                    animation: _pulseController,
+                                    builder: (context, child) {
+                                      final reduceMotion =
+                                          AppMotionSpec.reduceMotion(context);
+                                      final angle = reduceMotion
+                                          ? 0.0
+                                          : math.sin(
+                                                  _pulseController.value *
+                                                      math.pi,
+                                                ) *
+                                                0.02;
+                                      return Transform.rotate(
+                                        angle: angle,
+                                        child: child,
+                                      );
                                     },
-                                    backgroundColor: const Color(0xFFFFC300),
-                                    foregroundColor: const Color(0xFF1D3557),
-                                    labelFontSize: _buttonFontSize,
+                                    child: AnimatedKidButton(
+                                      label: step.buttonText,
+                                      icon: Icons.arrow_forward_rounded,
+                                      onPressed: () {
+                                        _goNext();
+                                      },
+                                      backgroundColor: const Color(0xFFFFC300),
+                                      foregroundColor: const Color(0xFF1D3557),
+                                      labelFontSize: _responsiveButtonFontSize(
+                                        context,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

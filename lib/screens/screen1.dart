@@ -116,8 +116,10 @@ class _Screen1State extends State<Screen1> {
                                         LessonBottomDecorationZone(
                                           viewportHeight: constraints.maxHeight,
                                           viewportWidth: constraints.maxWidth,
-                                          preferredSize: 240 * scale,
-                                          preferredReservedHeight: 170 * scale,
+                                          preferredSize: 372 * scale,
+                                          maxSize: 372 * scale,
+                                          preferredReservedHeight: 340 * scale,
+                                          maxReservedHeightFraction: 0.46,
                                           decorationBuilder: (size) => MascotWidget(
                                             assetPath:
                                                 'assets/Action Figures/AmiN First Screen.svg',

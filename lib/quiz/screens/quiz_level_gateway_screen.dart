@@ -74,12 +74,16 @@ class QuizLevelGatewayScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final compact = constraints.maxHeight < 720;
-                  final bannerHeight = compact ? 186.0 : 214.0;
-                  final characterHeight = compact ? 186.0 : 214.0;
-                  final characterWidth = compact ? 172.0 : 194.0;
-                  final speechBubbleLeft = compact ? 114.0 : 128.0;
-                  final speechBubbleBottom = compact ? 32.0 : 40.0;
+                  final compact =
+                      constraints.maxHeight < 720 || constraints.maxWidth < 360;
+                  final bannerHeight = constraints.maxHeight
+                      .clamp(0.0, compact ? 176.0 : 214.0)
+                      .toDouble();
+                  final characterHeight = bannerHeight;
+                  final characterWidth = characterHeight * 0.9;
+                  final characterLeft = compact ? -26.0 : -40.0;
+                  final speechBubbleLeft = compact ? 92.0 : 128.0;
+                  final speechBubbleBottom = compact ? 28.0 : 40.0;
 
                   return Column(
                     children: [
@@ -89,7 +93,7 @@ class QuizLevelGatewayScreen extends StatelessWidget {
                           clipBehavior: Clip.none,
                           children: [
                             Positioned(
-                              left: -40,
+                              left: characterLeft,
                               bottom: 0,
                               child: characterAdapter.buildCharacter(
                                 context: context,
@@ -331,8 +335,7 @@ class _StarCluster extends StatelessWidget {
           top: 10,
           child: Icon(Icons.auto_awesome, color: Color(0x66FFFFFF), size: 20),
         ),
-        if (starCount == 1)
-          Center(child: _star(size: 48)),
+        if (starCount == 1) Center(child: _star(size: 48)),
         if (starCount == 2) ...[
           Positioned(left: 12, top: 30, child: _star(size: 42)),
           Positioned(right: 12, top: 30, child: _star(size: 42)),

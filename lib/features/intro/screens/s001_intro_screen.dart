@@ -93,9 +93,19 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final compactHeight = constraints.maxHeight < 620;
-                      final characterSize = compactHeight
-                          ? (constraints.maxHeight * 0.42).clamp(240.0, 320.0)
-                          : 360.0;
+                      const characterAspect = 720 / 1280;
+                      final maxHeightFromWidth =
+                          constraints.maxWidth / characterAspect;
+                      final maxHeightFromScreen =
+                          constraints.maxHeight * (compactHeight ? 0.54 : 0.48);
+                      final rawCharacterHeight =
+                          maxHeightFromWidth < maxHeightFromScreen
+                          ? maxHeightFromWidth
+                          : maxHeightFromScreen;
+                      final characterHeight = rawCharacterHeight
+                          .clamp(300.0, 480.0)
+                          .toDouble();
+                      final characterWidth = characterHeight * characterAspect;
                       final titleSize = compactHeight ? 22.0 : 26.0;
                       final subtitleSize = compactHeight ? 18.0 : 21.0;
 
@@ -108,18 +118,16 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               AminCharacter(
-                                width: characterSize,
-                                height: characterSize,
+                                width: characterWidth,
+                                height: characterHeight,
                                 pose: AminPose.schoolUniform,
                                 motions: const <AminMotion>{
-                                  AminMotion.idleBreathing,
                                   AminMotion.blink,
                                   AminMotion.handWave,
-                                  AminMotion.smile,
                                 },
                                 backend: AminCharacterBackend.auto,
                                 placeholderAsset:
-                                    'assets/Action Figures/AmiN First Screen.svg',
+                                    'assets/Action Figures/amin_parts/anim_char_without_eyehands.png',
                               ),
                               SizedBox(height: compactHeight ? 10 : 14),
                               FadeTransition(
@@ -155,7 +163,7 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                               ),
                               SizedBox(height: compactHeight ? 12 : 16),
                               AnimatedKidButton(
-                                label: 'Jom Mula',
+                                label: 'Ayuh mula!',
                                 icon: Icons.play_arrow_rounded,
                                 onPressed: _goNext,
                                 backgroundColor: const Color(0xFFFFC300),

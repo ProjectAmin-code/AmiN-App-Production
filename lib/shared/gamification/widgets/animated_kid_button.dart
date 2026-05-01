@@ -65,6 +65,9 @@ class _AnimatedKidButtonState extends State<AnimatedKidButton>
       return;
     }
     await _controller.forward(from: 0);
+    if (!mounted) {
+      return;
+    }
     widget.onPressed?.call();
   }
 
@@ -125,8 +128,16 @@ class _AnimatedKidButtonState extends State<AnimatedKidButton>
     );
 
     final wrapped = MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      onEnter: (_) {
+        if (mounted) {
+          setState(() => _hovered = true);
+        }
+      },
+      onExit: (_) {
+        if (mounted) {
+          setState(() => _hovered = false);
+        }
+      },
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, widgetChild) {

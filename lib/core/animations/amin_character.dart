@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import 'package:rive/rive.dart' as rive;
 
 import '../../shared/design/app_design_tokens.dart';
 import '../../shared/motion/app_motion_spec.dart';
@@ -95,34 +93,35 @@ class _AminCharacterState extends State<AminCharacter>
   @override
   Widget build(BuildContext context) {
     final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final assetPath =
+        widget.placeholderAsset ??
+        AminCharacter.defaultAssetForPose(widget.pose);
+    final useSeparatedParts = assetPath.endsWith(
+      'anim_char_without_eyehands.png',
+    );
+
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
           final animationValue = reduceMotion ? 0.0 : _controller.value;
-          final motion = _resolveMotion(animationValue);
-          return Transform.translate(
-            offset: motion.offset,
-            child: Transform.rotate(
-              angle: motion.rotation,
-              child: Transform.scale(
-                scale: motion.scale,
-                child: SizedBox(
-                  width: widget.width,
-                  height: widget.height,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _buildCharacterBody(reduceMotion: reduceMotion),
-                      _FaceOverlay(
-                        enableBlink: widget.motions.contains(AminMotion.blink),
-                        showSmile: widget.motions.contains(AminMotion.smile),
-                        animationValue: animationValue,
-                      ),
-                    ],
+          return SizedBox(
+            width: widget.width,
+            height: widget.height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _assetImage(assetPath),
+                if (useSeparatedParts)
+                  _AminStaticPartsOverlay(
+                    enableBlink: widget.motions.contains(AminMotion.blink),
+                    enableHandWave: widget.motions.contains(
+                      AminMotion.handWave,
+                    ),
+                    animationValue: animationValue,
+                    reduceMotion: reduceMotion,
                   ),
-                ),
-              ),
+              ],
             ),
           );
         },
@@ -130,73 +129,7 @@ class _AminCharacterState extends State<AminCharacter>
     );
   }
 
-  _ResolvedMotion _resolveMotion(double value) {
-    final theta = value * math.pi * 2;
-    var scale = 1.0;
-    var offset = Offset.zero;
-    var rotation = 0.0;
-
-    if (widget.motions.contains(AminMotion.idleBreathing)) {
-      scale += math.sin(theta) * 0.018;
-    }
-    if (widget.motions.contains(AminMotion.lightBounce)) {
-      offset += Offset(0, -math.sin(theta).abs() * 5.0);
-    }
-    if (widget.motions.contains(AminMotion.handWave)) {
-      rotation += math.sin(theta * 1.6) * 0.07;
-    }
-    if (widget.motions.contains(AminMotion.pointDown)) {
-      rotation += 0.03;
-      offset += Offset(0, math.sin(theta * 1.2).abs() * 1.5);
-    }
-    if (widget.motions.contains(AminMotion.raiseHand)) {
-      rotation -= 0.04;
-      offset += Offset(0, -math.sin(theta * 1.1).abs() * 3.0);
-    }
-    return _ResolvedMotion(scale: scale, offset: offset, rotation: rotation);
-  }
-
-  Widget _buildCharacterBody({required bool reduceMotion}) {
-    final placeholderAsset =
-        widget.placeholderAsset ??
-        AminCharacter.defaultAssetForPose(widget.pose);
-    final backend = widget.backend;
-
-    if (backend == AminCharacterBackend.rive ||
-        (backend == AminCharacterBackend.auto && widget.riveAsset != null)) {
-      final riveAsset = widget.riveAsset;
-      if (riveAsset != null && riveAsset.isNotEmpty) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.lg),
-          child: rive.RiveAnimation.asset(
-            riveAsset,
-            fit: widget.fit,
-            useArtboardSize: false,
-            placeHolder: _placeholderImage(placeholderAsset),
-          ),
-        );
-      }
-    }
-
-    if (backend == AminCharacterBackend.lottie ||
-        (backend == AminCharacterBackend.auto && widget.lottieAsset != null)) {
-      final lottieAsset = widget.lottieAsset;
-      if (lottieAsset != null && lottieAsset.isNotEmpty) {
-        return Lottie.asset(
-          lottieAsset,
-          fit: widget.fit,
-          repeat: true,
-          animate: !reduceMotion,
-          errorBuilder: (context, error, stackTrace) =>
-              _placeholderImage(placeholderAsset),
-        );
-      }
-    }
-
-    return _placeholderImage(placeholderAsset);
-  }
-
-  Widget _placeholderImage(String assetPath) {
+  Widget _assetImage(String assetPath) {
     return AdaptiveAssetImage(
       assetPath: assetPath,
       fit: widget.fit,
@@ -218,86 +151,106 @@ class _AminCharacterState extends State<AminCharacter>
   }
 }
 
-class _ResolvedMotion {
-  const _ResolvedMotion({
-    required this.scale,
-    required this.offset,
-    required this.rotation,
-  });
-
-  final double scale;
-  final Offset offset;
-  final double rotation;
-}
-
-class _FaceOverlay extends StatelessWidget {
-  const _FaceOverlay({
+class _AminStaticPartsOverlay extends StatelessWidget {
+  const _AminStaticPartsOverlay({
     required this.enableBlink,
-    required this.showSmile,
+    required this.enableHandWave,
     required this.animationValue,
+    required this.reduceMotion,
   });
+
+  static const _sourceSize = Size(720, 1280);
+  static const _openEyesAsset =
+      'assets/Action Figures/amin_parts/amin_eyes_open_pair.png';
+  static const _handWaveAsset =
+      'assets/Action Figures/amin_parts/amin_hand_wave.png';
+  static const _eyesRect = Rect.fromLTWH(300, 185, 130, 60);
+  static const _handRect = Rect.fromLTWH(58, 250, 200, 250);
 
   final bool enableBlink;
-  final bool showSmile;
+  final bool enableHandWave;
   final double animationValue;
+  final bool reduceMotion;
 
   @override
   Widget build(BuildContext context) {
-    if (!enableBlink && !showSmile) {
+    if (!enableBlink && !enableHandWave) {
       return const SizedBox.shrink();
     }
 
     final theta = animationValue * math.pi * 2;
-    final blinkScale = !enableBlink || math.sin(theta * 2.4).abs() > 0.25
-        ? 1.0
-        : 0.25;
+    final blinkPhase = (animationValue * 3.4) % 1.0;
+    final isBlinking = enableBlink && blinkPhase > 0.90;
+    final eyeScaleY = isBlinking ? 0.08 : 1.0;
+    final handRotation = enableHandWave && !reduceMotion
+        ? math.sin(theta * 1.85) * 0.16
+        : 0.0;
 
     return IgnorePointer(
-      child: Padding(
-        padding: const EdgeInsets.all(26),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _eye(blinkScale),
-                const SizedBox(width: 18),
-                _eye(blinkScale),
-              ],
-            ),
-            if (showSmile) ...[
-              const SizedBox(height: 22),
-              Container(
-                width: 28,
-                height: 12,
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: AppColors.textPrimary,
-                      width: 2.2,
-                    ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final contentRect = _containRect(
+            Size(constraints.maxWidth, constraints.maxHeight),
+          );
+
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              if (enableBlink)
+                _positionedInSource(
+                  contentRect: contentRect,
+                  sourceRect: _eyesRect,
+                  child: Transform.scale(
+                    scaleY: eyeScaleY,
+                    child: Image.asset(_openEyesAsset, fit: BoxFit.contain),
                   ),
                 ),
-              ),
+              if (enableHandWave)
+                _positionedInSource(
+                  contentRect: contentRect,
+                  sourceRect: _handRect,
+                  child: Transform.rotate(
+                    angle: handRotation,
+                    alignment: const Alignment(0.55, 0.78),
+                    child: Image.asset(_handWaveAsset, fit: BoxFit.contain),
+                  ),
+                ),
             ],
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _eye(double blinkScale) {
-    return Transform.scale(
-      scaleY: blinkScale,
-      child: Container(
-        width: 8,
-        height: 8,
-        decoration: const BoxDecoration(
-          color: AppColors.textPrimary,
-          shape: BoxShape.circle,
-        ),
-      ),
+  Rect _containRect(Size boxSize) {
+    final sourceAspect = _sourceSize.width / _sourceSize.height;
+    final boxAspect = boxSize.width / boxSize.height;
+
+    if (boxAspect > sourceAspect) {
+      final height = boxSize.height;
+      final width = height * sourceAspect;
+      return Rect.fromLTWH((boxSize.width - width) / 2, 0, width, height);
+    }
+
+    final width = boxSize.width;
+    final height = width / sourceAspect;
+    return Rect.fromLTWH(0, (boxSize.height - height) / 2, width, height);
+  }
+
+  Widget _positionedInSource({
+    required Rect contentRect,
+    required Rect sourceRect,
+    required Widget child,
+  }) {
+    final scaleX = contentRect.width / _sourceSize.width;
+    final scaleY = contentRect.height / _sourceSize.height;
+
+    return Positioned(
+      left: contentRect.left + sourceRect.left * scaleX,
+      top: contentRect.top + sourceRect.top * scaleY,
+      width: sourceRect.width * scaleX,
+      height: sourceRect.height * scaleY,
+      child: child,
     );
   }
 }

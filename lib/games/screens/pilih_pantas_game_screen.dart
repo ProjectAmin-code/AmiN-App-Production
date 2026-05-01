@@ -3,13 +3,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../core/audio/game_background_audio.dart';
+import '../../core/audio/game_instruction_voice.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
 import '../../shared/navigation/app_screen_wiring.dart';
 import '../../shared/progress/progress_tracker.dart';
+import '../widgets/game_audio_toggle_button.dart';
 import '../widgets/game_completion_template.dart';
+import '../widgets/game_score_badge.dart';
 
 class PilihPantasGameScreen extends StatefulWidget {
   const PilihPantasGameScreen({super.key});
@@ -62,6 +66,7 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   bool _introOverlayVisible = false;
   bool _introClosing = false;
   bool _introIsTyping = false;
+  bool _introCoachStarted = false;
   List<String> _introWords = const <String>[];
   int _visibleIntroWordCount = 0;
   int _introTypingSession = 0;
@@ -86,6 +91,8 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   void dispose() {
     _nextWordTimer?.cancel();
     _introWordTimer?.cancel();
+    unawaited(GameInstructionVoice.stop());
+    unawaited(GameBackgroundAudio.stop());
     super.dispose();
   }
 
@@ -102,9 +109,10 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   }
 
   Future<void> _startIntroCoachSequence() async {
-    if (!mounted || !_showIntroOverlay) {
+    if (!mounted || !_showIntroOverlay || _introCoachStarted) {
       return;
     }
+    _introCoachStarted = true;
     final words = _introInstructionScript
         .trim()
         .split(RegExp(r'\s+'))
@@ -119,6 +127,7 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
       _visibleIntroWordCount = reduceMotion ? words.length : 0;
       _introIsTyping = !reduceMotion && words.isNotEmpty;
     });
+    unawaited(GameInstructionVoice.speak(_introInstructionScript));
 
     if (words.isEmpty) {
       return;
@@ -163,6 +172,7 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
     if (_introClosing) {
       return;
     }
+    final stopVoice = GameInstructionVoice.stop();
     _introTypingSession += 1;
     _introWordTimer?.cancel();
     if (!mounted) {
@@ -172,6 +182,11 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
       _introClosing = true;
       _introOverlayVisible = false;
     });
+    await stopVoice;
+    if (!mounted) {
+      return;
+    }
+    unawaited(GameBackgroundAudio.playGameTrack(1));
     await Future<void>.delayed(
       AppMotionSpec.chooseDuration(
         context,
@@ -219,6 +234,9 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
 
   void _moveNext() {
     _nextWordTimer?.cancel();
+    if (!mounted) {
+      return;
+    }
     if (_currentIndex >= _roundWords.length - 1) {
       _finishRound();
       return;
@@ -234,6 +252,9 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   }
 
   void _finishRound() {
+    if (!mounted) {
+      return;
+    }
     ProgressTracker.instance.recordGameSession(
       starsEarned: _score,
       starsPossible: _roundWords.length,
@@ -446,25 +467,14 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
                             icon: const Icon(Icons.arrow_back_ios_new_rounded),
                           ),
                           const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFD6E4F1),
-                              ),
-                            ),
-                            child: Text(
-                              'â­$_score / ${_roundWords.length}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF1D3557),
-                              ),
-                            ),
+                          GameAudioToggleButton(
+                            gameNumber: 1,
+                            canPlay: !_showIntroOverlay,
+                          ),
+                          const SizedBox(width: 8),
+                          GameScoreBadge(
+                            score: _score,
+                            total: _roundWords.length,
                           ),
                         ],
                       ),

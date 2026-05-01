@@ -47,8 +47,6 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   final Map<String, List<String>> _dragChoiceOrder = <String, List<String>>{};
   final Random _screenLoadRandom = Random();
   static const String _firstQuestionWithSeparatedMOptions = 'EK1';
-  // Easy removal switch for bypass controls: set to false for normal flow.
-  static const bool _enableAnswerBypass = true;
 
   int _currentIndex = 0;
 
@@ -326,15 +324,6 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
     setState(() {
       _currentIndex += 1;
-    });
-  }
-
-  void _goPrevious() {
-    if (_currentIndex == 0) {
-      return;
-    }
-    setState(() {
-      _currentIndex -= 1;
     });
   }
 
@@ -719,7 +708,10 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       );
     }
 
-    return RichText(textAlign: bodyTextAlign, text: TextSpan(children: spans));
+    return RichText(
+      textAlign: bodyTextAlign,
+      text: TextSpan(children: spans),
+    );
   }
 
   Widget _buildBodyCard(QuizQuestion question) {
@@ -762,7 +754,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
     final question = _currentQuestion;
     final isEasyCompact = _isEasyCompactQuestion(question);
-    final hasInlineImage = (question.imageAssetPath?.trim().isNotEmpty ?? false);
+    final hasInlineImage =
+        (question.imageAssetPath?.trim().isNotEmpty ?? false);
     final isWideImageQuestion =
         hasInlineImage &&
         (question.level == QuizLevel.hard || question.level == QuizLevel.easy);
@@ -798,187 +791,177 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPagePadding,
-            verticalPagePadding,
-            horizontalPagePadding,
-            verticalPagePadding,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  physics: isEasyCompact && !isWideImageQuestion
-                      ? const NeverScrollableScrollPhysics()
-                      : null,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: LinearProgressIndicator(
-                        value: (_currentIndex + 1) / _questions.length,
-                        minHeight: isEasyCompact ? 8 : 10,
-                        backgroundColor: const Color(0xFFE2E8F0),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          quizLevelColor(question.level),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: isEasyCompact ? 8 : 12),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isEasyCompact ? 10 : 12,
-                          vertical: isEasyCompact ? 6 : 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: quizLevelColor(question.level),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          quizLevelLabel(question.level),
-                          style: TextStyle(
-                            fontSize: isEasyCompact ? 14 : 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: isEasyCompact ? 8 : 14),
-                    if (question.isBonus && !isEasyCompact) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF4CF),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFF3CE73)),
-                        ),
-                        child: const Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final availableWidth =
+                constraints.maxWidth - (horizontalPagePadding * 2);
+            final contentWidth = availableWidth.clamp(0.0, 760.0).toDouble();
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPagePadding,
+                verticalPagePadding,
+                horizontalPagePadding,
+                verticalPagePadding,
+              ),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: contentWidth,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          padding: EdgeInsets.zero,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
                           children: [
-                            Icon(
-                              Icons.workspace_premium_rounded,
-                              color: Color(0xFF8A5A00),
-                            ),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Bahagian Bonus',
-                                style: TextStyle(
-                                  fontSize: QuizTokens.headingTextSize,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF8A5A00),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(999),
+                              child: LinearProgressIndicator(
+                                value: (_currentIndex + 1) / _questions.length,
+                                minHeight: isEasyCompact ? 8 : 10,
+                                backgroundColor: const Color(0xFFE2E8F0),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  quizLevelColor(question.level),
                                 ),
                               ),
                             ),
+                            SizedBox(height: isEasyCompact ? 8 : 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isEasyCompact ? 10 : 12,
+                                  vertical: isEasyCompact ? 6 : 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: quizLevelColor(question.level),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  quizLevelLabel(question.level),
+                                  style: TextStyle(
+                                    fontSize: isEasyCompact ? 14 : 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: isEasyCompact ? 8 : 14),
+                            if (question.isBonus && !isEasyCompact) ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFF4CF),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFFF3CE73),
+                                  ),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.workspace_premium_rounded,
+                                      color: Color(0xFF8A5A00),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Bahagian Bonus',
+                                        style: TextStyle(
+                                          fontSize: QuizTokens.headingTextSize,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF8A5A00),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                            Text(
+                              'Hai, ${widget.name}',
+                              style: const TextStyle(
+                                fontSize: QuizTokens.headingTextSize,
+                                color: Color(0xFF1D3557),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    question.title,
+                                    style: TextStyle(
+                                      fontSize: questionHeaderTextSize,
+                                      fontWeight: FontWeight.w800,
+                                      color: const Color(0xFF0E7490),
+                                    ),
+                                  ),
+                                  SizedBox(height: isEasyCompact ? 4 : 6),
+                                  Text(
+                                    question.prompt,
+                                    style: TextStyle(
+                                      fontSize: questionHeaderTextSize,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                  _buildImageReference(question),
+                                  _buildBodyCard(question),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: isEasyCompact ? 8 : 12),
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(isEasyCompact ? 10 : 20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.96),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: QuizTokens.answerPanelBorder,
+                                ),
+                              ),
+                              child: _buildQuestionInput(question),
+                            ),
+                            SizedBox(height: isEasyCompact ? 8 : 12),
                           ],
                         ),
                       ),
                       const SizedBox(height: 10),
+                      AnimatedKidButton(
+                        label: actionLabel,
+                        icon: Icons.play_circle_fill_rounded,
+                        onPressed: _canSubmit(question) ? _submitCurrent : null,
+                        backgroundColor: const Color(0xFFFFC300),
+                        foregroundColor: Colors.black87,
+                        height: isEasyCompact ? 48 : 54,
+                        labelFontSize: isEasyCompact
+                            ? QuizTokens.buttonTextSize - 2
+                            : QuizTokens.buttonTextSize,
+                      ),
                     ],
-                    Text(
-                      'Hai, ${widget.name}',
-                      style: const TextStyle(
-                        fontSize: QuizTokens.headingTextSize,
-                        color: Color(0xFF1D3557),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            question.title,
-                            style: TextStyle(
-                              fontSize: questionHeaderTextSize,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0E7490),
-                            ),
-                          ),
-                          SizedBox(height: isEasyCompact ? 4 : 6),
-                          Text(
-                            question.prompt,
-                            style: TextStyle(
-                              fontSize: questionHeaderTextSize,
-                              height: 1.35,
-                            ),
-                          ),
-                          _buildImageReference(question),
-                          _buildBodyCard(question),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: isEasyCompact ? 8 : 12),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(isEasyCompact ? 10 : 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.96),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: QuizTokens.answerPanelBorder),
-                      ),
-                      child: _buildQuestionInput(question),
-                    ),
-                    SizedBox(height: isEasyCompact ? 8 : 12),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 10),
-              if (_enableAnswerBypass) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _currentIndex == 0 ? null : _goPrevious,
-                        icon: const Icon(Icons.skip_previous_rounded),
-                        label: const Text('Pintas Sebelum'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _goNext(),
-                        icon: const Icon(Icons.skip_next_rounded),
-                        label: const Text('Pintas Seterusnya'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-              AnimatedKidButton(
-                label: actionLabel,
-                icon: Icons.play_circle_fill_rounded,
-                onPressed: _canSubmit(question) ? _submitCurrent : null,
-                backgroundColor: const Color(0xFFFFC300),
-                foregroundColor: Colors.black87,
-                labelFontSize: QuizTokens.buttonTextSize,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

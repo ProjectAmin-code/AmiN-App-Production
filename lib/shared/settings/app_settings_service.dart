@@ -17,7 +17,7 @@ class AppSettingsService extends ChangeNotifier {
 
   bool _voiceOverEnabled = true;
   bool _soundEffectsEnabled = true;
-  bool _musicEnabled = false;
+  bool _musicEnabled = true;
   bool _gamificationOverlaysEnabled = false;
 
   bool get voiceOverEnabled => _voiceOverEnabled;
@@ -34,7 +34,7 @@ class AppSettingsService extends ChangeNotifier {
       _prefs = await SharedPreferences.getInstance();
       _voiceOverEnabled = _prefs?.getBool(_voiceOverKey) ?? true;
       _soundEffectsEnabled = _prefs?.getBool(_soundEffectsKey) ?? true;
-      _musicEnabled = _prefs?.getBool(_musicKey) ?? false;
+      _musicEnabled = _prefs?.getBool(_musicKey) ?? true;
       _gamificationOverlaysEnabled =
           _prefs?.getBool(_gamificationOverlaysKey) ?? false;
     } catch (_) {

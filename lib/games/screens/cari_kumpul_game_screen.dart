@@ -3,11 +3,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../core/audio/game_background_audio.dart';
+import '../../core/audio/game_instruction_voice.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
 import '../../shared/progress/progress_tracker.dart';
+import '../widgets/game_audio_toggle_button.dart';
 import '../widgets/game_completion_template.dart';
 import 'game_menu_screen.dart';
 
@@ -66,6 +69,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
   bool _introOverlayVisible = false;
   bool _introClosing = false;
   bool _introIsTyping = false;
+  bool _introCoachStarted = false;
   List<String> _introWords = const <String>[];
   int _visibleIntroWordCount = 0;
   int _introTypingSession = 0;
@@ -88,6 +92,8 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
   void dispose() {
     _feedbackTimer?.cancel();
     _introWordTimer?.cancel();
+    unawaited(GameInstructionVoice.stop());
+    unawaited(GameBackgroundAudio.stop());
     super.dispose();
   }
 
@@ -262,9 +268,10 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
   }
 
   Future<void> _startIntroCoachSequence() async {
-    if (!mounted || !_showIntroOverlay) {
+    if (!mounted || !_showIntroOverlay || _introCoachStarted) {
       return;
     }
+    _introCoachStarted = true;
     final words = _introInstructionScript
         .trim()
         .split(RegExp(r'\s+'))
@@ -279,6 +286,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
       _visibleIntroWordCount = reduceMotion ? words.length : 0;
       _introIsTyping = !reduceMotion && words.isNotEmpty;
     });
+    unawaited(GameInstructionVoice.speak(_introInstructionScript));
 
     if (words.isEmpty || reduceMotion) {
       return;
@@ -320,6 +328,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
     if (_introClosing) {
       return;
     }
+    final stopVoice = GameInstructionVoice.stop();
     _introTypingSession += 1;
     _introWordTimer?.cancel();
     if (!mounted) {
@@ -329,6 +338,11 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
       _introClosing = true;
       _introOverlayVisible = false;
     });
+    await stopVoice;
+    if (!mounted) {
+      return;
+    }
+    unawaited(GameBackgroundAudio.playGameTrack(2));
     await Future<void>.delayed(
       AppMotionSpec.chooseDuration(
         context,
@@ -511,6 +525,11 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
                           ),
                         ),
                       ),
+                      GameAudioToggleButton(
+                        gameNumber: 2,
+                        canPlay: !_showIntroOverlay,
+                      ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,

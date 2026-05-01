@@ -19,6 +19,7 @@ class GameMenuScreen extends StatelessWidget {
     required Color color,
     required Widget destination,
     required String heroTag,
+    required bool compact,
     IconData icon = Icons.play_arrow_rounded,
   }) {
     return Hero(
@@ -29,7 +30,10 @@ class GameMenuScreen extends StatelessWidget {
           onTap: () => pushAdaptive(context, destination),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 14 : 18,
+              vertical: compact ? 14 : 18,
+            ),
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(18),
@@ -43,14 +47,16 @@ class GameMenuScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
+                Icon(icon, color: Colors.white, size: compact ? 24 : 28),
+                SizedBox(width: compact ? 10 : 12),
                 Expanded(
                   child: Text(
                     label,
-                    style: const TextStyle(
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: compact ? 22 : 28,
                       fontWeight: FontWeight.w900,
                       height: 1.05,
                     ),
@@ -71,7 +77,6 @@ class GameMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gamification = GamificationScope.of(context);
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -87,112 +92,111 @@ class GameMenuScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: LayoutBuilder(
                 builder: (context, constraints) {
+                  final compact =
+                      constraints.maxWidth < 380 || constraints.maxHeight < 700;
                   final contentWidth = constraints.maxWidth > 540
                       ? 540.0
                       : constraints.maxWidth;
-                  return SizedBox.expand(
+                  final mascotSize = (constraints.maxHeight * 0.26)
+                      .clamp(140.0, compact ? 184.0 : 230.0)
+                      .toDouble();
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      bottom: 16 + MediaQuery.paddingOf(context).bottom,
+                    ),
                     child: Align(
                       alignment: Alignment.topCenter,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          width: contentWidth,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  StreakWidget(
-                                    streak: gamification.streak,
-                                    compact: true,
-                                  ),
-                                ],
+                      child: SizedBox(
+                        width: contentWidth,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: compact ? 8 : 18),
+                            MascotWidget(
+                              assetPath:
+                                  'assets/Action Figures/AmiN Pointing.svg',
+                              width: mascotSize,
+                              height: mascotSize,
+                              state: MascotState.encourage,
+                            ),
+                            const SizedBox(height: 0),
+                            Text(
+                              'Jom Main!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFFFFF176),
+                                fontSize: compact ? 42 : 56,
+                                fontWeight: FontWeight.w900,
+                                height: 1,
                               ),
-                              const SizedBox(height: 10),
-                              const MascotWidget(
-                                assetPath:
-                                    'assets/Action Figures/AmiN Pointing.svg',
-                                width: 118,
-                                height: 118,
-                                state: MascotState.encourage,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Pilih permainan untuk menguji kefahaman anda.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: compact ? 17 : 22,
+                                height: 1.2,
                               ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                'Jom Main!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Color(0xFFFFF176),
-                                  fontSize: 56,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1,
+                            ),
+                            SizedBox(height: compact ? 16 : 24),
+                            _menuButton(
+                              context: context,
+                              label: 'Pilih Pantas',
+                              color: const Color(0xFFFF8A34),
+                              destination: const PilihPantasGameScreen(),
+                              heroTag: 'hero-game-pilih-pantas',
+                              icon: Icons.flash_on_rounded,
+                              compact: compact,
+                            ),
+                            _menuButton(
+                              context: context,
+                              label: 'Pilih & Kumpul',
+                              color: const Color(0xFF2EAD63),
+                              destination: const CariKumpulGameScreen(),
+                              heroTag: 'hero-game-pilih-kumpul',
+                              icon: Icons.touch_app_rounded,
+                              compact: compact,
+                            ),
+                            _menuButton(
+                              context: context,
+                              label: 'Cari & Pilih',
+                              color: const Color(0xFF5A67D8),
+                              destination: const CariBulatkanGameScreen(),
+                              heroTag: 'hero-game-cari-pilih',
+                              icon: Icons.grid_on_rounded,
+                              compact: compact,
+                            ),
+                            _menuButton(
+                              context: context,
+                              label: 'Betul atau Salah?',
+                              color: const Color(0xFF8E44AD),
+                              destination: const BetulAtauSalahGameScreen(),
+                              heroTag: 'hero-game-betul-salah',
+                              icon: Icons.check_circle_rounded,
+                              compact: compact,
+                            ),
+                            SizedBox(height: compact ? 8 : 16),
+                            OutlinedButton.icon(
+                              onPressed: () => goToMainMenu(context),
+                              icon: const Icon(Icons.home_rounded),
+                              label: const Text('Kembali ke Menu Utama'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.background,
+                                side: const BorderSide(color: Colors.white70),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 12,
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Pilih permainan untuk menguji kefahaman anda.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
+                                textStyle: const TextStyle(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 22,
-                                  height: 1.2,
                                 ),
                               ),
-                              const SizedBox(height: 24),
-                              _menuButton(
-                                context: context,
-                                label: 'Pilih Pantas',
-                                color: const Color(0xFFFF8A34),
-                                destination: const PilihPantasGameScreen(),
-                                heroTag: 'hero-game-pilih-pantas',
-                                icon: Icons.flash_on_rounded,
-                              ),
-                              _menuButton(
-                                context: context,
-                                label: 'Pilih & Kumpul',
-                                color: const Color(0xFF2EAD63),
-                                destination: const CariKumpulGameScreen(),
-                                heroTag: 'hero-game-pilih-kumpul',
-                                icon: Icons.touch_app_rounded,
-                              ),
-                              _menuButton(
-                                context: context,
-                                label: 'Cari & Pilih',
-                                color: const Color(0xFF5A67D8),
-                                destination: const CariBulatkanGameScreen(),
-                                heroTag: 'hero-game-cari-pilih',
-                                icon: Icons.grid_on_rounded,
-                              ),
-                              _menuButton(
-                                context: context,
-                                label: 'Betul atau Salah?',
-                                color: const Color(0xFF8E44AD),
-                                destination: const BetulAtauSalahGameScreen(),
-                                heroTag: 'hero-game-betul-salah',
-                                icon: Icons.check_circle_rounded,
-                              ),
-                              const SizedBox(height: 16),
-                              OutlinedButton.icon(
-                                onPressed: () => goToMainMenu(context),
-                                icon: const Icon(Icons.home_rounded),
-                                label: const Text('Kembali ke Menu Utama'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.background,
-                                  side: const BorderSide(color: Colors.white70),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 12,
-                                  ),
-                                  textStyle: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

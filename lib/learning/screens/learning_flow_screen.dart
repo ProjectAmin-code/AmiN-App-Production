@@ -43,9 +43,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     Color(0xFFEF4444),
     Color(0xFFEC4899),
   ];
-  // Set this to false to remove all B07-B10 mascot animations and gap tuning.
-  static const bool _enableB7ToB10ArrowEnhancements = true;
-  static const Set<String> _arrowEnhancedStepIds = {'B07', 'B08', 'B09', 'B10'};
+  // Set this to false to remove all B15-B18 mascot animations and gap tuning.
+  static const bool _enableB15ToB18ArrowEnhancements = true;
+  static const Set<String> _arrowEnhancedStepIds = {'B15', 'B16', 'B17', 'B18'};
   static const String _arrowMascotRightAsset =
       'assets/Action Figures/AmiN pointing right.svg';
   static const String _arrowMascotPointingAsset =
@@ -55,6 +55,22 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   late final List<LearningStep> _steps;
 
   int _currentIndex = 0;
+  int _b07AnimationStage = 0;
+  bool _isB07StageAnimating = false;
+  int _b08AnimationStage = 0;
+  bool _isB08StageAnimating = false;
+  int _b09AnimationStage = 0;
+  bool _isB09StageAnimating = false;
+  int _b10AnimationStage = 0;
+  bool _isB10StageAnimating = false;
+  int _b11AnimationStage = 0;
+  bool _isB11StageAnimating = false;
+  int _b12AnimationStage = 0;
+  bool _isB12StageAnimating = false;
+  int _b13AnimationStage = 0;
+  bool _isB13StageAnimating = false;
+  int _b14AnimationStage = 0;
+  bool _isB14StageAnimating = false;
   bool _voiceEnabled = AppSettingsService.instance.voiceOverEnabled;
 
   LearningStep get _currentStep => _steps[_currentIndex];
@@ -133,7 +149,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       context.go(AppRoutes.s003MainMenu);
       return;
     }
-    setState(() => _currentIndex -= 1);
+    setState(() {
+      _currentIndex -= 1;
+      _resetB07AnimationIfNeeded();
+      _resetB08AnimationIfNeeded();
+      _resetB09AnimationIfNeeded();
+      _resetB10AnimationIfNeeded();
+      _resetB11ToB14AnimationIfNeeded();
+    });
     await _speakCurrentStep();
   }
 
@@ -151,7 +174,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     if (!mounted) {
       return;
     }
-    setState(() => _currentIndex += 1);
+    setState(() {
+      _currentIndex += 1;
+      _resetB07AnimationIfNeeded();
+      _resetB08AnimationIfNeeded();
+      _resetB09AnimationIfNeeded();
+      _resetB10AnimationIfNeeded();
+      _resetB11ToB14AnimationIfNeeded();
+    });
     gamification?.awardXp(8, reason: 'Belajar ${_currentStep.id}');
     gamification?.updateStreak(success: true);
     ProgressTracker.instance.updateLearningStep(
@@ -176,6 +206,289 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       await speakAction();
     } catch (_) {
       // Keep UI interactions responsive even if TTS is unavailable.
+    }
+  }
+
+  Future<void> _advanceB07AnimationStage() async {
+    if (_isB07StageAnimating || _b07AnimationStage >= 3) {
+      return;
+    }
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final nextStage = _b07AnimationStage + 1;
+    final duration = _b07StageDuration(nextStage);
+    setState(() {
+      _b07AnimationStage = nextStage;
+      _isB07StageAnimating = !reduceMotion;
+    });
+    if (reduceMotion) {
+      return;
+    }
+    await Future<void>.delayed(duration);
+    if (!mounted || _currentStep.id != 'B07') {
+      return;
+    }
+    setState(() => _isB07StageAnimating = false);
+  }
+
+  Duration _b07StageDuration(int stage) {
+    return AppMotionSpec.chooseDuration(
+      context,
+      stage == 2
+          ? const Duration(milliseconds: 1100)
+          : const Duration(milliseconds: 360),
+      const Duration(milliseconds: 1),
+    );
+  }
+
+  void _resetB07AnimationIfNeeded() {
+    if (_currentStep.id != 'B07') {
+      _isB07StageAnimating = false;
+      return;
+    }
+    _b07AnimationStage = 0;
+    _isB07StageAnimating = false;
+  }
+
+  Future<void> _advanceB08AnimationStage() async {
+    if (_isB08StageAnimating || _b08AnimationStage >= 3) {
+      return;
+    }
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final nextStage = _b08AnimationStage + 1;
+    final duration = _b08StageDuration(nextStage);
+    setState(() {
+      _b08AnimationStage = nextStage;
+      _isB08StageAnimating = !reduceMotion;
+    });
+    if (reduceMotion) {
+      return;
+    }
+    await Future<void>.delayed(duration);
+    if (!mounted || _currentStep.id != 'B08') {
+      return;
+    }
+    setState(() => _isB08StageAnimating = false);
+  }
+
+  Duration _b08StageDuration(int stage) {
+    return AppMotionSpec.chooseDuration(
+      context,
+      stage == 2
+          ? const Duration(milliseconds: 1100)
+          : const Duration(milliseconds: 360),
+      const Duration(milliseconds: 1),
+    );
+  }
+
+  void _resetB08AnimationIfNeeded() {
+    if (_currentStep.id != 'B08') {
+      _isB08StageAnimating = false;
+      return;
+    }
+    _b08AnimationStage = 0;
+    _isB08StageAnimating = false;
+  }
+
+  Future<void> _advanceB09AnimationStage() async {
+    if (_isB09StageAnimating || _b09AnimationStage >= 3) {
+      return;
+    }
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final nextStage = _b09AnimationStage + 1;
+    final duration = _b09StageDuration(nextStage);
+    setState(() {
+      _b09AnimationStage = nextStage;
+      _isB09StageAnimating = !reduceMotion;
+    });
+    if (reduceMotion) {
+      return;
+    }
+    await Future<void>.delayed(duration);
+    if (!mounted || _currentStep.id != 'B09') {
+      return;
+    }
+    setState(() => _isB09StageAnimating = false);
+  }
+
+  Duration _b09StageDuration(int stage) {
+    return AppMotionSpec.chooseDuration(
+      context,
+      stage == 2
+          ? const Duration(milliseconds: 1100)
+          : const Duration(milliseconds: 360),
+      const Duration(milliseconds: 1),
+    );
+  }
+
+  void _resetB09AnimationIfNeeded() {
+    if (_currentStep.id != 'B09') {
+      _isB09StageAnimating = false;
+      return;
+    }
+    _b09AnimationStage = 0;
+    _isB09StageAnimating = false;
+  }
+
+  Future<void> _advanceB10AnimationStage() async {
+    if (_isB10StageAnimating || _b10AnimationStage >= 3) {
+      return;
+    }
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final nextStage = _b10AnimationStage + 1;
+    final duration = _b10StageDuration(nextStage);
+    setState(() {
+      _b10AnimationStage = nextStage;
+      _isB10StageAnimating = !reduceMotion;
+    });
+    if (reduceMotion) {
+      return;
+    }
+    await Future<void>.delayed(duration);
+    if (!mounted || _currentStep.id != 'B10') {
+      return;
+    }
+    setState(() => _isB10StageAnimating = false);
+  }
+
+  Duration _b10StageDuration(int stage) {
+    return AppMotionSpec.chooseDuration(
+      context,
+      stage == 2
+          ? const Duration(milliseconds: 1100)
+          : const Duration(milliseconds: 360),
+      const Duration(milliseconds: 1),
+    );
+  }
+
+  void _resetB10AnimationIfNeeded() {
+    if (_currentStep.id != 'B10') {
+      _isB10StageAnimating = false;
+      return;
+    }
+    _b10AnimationStage = 0;
+    _isB10StageAnimating = false;
+  }
+
+  Future<void> _advanceB11ToB14AnimationStage(String stepId) async {
+    final currentStage = _animationStageForSpecialStep(stepId);
+    if (_isAnimationRunningForSpecialStep(stepId) || currentStage >= 3) {
+      return;
+    }
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final nextStage = currentStage + 1;
+    final duration = _wordAnimationStageDuration(nextStage);
+    setState(() {
+      _setAnimationStageForSpecialStep(stepId, nextStage);
+      _setAnimationRunningForSpecialStep(stepId, !reduceMotion);
+    });
+    if (reduceMotion) {
+      return;
+    }
+    await Future<void>.delayed(duration);
+    if (!mounted || _currentStep.id != stepId) {
+      return;
+    }
+    setState(() => _setAnimationRunningForSpecialStep(stepId, false));
+  }
+
+  Duration _wordAnimationStageDuration(int stage) {
+    return AppMotionSpec.chooseDuration(
+      context,
+      stage == 2
+          ? const Duration(milliseconds: 1100)
+          : const Duration(milliseconds: 360),
+      const Duration(milliseconds: 1),
+    );
+  }
+
+  int _animationStageForSpecialStep(String stepId) {
+    switch (stepId) {
+      case 'B11':
+        return _b11AnimationStage;
+      case 'B12':
+        return _b12AnimationStage;
+      case 'B13':
+        return _b13AnimationStage;
+      case 'B14':
+        return _b14AnimationStage;
+      default:
+        return 0;
+    }
+  }
+
+  bool _isAnimationRunningForSpecialStep(String stepId) {
+    switch (stepId) {
+      case 'B11':
+        return _isB11StageAnimating;
+      case 'B12':
+        return _isB12StageAnimating;
+      case 'B13':
+        return _isB13StageAnimating;
+      case 'B14':
+        return _isB14StageAnimating;
+      default:
+        return false;
+    }
+  }
+
+  void _setAnimationStageForSpecialStep(String stepId, int stage) {
+    switch (stepId) {
+      case 'B11':
+        _b11AnimationStage = stage;
+        break;
+      case 'B12':
+        _b12AnimationStage = stage;
+        break;
+      case 'B13':
+        _b13AnimationStage = stage;
+        break;
+      case 'B14':
+        _b14AnimationStage = stage;
+        break;
+    }
+  }
+
+  void _setAnimationRunningForSpecialStep(String stepId, bool isAnimating) {
+    switch (stepId) {
+      case 'B11':
+        _isB11StageAnimating = isAnimating;
+        break;
+      case 'B12':
+        _isB12StageAnimating = isAnimating;
+        break;
+      case 'B13':
+        _isB13StageAnimating = isAnimating;
+        break;
+      case 'B14':
+        _isB14StageAnimating = isAnimating;
+        break;
+    }
+  }
+
+  void _resetB11ToB14AnimationIfNeeded() {
+    if (_currentStep.id != 'B11') {
+      _isB11StageAnimating = false;
+    } else {
+      _b11AnimationStage = 0;
+      _isB11StageAnimating = false;
+    }
+    if (_currentStep.id != 'B12') {
+      _isB12StageAnimating = false;
+    } else {
+      _b12AnimationStage = 0;
+      _isB12StageAnimating = false;
+    }
+    if (_currentStep.id != 'B13') {
+      _isB13StageAnimating = false;
+    } else {
+      _b13AnimationStage = 0;
+      _isB13StageAnimating = false;
+    }
+    if (_currentStep.id != 'B14') {
+      _isB14StageAnimating = false;
+    } else {
+      _b14AnimationStage = 0;
+      _isB14StageAnimating = false;
     }
   }
 
@@ -340,7 +653,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
     final derivedWord = hotspot.derivedWord;
     final normalizedBaseWord = hotspot.baseWord.trim().toLowerCase();
-    if (stepId == 'B13' && normalizedBaseWord == 'kejar') {
+    if (stepId == 'B21' && normalizedBaseWord == 'kejar') {
       final lower = derivedWord.toLowerCase();
       final clusterIndex = lower.indexOf('ng');
       if (clusterIndex >= 0) {
@@ -372,7 +685,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         );
       }
     }
-    if (stepId == 'B13' &&
+    if (stepId == 'B21' &&
         normalizedBaseWord == 'tendang' &&
         derivedWord.length >= 3) {
       final before = derivedWord.substring(0, 2);
@@ -399,7 +712,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         ),
       );
     }
-    if (stepId == 'B14' &&
+    if (stepId == 'B22' &&
         normalizedBaseWord == 'potong' &&
         derivedWord.length >= 3) {
       final before = derivedWord.substring(0, 2);
@@ -426,7 +739,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         ),
       );
     }
-    if (stepId == 'B12' &&
+    if (stepId == 'B20' &&
         normalizedBaseWord == 'tulis' &&
         derivedWord.length >= 3) {
       final before = derivedWord.substring(0, 2);
@@ -560,7 +873,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     LearningStep step,
     LearningHotspot hotspot,
   ) {
-    if (step.id == 'B12') {
+    if (step.id == 'B20') {
       const b12PreciseAlignments = <String, Alignment>{
         'membaca': Alignment(-0.53, 0.07),
         'menulis': Alignment(0.45, 0.35),
@@ -569,7 +882,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       };
       return b12PreciseAlignments[hotspot.label] ?? hotspot.alignment;
     }
-    if (step.id == 'B13') {
+    if (step.id == 'B21') {
       final normalizedBaseWord = hotspot.baseWord.trim().toLowerCase();
       if (normalizedBaseWord == 'angkat' || normalizedBaseWord == 'angat') {
         return const Alignment(0.40, 0.56);
@@ -584,7 +897,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         return Alignment(-0.41, -0.52);
       }
     }
-    if (step.id == 'B14') {
+    if (step.id == 'B22') {
       final normalizedBaseWord = hotspot.baseWord.trim().toLowerCase();
       if (normalizedBaseWord == 'lap') {
         return Alignment(hotspot.alignment.x + 0.20, 0.78);
@@ -599,37 +912,37 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         return const Alignment(-0.96, -0.10);
       }
     }
-    if (step.id == 'B15' && hotspot.baseWord.trim().toLowerCase() == 'cat') {
+    if (step.id == 'B23' && hotspot.baseWord.trim().toLowerCase() == 'cat') {
       return Alignment(hotspot.alignment.x + 0.04, hotspot.alignment.y - 0.04);
     }
-    if (step.id == 'B15' && hotspot.baseWord.trim().toLowerCase() == 'lukis') {
+    if (step.id == 'B23' && hotspot.baseWord.trim().toLowerCase() == 'lukis') {
       return Alignment(hotspot.alignment.x + 0.04, 0.97);
     }
-    if (step.id == 'B15' && hotspot.baseWord.trim().toLowerCase() == 'warna') {
+    if (step.id == 'B23' && hotspot.baseWord.trim().toLowerCase() == 'warna') {
       return const Alignment(-0.40, 0.50);
     }
-    if (step.id == 'B15' &&
+    if (step.id == 'B23' &&
         hotspot.baseWord.trim().toLowerCase() == 'gunting') {
       return const Alignment(0.90, 0.78);
     }
-    if (step.id == 'B16' &&
+    if (step.id == 'B24' &&
         hotspot.baseWord.trim().toLowerCase() == 'pangkas') {
       return Alignment(hotspot.alignment.x + 0.25, 0.37);
     }
-    if (step.id == 'B16' && hotspot.baseWord.trim().toLowerCase() == 'buang') {
+    if (step.id == 'B24' && hotspot.baseWord.trim().toLowerCase() == 'buang') {
       return const Alignment(-0.27, -0.50);
     }
-    if (step.id == 'B16' && hotspot.baseWord.trim().toLowerCase() == 'kutip') {
+    if (step.id == 'B24' && hotspot.baseWord.trim().toLowerCase() == 'kutip') {
       return const Alignment(0.75, 0.88);
     }
-    if (step.id == 'B16' && hotspot.baseWord.trim().toLowerCase() == 'sapu') {
+    if (step.id == 'B24' && hotspot.baseWord.trim().toLowerCase() == 'sapu') {
       return const Alignment(-0.95, 0.10);
     }
     return hotspot.alignment;
   }
 
   bool _usesRoundedHotspotStyle(LearningStep step) {
-    return const {'B12', 'B13', 'B14', 'B15', 'B16', 'B17'}.contains(step.id);
+    return const {'B20', 'B21', 'B22', 'B23', 'B24', 'B25'}.contains(step.id);
   }
 
   Widget _buildHotspotStarButton({
@@ -790,11 +1103,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   bool _useReducedFontForStep(LearningStep step) {
-    return const {'B12', 'B13', 'B14', 'B15', 'B16', 'B17'}.contains(step.id);
+    return const {'B20', 'B21', 'B22', 'B23', 'B24', 'B25'}.contains(step.id);
   }
 
   bool _useLeftAlignedParagraphs(LearningStep step) {
-    return const {'B12', 'B13', 'B14', 'B15', 'B16'}.contains(step.id);
+    return const {'B20', 'B21', 'B22', 'B23', 'B24'}.contains(step.id);
   }
 
   double _stepHeadingFontSize(LearningStep step) {
@@ -829,22 +1142,22 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   bool _isArrowEnhancedStep(LearningStep step) {
-    return _enableB7ToB10ArrowEnhancements &&
+    return _enableB15ToB18ArrowEnhancements &&
         _arrowEnhancedStepIds.contains(step.id);
   }
 
-  double _extraBottomSpacingFromB09(LearningStep step) {
+  double _extraBottomSpacingForArrowEnhancedStep(LearningStep step) {
     if (!_isArrowEnhancedStep(step)) {
       return 0;
     }
     switch (step.id) {
-      case 'B07':
+      case 'B15':
         return 44;
-      case 'B08':
+      case 'B16':
         return 18;
-      case 'B10':
+      case 'B18':
         return 72;
-      case 'B09':
+      case 'B17':
       default:
         return 0;
     }
@@ -852,11 +1165,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   String _arrowMascotAssetForStep(LearningStep step) {
     switch (step.id) {
-      case 'B08':
-      case 'B10':
+      case 'B16':
+      case 'B18':
         return _arrowMascotPointingAsset;
-      case 'B07':
-      case 'B09':
+      case 'B15':
+      case 'B17':
       default:
         return _arrowMascotRightAsset;
     }
@@ -864,13 +1177,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   double _arrowMascotSizeForStep(LearningStep step) {
     switch (step.id) {
-      case 'B10':
+      case 'B18':
         return 148;
-      case 'B08':
+      case 'B16':
         return 126;
-      case 'B07':
+      case 'B15':
         return 118;
-      case 'B09':
+      case 'B17':
       default:
         return 96;
     }
@@ -880,7 +1193,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return Alignment.bottomRight;
   }
 
-  Widget _buildB7ToB10MascotOverlay(LearningStep step) {
+  Widget _buildB15ToB18MascotOverlay(LearningStep step) {
     final alignment = _arrowMascotAlignmentForStep(step);
     final edgePadding = alignment == Alignment.bottomLeft
         ? const EdgeInsets.only(left: 4, bottom: 2)
@@ -1077,7 +1390,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildArrowExamplesStep(LearningStep step) {
-    final extraBottomSpacing = _extraBottomSpacingFromB09(step);
+    final extraBottomSpacing = _extraBottomSpacingForArrowEnhancedStep(step);
     final bodySize = _responsiveBodyFontSize(context, step);
     final subheadingSize = _responsiveLabelFontSize(
       context,
@@ -1311,12 +1624,12 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
     return Stack(
       fit: StackFit.expand,
-      children: [content, _buildB7ToB10MascotOverlay(step)],
+      children: [content, _buildB15ToB18MascotOverlay(step)],
     );
   }
 
   TextSpan _highlightedLettersSpan(BuildContext context, LearningStep step) {
-    if (step.id == 'B09' && step.highlightedLetters.length >= 7) {
+    if (step.id == 'B17' && step.highlightedLetters.length >= 7) {
       final letters = step.highlightedLetters;
       return TextSpan(
         children: [
@@ -1373,7 +1686,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Color _arrowLetterColor(LearningStep step, LearningArrowRow row, int index) {
-    if (step.id == 'B07') {
+    if (step.id == 'B15') {
       final normalizedLetter = row.letter.trim().toLowerCase();
       if (normalizedLetter == 'b') {
         return const Color(0xFFF59E0B); // Orange
@@ -1768,7 +2081,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _buildB11ImageHeadingStep(LearningStep step) {
+  Widget _buildB19ImageHeadingStep(LearningStep step) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final imageSize = math.min(constraints.maxWidth * 0.72, 280.0);
@@ -1778,7 +2091,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Center(
               child: TweenAnimationBuilder<double>(
-                key: ValueKey('b11-image-heading-${step.id}'),
+                key: ValueKey('b19-image-heading-${step.id}'),
                 tween: Tween(begin: 0, end: 1),
                 duration: AppMotionSpec.chooseDuration(
                   context,
@@ -2022,18 +2335,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildSummaryStep(LearningStep step) {
-    final isB17 = step.id == 'B17';
-    final headingSize = isB17
+    final isB25 = step.id == 'B25';
+    final headingSize = isB25
         ? responsiveClamp(context, 20, _headingFontSize + 1, 26)
         : _responsiveHeadingFontSize(context, step);
-    final bodySize = isB17
+    final bodySize = isB25
         ? responsiveClamp(context, 15, _bodyFontSize, 20)
         : _responsiveBodyFontSize(context, step);
     Widget summaryContent(BoxConstraints constraints) {
-      final contentWidth = isB17
+      final contentWidth = isB25
           ? constraints.maxWidth * 0.9
           : constraints.maxWidth;
-      final cardWidth = isB17 || constraints.maxWidth < 360
+      final cardWidth = isB25 || constraints.maxWidth < 360
           ? contentWidth
           : (constraints.maxWidth - 10) / 2;
 
@@ -2074,13 +2387,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           card,
                           headingSize: headingSize,
                           bodySize: bodySize,
-                          useDarkerBackground: isB17,
+                          useDarkerBackground: isB25,
                         ),
                       ),
                     )
                     .toList(),
               ),
-              if (!isB17) ...[
+              if (!isB25) ...[
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
@@ -2101,7 +2414,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       );
     }
 
-    if (isB17) {
+    if (isB25) {
       return LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(child: summaryContent(constraints));
@@ -2195,6 +2508,1680 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     }
   }
 
+  Widget _buildLevelTransitionStep(LearningStep step) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final titleSize = responsiveClamp(context, 22, 28, 30);
+        final bodySize = responsiveClamp(context, 14, 18, 20);
+        final backgroundImage = step.backgroundImage;
+
+        return SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              backgroundImage == null || backgroundImage.isEmpty
+                  ? const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      backgroundImage,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsiveClamp(context, 18, 24, 28),
+                        vertical: responsiveClamp(context, 18, 24, 28),
+                      ),
+                      child: TweenAnimationBuilder<double>(
+                        key: ValueKey('level-transition-${step.id}'),
+                        tween: Tween(begin: 0, end: 1),
+                        duration: AppMotionSpec.chooseDuration(
+                          context,
+                          const Duration(milliseconds: 420),
+                          const Duration(milliseconds: 180),
+                        ),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, child) {
+                          if (AppMotionSpec.reduceMotion(context)) {
+                            return child ?? const SizedBox.shrink();
+                          }
+                          return Opacity(
+                            opacity: value,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - value) * 18),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              step.title,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: titleSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Poppins',
+                                fontFamilyFallback: _fontFallback,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              step.subtitle,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: bodySize,
+                                color: Colors.white70,
+                                height: 1.35,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Poppins',
+                                fontFamilyFallback: _fontFallback,
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            SizedBox(
+                              width: math.min(constraints.maxWidth * 0.72, 220),
+                              child: AnimatedKidButton(
+                                label: step.buttonText,
+                                icon: Icons.arrow_forward_rounded,
+                                onPressed: _goNext,
+                                backgroundColor: const Color(0xFFFFC300),
+                                foregroundColor: const Color(0xFF1D3557),
+                                labelFontSize: _responsiveButtonFontSize(
+                                  context,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildB07SalinAnimationStep(LearningStep step) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final reduceMotion = AppMotionSpec.reduceMotion(context);
+        final switchDuration = reduceMotion
+            ? Duration.zero
+            : AppMotionSpec.chooseDuration(
+                context,
+                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 1),
+              );
+        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
+        final contentTop = constraints.maxHeight * 0.30;
+        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
+        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
+        final stageHeight = responsiveClamp(context, 86, 118, 142);
+        final stageAlignmentX = constraints.maxWidth < 360
+            ? 0.18
+            : constraints.maxWidth < 400
+            ? 0.26
+            : 0.34;
+        final showContinue = _b07AnimationStage >= 3 && !_isB07StageAnimating;
+        final backgroundImage = step.backgroundImage;
+
+        return SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              backgroundImage == null || backgroundImage.isEmpty
+                  ? const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      backgroundImage,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: contentTop,
+                      bottom: responsiveClamp(context, 90, 104, 118),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: showContinue
+                              ? null
+                              : _advanceB07AnimationStage,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: contentPaddingX,
+                                vertical: contentPaddingY,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: stageHeight,
+                                    child: Align(
+                                      alignment: Alignment(stageAlignmentX, 0),
+                                      child: AnimatedSwitcher(
+                                        duration: switchDuration,
+                                        switchInCurve: Curves.easeOutCubic,
+                                        switchOutCurve: Curves.easeInCubic,
+                                        transitionBuilder: (child, animation) {
+                                          if (reduceMotion) {
+                                            return child;
+                                          }
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: ScaleTransition(
+                                              scale: Tween<double>(
+                                                begin: 0.96,
+                                                end: 1,
+                                              ).animate(animation),
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                        child: _buildB07SalinStageContent(
+                                          context,
+                                          stage: _b07AnimationStage,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: responsiveClamp(context, 16, 20, 24),
+                right: responsiveClamp(context, 16, 20, 24),
+                bottom: responsiveClamp(context, 14, 18, 22),
+                child: AnimatedSwitcher(
+                  duration: switchDuration,
+                  child: showContinue
+                      ? AnimatedKidButton(
+                          key: const ValueKey('b07-continue-visible'),
+                          label: step.buttonText,
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: _goNext,
+                          backgroundColor: const Color(0xFFFFC300),
+                          foregroundColor: const Color(0xFF1D3557),
+                          labelFontSize: _responsiveButtonFontSize(context),
+                        )
+                      : const SizedBox(
+                          key: ValueKey('b07-continue-hidden'),
+                          height: 0,
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildB07SalinStageContent(
+    BuildContext context, {
+    required int stage,
+  }) {
+    final wordSize = responsiveClamp(context, 30, 42, 52);
+    final formulaSize = responsiveClamp(context, 22, 30, 38);
+    final finalSize = responsiveClamp(context, 34, 48, 58);
+    const black = Color(0xFF111827);
+    const red = Color(0xFFE63946);
+    const green = Color(0xFF16A34A);
+
+    TextStyle style(double size, Color color) {
+      return TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.05,
+        fontFamily: 'Poppins',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    Widget scaled(Widget child) {
+      return FittedBox(fit: BoxFit.scaleDown, child: child);
+    }
+
+    Widget transformStage() {
+      final circleSize = responsiveClamp(context, 38, 50, 60);
+      final slotWidth = responsiveClamp(context, 46, 62, 74);
+      final slotHeight = responsiveClamp(context, 78, 100, 120);
+      final arrowSize = responsiveClamp(context, 24, 34, 42);
+      final lift = responsiveClamp(context, 28, 38, 46);
+      final nyLift = responsiveClamp(context, 4, 7, 9);
+      final reduceMotion = AppMotionSpec.reduceMotion(context);
+
+      Widget content(double value) {
+        final removeProgress = Curves.easeIn.transform(
+          (value / 0.55).clamp(0.0, 1.0),
+        );
+        final addProgress = Curves.easeOut.transform(
+          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+        );
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('me- + ', style: style(formulaSize, black)),
+            SizedBox(
+              width: slotWidth,
+              height: slotHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: 1 - removeProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, -lift * removeProgress),
+                      child: Container(
+                        width: circleSize,
+                        height: circleSize,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: red, width: 3),
+                        ),
+                        child: Text('S', style: style(formulaSize, red)),
+                      ),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: addProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - addProgress) * 18),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.translate(
+                            offset: Offset(0, -nyLift),
+                            child: Text('ny', style: style(formulaSize, green)),
+                          ),
+                          Positioned(
+                            top:
+                                slotHeight / 2 +
+                                responsiveClamp(context, 8, 12, 16),
+                            child: Icon(
+                              Icons.arrow_upward_rounded,
+                              color: green,
+                              size: arrowSize,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text('alin', style: style(formulaSize, black)),
+          ],
+        );
+      }
+
+      if (reduceMotion) {
+        return content(1);
+      }
+      return TweenAnimationBuilder<double>(
+        key: const ValueKey('b07-stage-2-transform'),
+        tween: Tween(begin: 0, end: 1),
+        duration: _b07StageDuration(2),
+        curve: Curves.linear,
+        builder: (context, value, child) => content(value),
+      );
+    }
+
+    switch (stage) {
+      case 0:
+        return scaled(
+          Text(
+            'Salin',
+            key: const ValueKey('b07-stage-0'),
+            maxLines: 1,
+            style: style(wordSize, black),
+          ),
+        );
+      case 1:
+        return scaled(
+          Text(
+            'me -',
+            key: const ValueKey('b07-stage-1'),
+            maxLines: 1,
+            style: style(formulaSize, black),
+          ),
+        );
+      case 2:
+        return scaled(transformStage());
+      default:
+        return scaled(
+          Text(
+            'menyalin',
+            key: const ValueKey('b07-stage-3'),
+            maxLines: 1,
+            style: style(finalSize, green),
+          ),
+        );
+    }
+  }
+
+  Widget _buildB08SimpanAnimationStep(LearningStep step) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final reduceMotion = AppMotionSpec.reduceMotion(context);
+        final switchDuration = reduceMotion
+            ? Duration.zero
+            : AppMotionSpec.chooseDuration(
+                context,
+                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 1),
+              );
+        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
+        final contentTop = constraints.maxHeight * 0.30;
+        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
+        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
+        final stageHeight = responsiveClamp(context, 86, 118, 142);
+        final stageAlignmentX = constraints.maxWidth < 360
+            ? 0.18
+            : constraints.maxWidth < 400
+            ? 0.26
+            : 0.34;
+        final showContinue = _b08AnimationStage >= 3 && !_isB08StageAnimating;
+        final backgroundImage = step.backgroundImage;
+
+        return SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              backgroundImage == null || backgroundImage.isEmpty
+                  ? const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      backgroundImage,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: contentTop,
+                      bottom: responsiveClamp(context, 90, 104, 118),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: showContinue
+                              ? null
+                              : _advanceB08AnimationStage,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: contentPaddingX,
+                                vertical: contentPaddingY,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: stageHeight,
+                                    child: Align(
+                                      alignment: Alignment(stageAlignmentX, 0),
+                                      child: AnimatedSwitcher(
+                                        duration: switchDuration,
+                                        switchInCurve: Curves.easeOutCubic,
+                                        switchOutCurve: Curves.easeInCubic,
+                                        transitionBuilder: (child, animation) {
+                                          if (reduceMotion) {
+                                            return child;
+                                          }
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: ScaleTransition(
+                                              scale: Tween<double>(
+                                                begin: 0.96,
+                                                end: 1,
+                                              ).animate(animation),
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                        child: _buildB08SimpanStageContent(
+                                          context,
+                                          stage: _b08AnimationStage,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: responsiveClamp(context, 16, 20, 24),
+                right: responsiveClamp(context, 16, 20, 24),
+                bottom: responsiveClamp(context, 14, 18, 22),
+                child: AnimatedSwitcher(
+                  duration: switchDuration,
+                  child: showContinue
+                      ? AnimatedKidButton(
+                          key: const ValueKey('b08-continue-visible'),
+                          label: step.buttonText,
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: _goNext,
+                          backgroundColor: const Color(0xFFFFC300),
+                          foregroundColor: const Color(0xFF1D3557),
+                          labelFontSize: _responsiveButtonFontSize(context),
+                        )
+                      : const SizedBox(
+                          key: ValueKey('b08-continue-hidden'),
+                          height: 0,
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildB08SimpanStageContent(
+    BuildContext context, {
+    required int stage,
+  }) {
+    final wordSize = responsiveClamp(context, 30, 42, 52);
+    final formulaSize = responsiveClamp(context, 22, 30, 38);
+    final finalSize = responsiveClamp(context, 34, 48, 58);
+    const black = Color(0xFF111827);
+    const red = Color(0xFFE63946);
+    const green = Color(0xFF16A34A);
+
+    TextStyle style(double size, Color color) {
+      return TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.05,
+        fontFamily: 'Poppins',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    Widget scaled(Widget child) {
+      return FittedBox(fit: BoxFit.scaleDown, child: child);
+    }
+
+    Widget transformStage() {
+      final circleSize = responsiveClamp(context, 38, 50, 60);
+      final slotWidth = responsiveClamp(context, 46, 62, 74);
+      final slotHeight = responsiveClamp(context, 78, 100, 120);
+      final arrowSize = responsiveClamp(context, 24, 34, 42);
+      final lift = responsiveClamp(context, 28, 38, 46);
+      final nyLift = responsiveClamp(context, 4, 7, 9);
+      final reduceMotion = AppMotionSpec.reduceMotion(context);
+
+      Widget content(double value) {
+        final removeProgress = Curves.easeIn.transform(
+          (value / 0.55).clamp(0.0, 1.0),
+        );
+        final addProgress = Curves.easeOut.transform(
+          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+        );
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('me- + ', style: style(formulaSize, black)),
+            SizedBox(
+              width: slotWidth,
+              height: slotHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: 1 - removeProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, -lift * removeProgress),
+                      child: Container(
+                        width: circleSize,
+                        height: circleSize,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: red, width: 3),
+                        ),
+                        child: Text('s', style: style(formulaSize, red)),
+                      ),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: addProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - addProgress) * 18),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.translate(
+                            offset: Offset(0, -nyLift),
+                            child: Text('ny', style: style(formulaSize, green)),
+                          ),
+                          Positioned(
+                            top:
+                                slotHeight / 2 +
+                                responsiveClamp(context, 8, 12, 16),
+                            child: Icon(
+                              Icons.arrow_upward_rounded,
+                              color: green,
+                              size: arrowSize,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text('impan', style: style(formulaSize, black)),
+          ],
+        );
+      }
+
+      if (reduceMotion) {
+        return content(1);
+      }
+      return TweenAnimationBuilder<double>(
+        key: const ValueKey('b08-stage-2-transform'),
+        tween: Tween(begin: 0, end: 1),
+        duration: _b08StageDuration(2),
+        curve: Curves.linear,
+        builder: (context, value, child) => content(value),
+      );
+    }
+
+    switch (stage) {
+      case 0:
+        return scaled(
+          Text(
+            'simpan',
+            key: const ValueKey('b08-stage-0'),
+            maxLines: 1,
+            style: style(wordSize, black),
+          ),
+        );
+      case 1:
+        return scaled(
+          Text(
+            'me-',
+            key: const ValueKey('b08-stage-1'),
+            maxLines: 1,
+            style: style(formulaSize, black),
+          ),
+        );
+      case 2:
+        return scaled(transformStage());
+      default:
+        return scaled(
+          Text(
+            'menyimpan',
+            key: const ValueKey('b08-stage-3'),
+            maxLines: 1,
+            style: style(finalSize, green),
+          ),
+        );
+    }
+  }
+
+  Widget _buildB09PilihAnimationStep(LearningStep step) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final reduceMotion = AppMotionSpec.reduceMotion(context);
+        final switchDuration = reduceMotion
+            ? Duration.zero
+            : AppMotionSpec.chooseDuration(
+                context,
+                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 1),
+              );
+        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
+        final contentTop = constraints.maxHeight * 0.30;
+        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
+        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
+        final stageHeight = responsiveClamp(context, 86, 118, 142);
+        final stageAlignmentX = constraints.maxWidth < 360
+            ? 0.18
+            : constraints.maxWidth < 400
+            ? 0.26
+            : 0.34;
+        final showContinue = _b09AnimationStage >= 3 && !_isB09StageAnimating;
+        final backgroundImage = step.backgroundImage;
+
+        return SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              backgroundImage == null || backgroundImage.isEmpty
+                  ? const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      backgroundImage,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: contentTop,
+                      bottom: responsiveClamp(context, 90, 104, 118),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: showContinue
+                              ? null
+                              : _advanceB09AnimationStage,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: contentPaddingX,
+                                vertical: contentPaddingY,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: stageHeight,
+                                    child: Align(
+                                      alignment: Alignment(stageAlignmentX, 0),
+                                      child: AnimatedSwitcher(
+                                        duration: switchDuration,
+                                        switchInCurve: Curves.easeOutCubic,
+                                        switchOutCurve: Curves.easeInCubic,
+                                        transitionBuilder: (child, animation) {
+                                          if (reduceMotion) {
+                                            return child;
+                                          }
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: ScaleTransition(
+                                              scale: Tween<double>(
+                                                begin: 0.96,
+                                                end: 1,
+                                              ).animate(animation),
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                        child: _buildB09PilihStageContent(
+                                          context,
+                                          stage: _b09AnimationStage,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: responsiveClamp(context, 16, 20, 24),
+                right: responsiveClamp(context, 16, 20, 24),
+                bottom: responsiveClamp(context, 14, 18, 22),
+                child: AnimatedSwitcher(
+                  duration: switchDuration,
+                  child: showContinue
+                      ? AnimatedKidButton(
+                          key: const ValueKey('b09-continue-visible'),
+                          label: step.buttonText,
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: _goNext,
+                          backgroundColor: const Color(0xFFFFC300),
+                          foregroundColor: const Color(0xFF1D3557),
+                          labelFontSize: _responsiveButtonFontSize(context),
+                        )
+                      : const SizedBox(
+                          key: ValueKey('b09-continue-hidden'),
+                          height: 0,
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildB09PilihStageContent(
+    BuildContext context, {
+    required int stage,
+  }) {
+    final wordSize = responsiveClamp(context, 30, 42, 52);
+    final formulaSize = responsiveClamp(context, 22, 30, 38);
+    final finalSize = responsiveClamp(context, 34, 48, 58);
+    const black = Color(0xFF111827);
+    const red = Color(0xFFE63946);
+    const green = Color(0xFF16A34A);
+
+    TextStyle style(double size, Color color) {
+      return TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.05,
+        fontFamily: 'Poppins',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    Widget scaled(Widget child) {
+      return FittedBox(fit: BoxFit.scaleDown, child: child);
+    }
+
+    Widget transformStage() {
+      final circleSize = responsiveClamp(context, 38, 50, 60);
+      final slotWidth = responsiveClamp(context, 46, 62, 74);
+      final slotHeight = responsiveClamp(context, 78, 100, 120);
+      final arrowSize = responsiveClamp(context, 24, 34, 42);
+      final lift = responsiveClamp(context, 28, 38, 46);
+      final replacementLift = responsiveClamp(context, 4, 7, 9);
+      final reduceMotion = AppMotionSpec.reduceMotion(context);
+
+      Widget content(double value) {
+        final removeProgress = Curves.easeIn.transform(
+          (value / 0.55).clamp(0.0, 1.0),
+        );
+        final addProgress = Curves.easeOut.transform(
+          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+        );
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('me- + ', style: style(formulaSize, black)),
+            SizedBox(
+              width: slotWidth,
+              height: slotHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: 1 - removeProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, -lift * removeProgress),
+                      child: Container(
+                        width: circleSize,
+                        height: circleSize,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: red, width: 3),
+                        ),
+                        child: Text('p', style: style(formulaSize, red)),
+                      ),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: addProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - addProgress) * 18),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.translate(
+                            offset: Offset(0, -replacementLift),
+                            child: Text('m', style: style(formulaSize, green)),
+                          ),
+                          Positioned(
+                            top:
+                                slotHeight / 2 +
+                                responsiveClamp(context, 8, 12, 16),
+                            child: Icon(
+                              Icons.arrow_upward_rounded,
+                              color: green,
+                              size: arrowSize,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text('ilih', style: style(formulaSize, black)),
+          ],
+        );
+      }
+
+      if (reduceMotion) {
+        return content(1);
+      }
+      return TweenAnimationBuilder<double>(
+        key: const ValueKey('b09-stage-2-transform'),
+        tween: Tween(begin: 0, end: 1),
+        duration: _b09StageDuration(2),
+        curve: Curves.linear,
+        builder: (context, value, child) => content(value),
+      );
+    }
+
+    switch (stage) {
+      case 0:
+        return scaled(
+          Text(
+            'pilih',
+            key: const ValueKey('b09-stage-0'),
+            maxLines: 1,
+            style: style(wordSize, black),
+          ),
+        );
+      case 1:
+        return scaled(
+          Text(
+            'me-',
+            key: const ValueKey('b09-stage-1'),
+            maxLines: 1,
+            style: style(formulaSize, black),
+          ),
+        );
+      case 2:
+        return scaled(transformStage());
+      default:
+        return scaled(
+          Text(
+            'memilih',
+            key: const ValueKey('b09-stage-3'),
+            maxLines: 1,
+            style: style(finalSize, green),
+          ),
+        );
+    }
+  }
+
+  Widget _buildB10PakaiAnimationStep(LearningStep step) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final reduceMotion = AppMotionSpec.reduceMotion(context);
+        final switchDuration = reduceMotion
+            ? Duration.zero
+            : AppMotionSpec.chooseDuration(
+                context,
+                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 1),
+              );
+        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
+        final contentTop = constraints.maxHeight * 0.30;
+        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
+        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
+        final stageHeight = responsiveClamp(context, 86, 118, 142);
+        final stageAlignmentX = constraints.maxWidth < 360
+            ? 0.18
+            : constraints.maxWidth < 400
+            ? 0.26
+            : 0.34;
+        final showContinue = _b10AnimationStage >= 3 && !_isB10StageAnimating;
+        final backgroundImage = step.backgroundImage;
+
+        return SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              backgroundImage == null || backgroundImage.isEmpty
+                  ? const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      backgroundImage,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: contentTop,
+                      bottom: responsiveClamp(context, 90, 104, 118),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: showContinue
+                              ? null
+                              : _advanceB10AnimationStage,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: contentPaddingX,
+                                vertical: contentPaddingY,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: stageHeight,
+                                    child: Align(
+                                      alignment: Alignment(stageAlignmentX, 0),
+                                      child: AnimatedSwitcher(
+                                        duration: switchDuration,
+                                        switchInCurve: Curves.easeOutCubic,
+                                        switchOutCurve: Curves.easeInCubic,
+                                        transitionBuilder: (child, animation) {
+                                          if (reduceMotion) {
+                                            return child;
+                                          }
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: ScaleTransition(
+                                              scale: Tween<double>(
+                                                begin: 0.96,
+                                                end: 1,
+                                              ).animate(animation),
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                        child: _buildB10PakaiStageContent(
+                                          context,
+                                          stage: _b10AnimationStage,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: responsiveClamp(context, 16, 20, 24),
+                right: responsiveClamp(context, 16, 20, 24),
+                bottom: responsiveClamp(context, 14, 18, 22),
+                child: AnimatedSwitcher(
+                  duration: switchDuration,
+                  child: showContinue
+                      ? AnimatedKidButton(
+                          key: const ValueKey('b10-continue-visible'),
+                          label: step.buttonText,
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: _goNext,
+                          backgroundColor: const Color(0xFFFFC300),
+                          foregroundColor: const Color(0xFF1D3557),
+                          labelFontSize: _responsiveButtonFontSize(context),
+                        )
+                      : const SizedBox(
+                          key: ValueKey('b10-continue-hidden'),
+                          height: 0,
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildB10PakaiStageContent(
+    BuildContext context, {
+    required int stage,
+  }) {
+    final wordSize = responsiveClamp(context, 30, 42, 52);
+    final formulaSize = responsiveClamp(context, 22, 30, 38);
+    final finalSize = responsiveClamp(context, 34, 48, 58);
+    const black = Color(0xFF111827);
+    const red = Color(0xFFE63946);
+    const green = Color(0xFF16A34A);
+
+    TextStyle style(double size, Color color) {
+      return TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.05,
+        fontFamily: 'Poppins',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    Widget scaled(Widget child) {
+      return FittedBox(fit: BoxFit.scaleDown, child: child);
+    }
+
+    Widget transformStage() {
+      final circleSize = responsiveClamp(context, 38, 50, 60);
+      final slotWidth = responsiveClamp(context, 46, 62, 74);
+      final slotHeight = responsiveClamp(context, 78, 100, 120);
+      final arrowSize = responsiveClamp(context, 24, 34, 42);
+      final lift = responsiveClamp(context, 28, 38, 46);
+      final replacementLift = responsiveClamp(context, 4, 7, 9);
+      final reduceMotion = AppMotionSpec.reduceMotion(context);
+
+      Widget content(double value) {
+        final removeProgress = Curves.easeIn.transform(
+          (value / 0.55).clamp(0.0, 1.0),
+        );
+        final addProgress = Curves.easeOut.transform(
+          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+        );
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('me- + ', style: style(formulaSize, black)),
+            SizedBox(
+              width: slotWidth,
+              height: slotHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: 1 - removeProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, -lift * removeProgress),
+                      child: Container(
+                        width: circleSize,
+                        height: circleSize,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: red, width: 3),
+                        ),
+                        child: Text('p', style: style(formulaSize, red)),
+                      ),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: addProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - addProgress) * 18),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.translate(
+                            offset: Offset(0, -replacementLift),
+                            child: Text('m', style: style(formulaSize, green)),
+                          ),
+                          Positioned(
+                            top:
+                                slotHeight / 2 +
+                                responsiveClamp(context, 8, 12, 16),
+                            child: Icon(
+                              Icons.arrow_upward_rounded,
+                              color: green,
+                              size: arrowSize,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text('akai', style: style(formulaSize, black)),
+          ],
+        );
+      }
+
+      if (reduceMotion) {
+        return content(1);
+      }
+      return TweenAnimationBuilder<double>(
+        key: const ValueKey('b10-stage-2-transform'),
+        tween: Tween(begin: 0, end: 1),
+        duration: _b10StageDuration(2),
+        curve: Curves.linear,
+        builder: (context, value, child) => content(value),
+      );
+    }
+
+    switch (stage) {
+      case 0:
+        return scaled(
+          Text(
+            'pakai',
+            key: const ValueKey('b10-stage-0'),
+            maxLines: 1,
+            style: style(wordSize, black),
+          ),
+        );
+      case 1:
+        return scaled(
+          Text(
+            'me-',
+            key: const ValueKey('b10-stage-1'),
+            maxLines: 1,
+            style: style(formulaSize, black),
+          ),
+        );
+      case 2:
+        return scaled(transformStage());
+      default:
+        return scaled(
+          Text(
+            'memakai',
+            key: const ValueKey('b10-stage-3'),
+            maxLines: 1,
+            style: style(finalSize, green),
+          ),
+        );
+    }
+  }
+
+  Widget _buildGenericWordAnimationStep({
+    required LearningStep step,
+    required String rootWord,
+    required String finalWord,
+    required String circledLetter,
+    required String remainingLetters,
+    required String replacementLetters,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final reduceMotion = AppMotionSpec.reduceMotion(context);
+        final switchDuration = reduceMotion
+            ? Duration.zero
+            : AppMotionSpec.chooseDuration(
+                context,
+                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 1),
+              );
+        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
+        final contentTop = constraints.maxHeight * 0.30;
+        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
+        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
+        final stageHeight = responsiveClamp(context, 86, 118, 142);
+        final stageAlignmentX = constraints.maxWidth < 360
+            ? 0.18
+            : constraints.maxWidth < 400
+            ? 0.26
+            : 0.34;
+        final stage = _animationStageForSpecialStep(step.id);
+        final showContinue =
+            stage >= 3 && !_isAnimationRunningForSpecialStep(step.id);
+        final backgroundImage = step.backgroundImage;
+
+        return SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              backgroundImage == null || backgroundImage.isEmpty
+                  ? const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      backgroundImage,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      top: contentTop,
+                      bottom: responsiveClamp(context, 90, 104, 118),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: showContinue
+                              ? null
+                              : () => _advanceB11ToB14AnimationStage(step.id),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: contentPaddingX,
+                                vertical: contentPaddingY,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    height: stageHeight,
+                                    child: Align(
+                                      alignment: Alignment(stageAlignmentX, 0),
+                                      child: AnimatedSwitcher(
+                                        duration: switchDuration,
+                                        switchInCurve: Curves.easeOutCubic,
+                                        switchOutCurve: Curves.easeInCubic,
+                                        transitionBuilder: (child, animation) {
+                                          if (reduceMotion) {
+                                            return child;
+                                          }
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: ScaleTransition(
+                                              scale: Tween<double>(
+                                                begin: 0.96,
+                                                end: 1,
+                                              ).animate(animation),
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                        child: _buildGenericWordStageContent(
+                                          context,
+                                          stepId: step.id,
+                                          stage: stage,
+                                          rootWord: rootWord,
+                                          finalWord: finalWord,
+                                          circledLetter: circledLetter,
+                                          remainingLetters: remainingLetters,
+                                          replacementLetters:
+                                              replacementLetters,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: responsiveClamp(context, 16, 20, 24),
+                right: responsiveClamp(context, 16, 20, 24),
+                bottom: responsiveClamp(context, 14, 18, 22),
+                child: AnimatedSwitcher(
+                  duration: switchDuration,
+                  child: showContinue
+                      ? AnimatedKidButton(
+                          key: ValueKey('${step.id}-continue-visible'),
+                          label: step.buttonText,
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: _goNext,
+                          backgroundColor: const Color(0xFFFFC300),
+                          foregroundColor: const Color(0xFF1D3557),
+                          labelFontSize: _responsiveButtonFontSize(context),
+                        )
+                      : SizedBox(
+                          key: ValueKey('${step.id}-continue-hidden'),
+                          height: 0,
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGenericWordStageContent(
+    BuildContext context, {
+    required String stepId,
+    required int stage,
+    required String rootWord,
+    required String finalWord,
+    required String circledLetter,
+    required String remainingLetters,
+    required String replacementLetters,
+  }) {
+    final wordSize = responsiveClamp(context, 30, 42, 52);
+    final formulaSize = responsiveClamp(context, 22, 30, 38);
+    final finalSize = responsiveClamp(context, 34, 48, 58);
+    const black = Color(0xFF111827);
+    const red = Color(0xFFE63946);
+    const green = Color(0xFF16A34A);
+
+    TextStyle style(double size, Color color) {
+      return TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.05,
+        fontFamily: 'Poppins',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    Widget scaled(Widget child) {
+      return FittedBox(fit: BoxFit.scaleDown, child: child);
+    }
+
+    Widget transformStage() {
+      final circleSize = responsiveClamp(context, 38, 50, 60);
+      final slotWidth = responsiveClamp(
+        context,
+        replacementLetters.length > 1 ? 54 : 46,
+        replacementLetters.length > 1 ? 72 : 62,
+        replacementLetters.length > 1 ? 86 : 74,
+      );
+      final slotHeight = responsiveClamp(context, 78, 100, 120);
+      final arrowSize = responsiveClamp(context, 24, 34, 42);
+      final lift = responsiveClamp(context, 28, 38, 46);
+      final replacementLift = responsiveClamp(context, 4, 7, 9);
+      final reduceMotion = AppMotionSpec.reduceMotion(context);
+
+      Widget content(double value) {
+        final removeProgress = Curves.easeIn.transform(
+          (value / 0.55).clamp(0.0, 1.0),
+        );
+        final addProgress = Curves.easeOut.transform(
+          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+        );
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('me- + ', style: style(formulaSize, black)),
+            SizedBox(
+              width: slotWidth,
+              height: slotHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: 1 - removeProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, -lift * removeProgress),
+                      child: Container(
+                        width: circleSize,
+                        height: circleSize,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: red, width: 3),
+                        ),
+                        child: Text(
+                          circledLetter,
+                          style: style(formulaSize, red),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: addProgress,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - addProgress) * 18),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.translate(
+                            offset: Offset(0, -replacementLift),
+                            child: Text(
+                              replacementLetters,
+                              style: style(formulaSize, green),
+                            ),
+                          ),
+                          Positioned(
+                            top:
+                                slotHeight / 2 +
+                                responsiveClamp(context, 8, 12, 16),
+                            child: Icon(
+                              Icons.arrow_upward_rounded,
+                              color: green,
+                              size: arrowSize,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(remainingLetters, style: style(formulaSize, black)),
+          ],
+        );
+      }
+
+      if (reduceMotion) {
+        return content(1);
+      }
+      return TweenAnimationBuilder<double>(
+        key: ValueKey('$stepId-stage-2-transform'),
+        tween: Tween(begin: 0, end: 1),
+        duration: _wordAnimationStageDuration(2),
+        curve: Curves.linear,
+        builder: (context, value, child) => content(value),
+      );
+    }
+
+    switch (stage) {
+      case 0:
+        return scaled(
+          Text(
+            rootWord,
+            key: ValueKey('$stepId-stage-0'),
+            maxLines: 1,
+            style: style(wordSize, black),
+          ),
+        );
+      case 1:
+        return scaled(
+          Text(
+            'me-',
+            key: ValueKey('$stepId-stage-1'),
+            maxLines: 1,
+            style: style(formulaSize, black),
+          ),
+        );
+      case 2:
+        return scaled(transformStage());
+      default:
+        return scaled(
+          Text(
+            finalWord,
+            key: ValueKey('$stepId-stage-3'),
+            maxLines: 1,
+            style: style(finalSize, green),
+          ),
+        );
+    }
+  }
+
   Widget _buildCompletionStep() {
     final bodySize = responsiveClamp(context, 15, _bodyFontSize, 20);
     return _scrollableStepContent(
@@ -2281,8 +4268,60 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildStepBody(LearningStep step) {
+    if (step.id == 'B07') {
+      return _buildB07SalinAnimationStep(step);
+    }
+    if (step.id == 'B08') {
+      return _buildB08SimpanAnimationStep(step);
+    }
+    if (step.id == 'B09') {
+      return _buildB09PilihAnimationStep(step);
+    }
+    if (step.id == 'B10') {
+      return _buildB10PakaiAnimationStep(step);
+    }
     if (step.id == 'B11') {
-      return _buildB11ImageHeadingStep(step);
+      return _buildGenericWordAnimationStep(
+        step: step,
+        rootWord: 'tarik',
+        finalWord: 'menarik',
+        circledLetter: 't',
+        remainingLetters: 'arik',
+        replacementLetters: 'n',
+      );
+    }
+    if (step.id == 'B12') {
+      return _buildGenericWordAnimationStep(
+        step: step,
+        rootWord: 'tanam',
+        finalWord: 'menanam',
+        circledLetter: 't',
+        remainingLetters: 'anam',
+        replacementLetters: 'n',
+      );
+    }
+    if (step.id == 'B13') {
+      return _buildGenericWordAnimationStep(
+        step: step,
+        rootWord: 'kumpul',
+        finalWord: 'mengumpul',
+        circledLetter: 'k',
+        remainingLetters: 'umpul',
+        replacementLetters: 'ng',
+      );
+    }
+    if (step.id == 'B14') {
+      return _buildGenericWordAnimationStep(
+        step: step,
+        rootWord: 'kunci',
+        finalWord: 'mengunci',
+        circledLetter: 'k',
+        remainingLetters: 'unci',
+        replacementLetters: 'ng',
+      );
+    }
+    if (step.id == 'B19') {
+      return _buildB19ImageHeadingStep(step);
     }
     switch (step.type) {
       case LearningStepType.equationExamples:
@@ -2293,6 +4332,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         return _buildTableStep(step);
       case LearningStepType.changeCards:
         return _buildChangeCardsStep(step);
+      case LearningStepType.levelTransition:
+        return _buildLevelTransitionStep(step);
       case LearningStepType.situation:
         return _buildSituationStep(step);
       case LearningStepType.summary:
@@ -2306,6 +4347,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   Widget build(BuildContext context) {
     final step = _currentStep;
     final mediaQuery = MediaQuery.of(context);
+    final isLevelTransition = step.type == LearningStepType.levelTransition;
     return MediaQuery(
       data: mediaQuery.copyWith(textScaler: responsiveTextScaler(context)),
       child: Scaffold(
@@ -2328,7 +4370,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                   _buildTopBar(),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      padding: isLevelTransition
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       child: AnimatedSwitcher(
                         duration: AppMotionSpec.chooseDuration(
                           context,
@@ -2345,17 +4389,23 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                         child: Container(
                           key: ValueKey(step.id),
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: isLevelTransition
+                              ? EdgeInsets.zero
+                              : const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.52),
-                            borderRadius: BorderRadius.circular(18),
+                            color: isLevelTransition
+                                ? Colors.transparent
+                                : Colors.white.withValues(alpha: 0.52),
+                            borderRadius: BorderRadius.circular(
+                              isLevelTransition ? 0 : 18,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(child: _buildStepBody(step)),
-                              if (step.type !=
-                                  LearningStepType.quizGateway) ...[
+                              if (step.type != LearningStepType.quizGateway &&
+                                  !isLevelTransition) ...[
                                 const SizedBox(height: 12),
                                 SizedBox(
                                   width: double.infinity,
@@ -2654,6 +4704,78 @@ List<LearningStep> _buildSteps() {
     ),
     LearningStep(
       id: 'B07',
+      title: 'salin',
+      subtitle: 'menyalin',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'salin… tambah imbuhan me-… menjadi… menyalin',
+      backgroundImage: 'assets/background/animaBgGirl.jpg',
+    ),
+    LearningStep(
+      id: 'B08',
+      title: 'simpan',
+      subtitle: 'menyimpan',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'simpan… tambah imbuhan me-… menjadi… menyimpan',
+      backgroundImage: 'assets/background/animaBgGirl.jpg',
+    ),
+    LearningStep(
+      id: 'B09',
+      title: 'pilih',
+      subtitle: 'memilih',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'pilih… tambah imbuhan me-… menjadi… memilih',
+      backgroundImage: 'assets/background/animaBgBoy.jpg',
+    ),
+    LearningStep(
+      id: 'B10',
+      title: 'pakai',
+      subtitle: 'memakai',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'pakai… tambah imbuhan me-… menjadi… memakai',
+      backgroundImage: 'assets/background/animaBgBoy.jpg',
+    ),
+    LearningStep(
+      id: 'B11',
+      title: 'tarik',
+      subtitle: 'menarik',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'tarik… tambah imbuhan me-… menjadi… menarik',
+      backgroundImage: 'assets/background/animaBgGirl.jpg',
+    ),
+    LearningStep(
+      id: 'B12',
+      title: 'tanam',
+      subtitle: 'menanam',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'tanam… tambah imbuhan me-… menjadi… menanam',
+      backgroundImage: 'assets/background/animaBgGirl.jpg',
+    ),
+    LearningStep(
+      id: 'B13',
+      title: 'kumpul',
+      subtitle: 'mengumpul',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'kumpul… tambah imbuhan me-… menjadi… mengumpul',
+      backgroundImage: 'assets/background/animaBgBoy.jpg',
+    ),
+    LearningStep(
+      id: 'B14',
+      title: 'kunci',
+      subtitle: 'mengunci',
+      type: LearningStepType.levelTransition,
+      buttonText: 'Teruskan',
+      voiceScript: 'kunci… tambah imbuhan me-… menjadi… mengunci',
+      backgroundImage: 'assets/background/animaBgBoy.jpg',
+    ),
+    LearningStep(
+      id: 'B15',
       title: 'Penggunaan imbuhan mem-',
       type: LearningStepType.arrowExamples,
       subtitle: 'Gunakan imbuhan mem- apabila kata dasar bermula dengan huruf:',
@@ -2683,7 +4805,7 @@ List<LearningStep> _buildSteps() {
       highlightedPrefix: 'mem',
     ),
     LearningStep(
-      id: 'B08',
+      id: 'B16',
       title: 'Penggunaan imbuhan men-',
       type: LearningStepType.arrowExamples,
       subtitle: 'Gunakan imbuhan men- apabila kata dasar bermula dengan huruf:',
@@ -2722,7 +4844,7 @@ List<LearningStep> _buildSteps() {
       highlightedPrefix: 'men',
     ),
     LearningStep(
-      id: 'B09',
+      id: 'B17',
       title: 'Penggunaan imbuhan meng-',
       type: LearningStepType.arrowExamples,
       subtitle: 'Gunakan imbuhan meng- apabila kata dasar bermula dengan:',
@@ -2761,7 +4883,7 @@ List<LearningStep> _buildSteps() {
       highlightedPrefix: 'meng',
     ),
     LearningStep(
-      id: 'B10',
+      id: 'B18',
       title: 'Penggunaan imbuhan menge-',
       type: LearningStepType.arrowExamples,
       subtitle:
@@ -2778,7 +4900,7 @@ List<LearningStep> _buildSteps() {
       highlightedPrefix: 'menge',
     ),
     LearningStep(
-      id: 'B11',
+      id: 'B19',
       title: 'Mari kita belajar imbuhan awalan melalui situasi.',
       type: LearningStepType.changeCards,
       backgroundTop: Color(0xFFFFF8D2),
@@ -2787,7 +4909,7 @@ List<LearningStep> _buildSteps() {
           'Situasi ini membantu anda memilih imbuhan berdasarkan huruf awal kata dasar.',
     ),
     LearningStep(
-      id: 'B12',
+      id: 'B20',
       title: 'Situasi: AmiN di dalam kelas',
       type: LearningStepType.situation,
       backgroundTop: Color(0xFFEAF5FF),
@@ -2829,7 +4951,7 @@ List<LearningStep> _buildSteps() {
       ],
     ),
     LearningStep(
-      id: 'B13',
+      id: 'B21',
       title: 'Situasi: AmiN di padang sekolah',
       type: LearningStepType.situation,
       backgroundTop: Color(0xFFE5FFE8),
@@ -2871,7 +4993,7 @@ List<LearningStep> _buildSteps() {
       ],
     ),
     LearningStep(
-      id: 'B14',
+      id: 'B22',
       title: 'Situasi: AmiN di dapur',
       type: LearningStepType.situation,
       backgroundTop: Color(0xFFFFF0D8),
@@ -2913,7 +5035,7 @@ List<LearningStep> _buildSteps() {
       ],
     ),
     LearningStep(
-      id: 'B15',
+      id: 'B23',
       title: 'Situasi: AmiN dalam aktiviti seni',
       type: LearningStepType.situation,
       backgroundTop: Color(0xFFEAF2FF),
@@ -2955,7 +5077,7 @@ List<LearningStep> _buildSteps() {
       ],
     ),
     LearningStep(
-      id: 'B16',
+      id: 'B24',
       title: 'Situasi: AmiN dalam aktiviti gotong-royong',
       type: LearningStepType.situation,
       backgroundTop: Color(0xFFE6FFF1),
@@ -2997,7 +5119,7 @@ List<LearningStep> _buildSteps() {
       ],
     ),
     LearningStep(
-      id: 'B17',
+      id: 'B25',
       title: 'Ringkasan Imbuhan Awalan meN-',
       type: LearningStepType.summary,
       backgroundTop: Color(0xFFFFF8D5),

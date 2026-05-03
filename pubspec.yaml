@@ -65,6 +65,8 @@ flutter:
   assets:
     - assets/
     - assets/background/
+    - assets/background/animaBgGirl.jpg
+    - assets/background/animaBgBoy.jpg
     - assets/Action Figures/
     - assets/Action Figures/amin_parts/
     - assets/Belajar/

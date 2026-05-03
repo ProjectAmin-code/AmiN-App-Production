@@ -5,6 +5,7 @@ enum LearningStepType {
   arrowExamples,
   table,
   changeCards,
+  levelTransition,
   situation,
   summary,
   quizGateway,
@@ -113,6 +114,7 @@ class LearningStep {
     this.buttonText = 'Teruskan',
     this.backgroundTop = const Color(0xFFE7F8FF),
     this.backgroundBottom = const Color(0xFFC7EDFF),
+    this.backgroundImage,
     this.tableHeaders = const [],
     this.tableRows = const [],
     this.footerNote = '',
@@ -139,6 +141,7 @@ class LearningStep {
   final LearningStepType type;
   final Color backgroundTop;
   final Color backgroundBottom;
+  final String? backgroundImage;
   final List<String> tableHeaders;
   final List<LearningRuleRow> tableRows;
   final String footerNote;

@@ -96,12 +96,10 @@ class LearningSummaryCard {
   const LearningSummaryCard({
     required this.prefix,
     required this.ruleText,
-    required this.example,
   });
 
   final String prefix;
   final String ruleText;
-  final String example;
 }
 
 class LearningStep {

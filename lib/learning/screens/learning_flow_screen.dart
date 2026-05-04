@@ -3,13 +3,12 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../core/navigation/app_routes.dart';
 import '../../core/responsive/responsive_utils.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
+import '../../shared/navigation/app_screen_wiring.dart';
 import '../../shared/progress/progress_tracker.dart';
 import '../../shared/settings/app_settings_service.dart';
 import '../../shared/widgets/adaptive_asset_image.dart';
@@ -147,7 +146,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       return;
     }
     if (_currentIndex == 0) {
-      context.go(AppRoutes.s003MainMenu);
+      goToMainMenu(context);
       return;
     }
     setState(() {
@@ -168,7 +167,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       if (!mounted) {
         return;
       }
-      context.go(AppRoutes.s003MainMenu);
+      goToMainMenu(context);
       return;
     }
     await AminTtsService.instance.stop();
@@ -2476,17 +2475,6 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               fontFamilyFallback: _fontFallback,
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Contoh: ${card.example}',
-            style: TextStyle(
-              fontSize: bodySize,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1D3557),
-              fontFamily: 'Poppins',
-              fontFamilyFallback: _fontFallback,
-            ),
-          ),
         ],
       ),
     );
@@ -4390,7 +4378,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           AnimatedKidButton(
             label: 'Kembali ke Menu Utama',
             icon: Icons.home_rounded,
-            onPressed: () => context.go(AppRoutes.s003MainMenu),
+            onPressed: () => goToMainMenu(context),
             backgroundColor: const Color(0xFF2A9D8F),
             labelFontSize: _responsiveButtonFontSize(context),
           ),
@@ -4810,7 +4798,6 @@ List<LearningStep> _buildSteps() {
       backgroundBottom: Color(0xFFFFEBB1),
       highlightedLetters: ['l', 'm', 'n', 'ng', 'ny', 'r', 'w'],
       afterHighlightLine: 'Huruf awal tidak berubah.',
-      exampleSubheading: 'Contoh',
       arrowRows: [
         LearningArrowRow(
           letter: 'l',
@@ -5303,28 +5290,24 @@ List<LearningStep> _buildSteps() {
       summaryCards: [
         LearningSummaryCard(
           prefix: 'me-',
-          ruleText: 'Huruf: l, m, n, ng, ny, r, w',
-          example: 'melukis',
+          ruleText: 'Huruf: l, m, n, ng, ny, r, w  \np (menjadi m) \nt (menjadi n) \nk (menjadi ng) \ns (menjadi ny)',
         ),
         LearningSummaryCard(
           prefix: 'mem-',
-          ruleText: 'Huruf: b, f, p\np -> m',
-          example: 'memusing',
+          ruleText:
+              'Huruf: b, f',
         ),
         LearningSummaryCard(
           prefix: 'men-',
-          ruleText: 'Huruf: c, d, j, z, t\nt -> n',
-          example: 'menulis',
+          ruleText: 'Huruf: c, d, j, z, sy',
         ),
         LearningSummaryCard(
           prefix: 'meng-',
-          ruleText: 'Huruf: g, h, k, vokal\nk -> ng',
-          example: 'mengarang',
+          ruleText: 'Huruf: a, e, i, o, u (vokal) \ng, h',
         ),
         LearningSummaryCard(
           prefix: 'menge-',
           ruleText: 'Kata satu suku kata guna imbuhan menge-',
-          example: 'mengecat',
         ),
       ],
     ),

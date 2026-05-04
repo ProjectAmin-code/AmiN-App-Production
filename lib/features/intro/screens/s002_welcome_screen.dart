@@ -148,7 +148,7 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                         },
                         backend: AminCharacterBackend.auto,
                         placeholderAsset:
-                            'assets/Action Figures/AmiN thinking.svg',
+                            'assets/Action Figures/AmiN showing both hands.svg',
                       ),
                       SizedBox(height: isCompact ? 10 : 16),
                       const LessonCard(
@@ -203,7 +203,7 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => _goNext(),
                                 decoration: InputDecoration(
-                                  hintText: 'Contoh: Amina',
+                                  hintText: 'Contoh: Suriya',
                                   errorText: _nameError,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),

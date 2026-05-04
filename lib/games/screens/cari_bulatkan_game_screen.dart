@@ -93,7 +93,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
     _clearSelectionTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
-    unawaited(GameBackgroundAudio.stop());
+    unawaited(GameBackgroundAudio.stopAll());
     super.dispose();
   }
 
@@ -268,13 +268,16 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
         break;
       }
     }
+    final isAlreadyFound =
+        matchedWord != null && _foundWords.contains(matchedWord);
+    final isCorrectNew = matchedWord != null && !isAlreadyFound;
 
     setState(() {
       _selectionLocked = true;
       _currentPath = path;
       if (matchedWord == null) {
         _feedback = 'Cuba lagi!';
-      } else if (_foundWords.contains(matchedWord)) {
+      } else if (isAlreadyFound) {
         _feedback = 'Perkataan itu sudah ditemui.';
       } else {
         final highlightColor = _colorForWord(matchedWord);
@@ -285,6 +288,11 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
         _feedback = 'Betul! "$matchedWord"';
       }
     });
+    unawaited(
+      isCorrectNew
+          ? GameBackgroundAudio.playCorrectSfx()
+          : GameBackgroundAudio.playWrongSfx(),
+    );
 
     if (_foundWords.length == _targetsByPlacement.length) {
       _completeRound();

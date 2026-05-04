@@ -93,7 +93,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
     _feedbackTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
-    unawaited(GameBackgroundAudio.stop());
+    unawaited(GameBackgroundAudio.stopAll());
     super.dispose();
   }
 
@@ -190,6 +190,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
           _feedbackText = 'Perkataan ini sudah dipilih.';
           _wrongTappedWord = null;
         });
+        unawaited(GameBackgroundAudio.playWrongSfx());
         return;
       }
       setState(() {
@@ -198,6 +199,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
         _feedbackText = 'Bagus!';
         _wrongTappedWord = null;
       });
+      unawaited(GameBackgroundAudio.playCorrectSfx());
       if (_foundCorrect.length == _targetWords.length) {
         _completeRound();
       }
@@ -208,6 +210,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
       _feedbackText = 'Cuba lagi.';
       _wrongTappedWord = word;
     });
+    unawaited(GameBackgroundAudio.playWrongSfx());
     _feedbackTimer?.cancel();
     _feedbackTimer = Timer(
       AppMotionSpec.chooseDuration(

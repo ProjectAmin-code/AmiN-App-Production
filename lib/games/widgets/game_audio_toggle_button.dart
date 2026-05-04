@@ -17,10 +17,13 @@ class GameAudioToggleButton extends StatelessWidget {
 
   Future<void> _toggle() async {
     final settings = AppSettingsService.instance;
-    final enabled = !settings.musicEnabled;
+    final currentlyEnabled =
+        settings.musicEnabled || settings.soundEffectsEnabled;
+    final enabled = !currentlyEnabled;
     await settings.setMusicEnabled(enabled);
+    await settings.setSoundEffectsEnabled(enabled);
     if (!enabled) {
-      await GameBackgroundAudio.stop();
+      await GameBackgroundAudio.stopAll();
       return;
     }
     if (canPlay) {
@@ -33,10 +36,11 @@ class GameAudioToggleButton extends StatelessWidget {
     return AnimatedBuilder(
       animation: AppSettingsService.instance,
       builder: (context, _) {
-        final enabled = AppSettingsService.instance.musicEnabled;
+        final settings = AppSettingsService.instance;
+        final enabled = settings.musicEnabled || settings.soundEffectsEnabled;
         return IconButton.filledTonal(
           onPressed: _toggle,
-          tooltip: enabled ? 'Matikan muzik' : 'Hidupkan muzik',
+          tooltip: enabled ? 'Matikan audio' : 'Hidupkan audio',
           icon: Icon(
             enabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
           ),

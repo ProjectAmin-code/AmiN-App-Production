@@ -95,7 +95,7 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
     _nextWordTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
-    unawaited(GameBackgroundAudio.stop());
+    unawaited(GameBackgroundAudio.stopAll());
     super.dispose();
   }
 
@@ -223,6 +223,11 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
         _burstKey += 1;
       }
     });
+    unawaited(
+      isCorrect
+          ? GameBackgroundAudio.playCorrectSfx()
+          : GameBackgroundAudio.playWrongSfx(),
+    );
 
     _nextWordTimer?.cancel();
     _nextWordTimer = Timer(

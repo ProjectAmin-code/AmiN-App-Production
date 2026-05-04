@@ -18,10 +18,20 @@ class AudioPreloader {
     'assets/audio/words/membaca.mp3',
   ];
 
+  static final List<String> _defaultGameAssets = <String>[
+    'assets/audio/games_audio/Game 1.mp3',
+    'assets/audio/games_audio/Game 2.mp3',
+    'assets/audio/games_audio/Game 3.mp3',
+    'assets/audio/games_audio/Game 4.mp3',
+    'assets/audio/answer_audio/right answer.mp3',
+    'assets/audio/answer_audio/wrong answer.mp3',
+  ];
+
   static Future<void> preloadDefaults() async {
     final all = <String>[
       ..._defaultVoiceOverAssets,
       ..._defaultPronunciationAssets,
+      ..._defaultGameAssets,
     ];
     for (final asset in all) {
       try {

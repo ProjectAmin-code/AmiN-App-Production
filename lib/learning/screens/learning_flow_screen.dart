@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -234,8 +235,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return AppMotionSpec.chooseDuration(
       context,
       stage == 2
-          ? const Duration(milliseconds: 1100)
-          : const Duration(milliseconds: 360),
+          ? const Duration(milliseconds: 2800)
+          : const Duration(milliseconds: 650),
       const Duration(milliseconds: 1),
     );
   }
@@ -274,8 +275,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return AppMotionSpec.chooseDuration(
       context,
       stage == 2
-          ? const Duration(milliseconds: 1100)
-          : const Duration(milliseconds: 360),
+          ? const Duration(milliseconds: 2800)
+          : const Duration(milliseconds: 650),
       const Duration(milliseconds: 1),
     );
   }
@@ -314,8 +315,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return AppMotionSpec.chooseDuration(
       context,
       stage == 2
-          ? const Duration(milliseconds: 1100)
-          : const Duration(milliseconds: 360),
+          ? const Duration(milliseconds: 2800)
+          : const Duration(milliseconds: 650),
       const Duration(milliseconds: 1),
     );
   }
@@ -354,8 +355,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return AppMotionSpec.chooseDuration(
       context,
       stage == 2
-          ? const Duration(milliseconds: 1100)
-          : const Duration(milliseconds: 360),
+          ? const Duration(milliseconds: 2800)
+          : const Duration(milliseconds: 650),
       const Duration(milliseconds: 1),
     );
   }
@@ -395,8 +396,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return AppMotionSpec.chooseDuration(
       context,
       stage == 2
-          ? const Duration(milliseconds: 1100)
-          : const Duration(milliseconds: 360),
+          ? const Duration(milliseconds: 2800)
+          : const Duration(milliseconds: 650),
       const Duration(milliseconds: 1),
     );
   }
@@ -875,68 +876,68 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   ) {
     if (step.id == 'B20') {
       const b12PreciseAlignments = <String, Alignment>{
-        'membaca': Alignment(-0.53, 0.07),
-        'menulis': Alignment(0.45, 0.35),
-        'mengajar': Alignment(-0.06, -0.74),
-        'menjawab': Alignment(0.47, -0.22),
+        'membaca': Alignment(-0.47, 0.08),
+        'menulis': Alignment(0.45, 0.25),
+        'mengajar': Alignment(-0.06, -0.52),
+        'menjawab': Alignment(0.37, -0.21),
       };
       return b12PreciseAlignments[hotspot.label] ?? hotspot.alignment;
     }
     if (step.id == 'B21') {
       final normalizedBaseWord = hotspot.baseWord.trim().toLowerCase();
       if (normalizedBaseWord == 'angkat' || normalizedBaseWord == 'angat') {
-        return const Alignment(0.40, 0.56);
+        return const Alignment(0.42, 0.45);
       }
       if (normalizedBaseWord == 'kejar') {
-        return Alignment(hotspot.alignment.x, 0.20);
+        return Alignment(hotspot.alignment.x + 0.15, 0.10);
       }
       if (normalizedBaseWord == 'tendang') {
-        return Alignment(hotspot.alignment.x + 0.04, 0.60);
+        return Alignment(hotspot.alignment.x + 0.04, 0.48);
       }
       if (normalizedBaseWord == 'lompat') {
-        return Alignment(-0.41, -0.52);
+        return Alignment(-0.41, -0.42);
       }
     }
     if (step.id == 'B22') {
       final normalizedBaseWord = hotspot.baseWord.trim().toLowerCase();
       if (normalizedBaseWord == 'lap') {
-        return Alignment(hotspot.alignment.x + 0.20, 0.78);
+        return Alignment(hotspot.alignment.x + 0.20, 0.64);
       }
       if (normalizedBaseWord == 'potong') {
-        return const Alignment(-0.26, 0.62);
+        return const Alignment(-0.30, 0.47);
       }
       if (normalizedBaseWord == 'cuci') {
-        return const Alignment(0.78, 0.34);
+        return const Alignment(0.78, 0.29);
       }
       if (normalizedBaseWord == 'masak') {
-        return const Alignment(-0.96, -0.10);
+        return const Alignment(-0.90, -0.10);
       }
     }
     if (step.id == 'B23' && hotspot.baseWord.trim().toLowerCase() == 'cat') {
-      return Alignment(hotspot.alignment.x + 0.04, hotspot.alignment.y - 0.04);
+      return Alignment(hotspot.alignment.x + 0.04, hotspot.alignment.y + 0.10);
     }
     if (step.id == 'B23' && hotspot.baseWord.trim().toLowerCase() == 'lukis') {
-      return Alignment(hotspot.alignment.x + 0.04, 0.97);
+      return Alignment(hotspot.alignment.x + 0.04, 0.62);
     }
     if (step.id == 'B23' && hotspot.baseWord.trim().toLowerCase() == 'warna') {
-      return const Alignment(-0.40, 0.50);
+      return const Alignment(-0.39, 0.36);
     }
     if (step.id == 'B23' &&
         hotspot.baseWord.trim().toLowerCase() == 'gunting') {
-      return const Alignment(0.90, 0.78);
+      return const Alignment(0.68, 0.55);
     }
     if (step.id == 'B24' &&
         hotspot.baseWord.trim().toLowerCase() == 'pangkas') {
-      return Alignment(hotspot.alignment.x + 0.25, 0.37);
+      return Alignment(hotspot.alignment.x + 0.22, 0.26);
     }
     if (step.id == 'B24' && hotspot.baseWord.trim().toLowerCase() == 'buang') {
-      return const Alignment(-0.27, -0.50);
+      return const Alignment(-0.27, -0.35);
     }
     if (step.id == 'B24' && hotspot.baseWord.trim().toLowerCase() == 'kutip') {
-      return const Alignment(0.75, 0.88);
+      return const Alignment(0.64, 0.70);
     }
     if (step.id == 'B24' && hotspot.baseWord.trim().toLowerCase() == 'sapu') {
-      return const Alignment(-0.95, 0.10);
+      return const Alignment(-0.70, 0.20);
     }
     return hotspot.alignment;
   }
@@ -2639,6 +2640,93 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
+  Widget _buildTapHintLayer({required bool show, required VoidCallback onTap}) {
+    if (!show) {
+      return const SizedBox.shrink();
+    }
+    final reduceMotion = AppMotionSpec.reduceMotion(context);
+    return Positioned.fill(
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: onTap,
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 2.8, sigmaY: 2.8),
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.28),
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: responsiveClamp(context, 96, 116, 136),
+                ),
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    final value = reduceMotion ? 1.0 : _pulseController.value;
+                    final wave = math.sin(value * math.pi);
+                    final outerSize = responsiveClamp(context, 82, 104, 122);
+                    final innerSize = responsiveClamp(context, 58, 72, 84);
+                    return SizedBox(
+                      width: outerSize,
+                      height: outerSize,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.scale(
+                            scale: reduceMotion ? 1 : 0.82 + (wave * 0.22),
+                            child: Opacity(
+                              opacity: reduceMotion ? 0.45 : 0.20 + wave * 0.30,
+                              child: Container(
+                                width: outerSize,
+                                height: outerSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFFFFC300),
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Transform.scale(
+                            scale: reduceMotion ? 1 : 0.92 + (wave * 0.08),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.92),
+                                shape: BoxShape.circle,
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x44000000),
+                                    blurRadius: 18,
+                                    offset: Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: SizedBox(
+                                width: innerSize,
+                                height: innerSize,
+                                child: Icon(
+                                  Icons.touch_app_rounded,
+                                  color: const Color(0xFF1D3557),
+                                  size: responsiveClamp(context, 32, 40, 48),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildB07SalinAnimationStep(LearningStep step) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -2647,11 +2735,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ? Duration.zero
             : AppMotionSpec.chooseDuration(
                 context,
-                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 650),
                 const Duration(milliseconds: 1),
               );
         final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.30;
+        final contentTop = constraints.maxHeight * 0.22;
         final contentPaddingX = responsiveClamp(context, 18, 24, 30);
         final contentPaddingY = responsiveClamp(context, 12, 18, 24);
         final stageHeight = responsiveClamp(context, 86, 118, 142);
@@ -2694,6 +2782,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                         );
                       },
                     ),
+              _buildTapHintLayer(
+                show: _b07AnimationStage == 0 && !_isB07StageAnimating,
+                onTap: _advanceB07AnimationStage,
+              ),
               SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -2796,9 +2888,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final wordSize = responsiveClamp(context, 30, 42, 52);
-    final formulaSize = responsiveClamp(context, 22, 30, 38);
-    final finalSize = responsiveClamp(context, 34, 48, 58);
+    final textSize = responsiveClamp(context, 28, 36, 44);
+    final wordSize = textSize;
+    final formulaSize = textSize;
+    final finalSize = textSize;
     const black = Color(0xFF111827);
     const red = Color(0xFFE63946);
     const green = Color(0xFF16A34A);
@@ -2824,15 +2917,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       final slotHeight = responsiveClamp(context, 78, 100, 120);
       final arrowSize = responsiveClamp(context, 24, 34, 42);
       final lift = responsiveClamp(context, 28, 38, 46);
-      final nyLift = responsiveClamp(context, 4, 7, 9);
+      const nyLift = 0.0;
       final reduceMotion = AppMotionSpec.reduceMotion(context);
 
       Widget content(double value) {
+        final circleProgress = Curves.easeOutCubic.transform(
+          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
+        );
         final removeProgress = Curves.easeIn.transform(
-          (value / 0.55).clamp(0.0, 1.0),
+          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
         );
         final addProgress = Curves.easeOut.transform(
-          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
         );
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -2850,15 +2946,19 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     opacity: 1 - removeProgress,
                     child: Transform.translate(
                       offset: Offset(0, -lift * removeProgress),
-                      child: Container(
-                        width: circleSize,
-                        height: circleSize,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: red, width: 3),
+                      child: CustomPaint(
+                        painter: _CircleProgressPainter(
+                          color: red,
+                          progress: circleProgress,
+                          strokeWidth: 3,
                         ),
-                        child: Text('S', style: style(formulaSize, red)),
+                        child: SizedBox(
+                          width: circleSize,
+                          height: circleSize,
+                          child: Center(
+                            child: Text('S', style: style(formulaSize, red)),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -2935,7 +3035,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             'menyalin',
             key: const ValueKey('b07-stage-3'),
             maxLines: 1,
-            style: style(finalSize, green),
+            style: style(finalSize, black),
           ),
         );
     }
@@ -2949,11 +3049,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ? Duration.zero
             : AppMotionSpec.chooseDuration(
                 context,
-                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 650),
                 const Duration(milliseconds: 1),
               );
         final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.30;
+        final contentTop = constraints.maxHeight * 0.22;
         final contentPaddingX = responsiveClamp(context, 18, 24, 30);
         final contentPaddingY = responsiveClamp(context, 12, 18, 24);
         final stageHeight = responsiveClamp(context, 86, 118, 142);
@@ -3098,9 +3198,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final wordSize = responsiveClamp(context, 30, 42, 52);
-    final formulaSize = responsiveClamp(context, 22, 30, 38);
-    final finalSize = responsiveClamp(context, 34, 48, 58);
+    final textSize = responsiveClamp(context, 28, 36, 44);
+    final wordSize = textSize;
+    final formulaSize = textSize;
+    final finalSize = textSize;
     const black = Color(0xFF111827);
     const red = Color(0xFFE63946);
     const green = Color(0xFF16A34A);
@@ -3126,15 +3227,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       final slotHeight = responsiveClamp(context, 78, 100, 120);
       final arrowSize = responsiveClamp(context, 24, 34, 42);
       final lift = responsiveClamp(context, 28, 38, 46);
-      final nyLift = responsiveClamp(context, 4, 7, 9);
+      const nyLift = 0.0;
       final reduceMotion = AppMotionSpec.reduceMotion(context);
 
       Widget content(double value) {
+        final circleProgress = Curves.easeOutCubic.transform(
+          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
+        );
         final removeProgress = Curves.easeIn.transform(
-          (value / 0.55).clamp(0.0, 1.0),
+          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
         );
         final addProgress = Curves.easeOut.transform(
-          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
         );
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -3152,15 +3256,19 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     opacity: 1 - removeProgress,
                     child: Transform.translate(
                       offset: Offset(0, -lift * removeProgress),
-                      child: Container(
-                        width: circleSize,
-                        height: circleSize,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: red, width: 3),
+                      child: CustomPaint(
+                        painter: _CircleProgressPainter(
+                          color: red,
+                          progress: circleProgress,
+                          strokeWidth: 3,
                         ),
-                        child: Text('s', style: style(formulaSize, red)),
+                        child: SizedBox(
+                          width: circleSize,
+                          height: circleSize,
+                          child: Center(
+                            child: Text('s', style: style(formulaSize, red)),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -3237,7 +3345,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             'menyimpan',
             key: const ValueKey('b08-stage-3'),
             maxLines: 1,
-            style: style(finalSize, green),
+            style: style(finalSize, black),
           ),
         );
     }
@@ -3251,11 +3359,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ? Duration.zero
             : AppMotionSpec.chooseDuration(
                 context,
-                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 650),
                 const Duration(milliseconds: 1),
               );
         final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.30;
+        final contentTop = constraints.maxHeight * 0.22;
         final contentPaddingX = responsiveClamp(context, 18, 24, 30);
         final contentPaddingY = responsiveClamp(context, 12, 18, 24);
         final stageHeight = responsiveClamp(context, 86, 118, 142);
@@ -3400,9 +3508,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final wordSize = responsiveClamp(context, 30, 42, 52);
-    final formulaSize = responsiveClamp(context, 22, 30, 38);
-    final finalSize = responsiveClamp(context, 34, 48, 58);
+    final textSize = responsiveClamp(context, 28, 36, 44);
+    final wordSize = textSize;
+    final formulaSize = textSize;
+    final finalSize = textSize;
     const black = Color(0xFF111827);
     const red = Color(0xFFE63946);
     const green = Color(0xFF16A34A);
@@ -3428,15 +3537,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       final slotHeight = responsiveClamp(context, 78, 100, 120);
       final arrowSize = responsiveClamp(context, 24, 34, 42);
       final lift = responsiveClamp(context, 28, 38, 46);
-      final replacementLift = responsiveClamp(context, 4, 7, 9);
+      const replacementLift = 0.0;
       final reduceMotion = AppMotionSpec.reduceMotion(context);
 
       Widget content(double value) {
+        final circleProgress = Curves.easeOutCubic.transform(
+          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
+        );
         final removeProgress = Curves.easeIn.transform(
-          (value / 0.55).clamp(0.0, 1.0),
+          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
         );
         final addProgress = Curves.easeOut.transform(
-          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
         );
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -3454,15 +3566,19 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     opacity: 1 - removeProgress,
                     child: Transform.translate(
                       offset: Offset(0, -lift * removeProgress),
-                      child: Container(
-                        width: circleSize,
-                        height: circleSize,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: red, width: 3),
+                      child: CustomPaint(
+                        painter: _CircleProgressPainter(
+                          color: red,
+                          progress: circleProgress,
+                          strokeWidth: 3,
                         ),
-                        child: Text('p', style: style(formulaSize, red)),
+                        child: SizedBox(
+                          width: circleSize,
+                          height: circleSize,
+                          child: Center(
+                            child: Text('p', style: style(formulaSize, red)),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -3539,7 +3655,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             'memilih',
             key: const ValueKey('b09-stage-3'),
             maxLines: 1,
-            style: style(finalSize, green),
+            style: style(finalSize, black),
           ),
         );
     }
@@ -3553,11 +3669,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ? Duration.zero
             : AppMotionSpec.chooseDuration(
                 context,
-                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 650),
                 const Duration(milliseconds: 1),
               );
         final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.30;
+        final contentTop = constraints.maxHeight * 0.22;
         final contentPaddingX = responsiveClamp(context, 18, 24, 30);
         final contentPaddingY = responsiveClamp(context, 12, 18, 24);
         final stageHeight = responsiveClamp(context, 86, 118, 142);
@@ -3702,9 +3818,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final wordSize = responsiveClamp(context, 30, 42, 52);
-    final formulaSize = responsiveClamp(context, 22, 30, 38);
-    final finalSize = responsiveClamp(context, 34, 48, 58);
+    final textSize = responsiveClamp(context, 28, 36, 44);
+    final wordSize = textSize;
+    final formulaSize = textSize;
+    final finalSize = textSize;
     const black = Color(0xFF111827);
     const red = Color(0xFFE63946);
     const green = Color(0xFF16A34A);
@@ -3730,15 +3847,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       final slotHeight = responsiveClamp(context, 78, 100, 120);
       final arrowSize = responsiveClamp(context, 24, 34, 42);
       final lift = responsiveClamp(context, 28, 38, 46);
-      final replacementLift = responsiveClamp(context, 4, 7, 9);
+      const replacementLift = 0.0;
       final reduceMotion = AppMotionSpec.reduceMotion(context);
 
       Widget content(double value) {
+        final circleProgress = Curves.easeOutCubic.transform(
+          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
+        );
         final removeProgress = Curves.easeIn.transform(
-          (value / 0.55).clamp(0.0, 1.0),
+          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
         );
         final addProgress = Curves.easeOut.transform(
-          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
         );
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -3756,15 +3876,19 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     opacity: 1 - removeProgress,
                     child: Transform.translate(
                       offset: Offset(0, -lift * removeProgress),
-                      child: Container(
-                        width: circleSize,
-                        height: circleSize,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: red, width: 3),
+                      child: CustomPaint(
+                        painter: _CircleProgressPainter(
+                          color: red,
+                          progress: circleProgress,
+                          strokeWidth: 3,
                         ),
-                        child: Text('p', style: style(formulaSize, red)),
+                        child: SizedBox(
+                          width: circleSize,
+                          height: circleSize,
+                          child: Center(
+                            child: Text('p', style: style(formulaSize, red)),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -3841,7 +3965,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             'memakai',
             key: const ValueKey('b10-stage-3'),
             maxLines: 1,
-            style: style(finalSize, green),
+            style: style(finalSize, black),
           ),
         );
     }
@@ -3862,11 +3986,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ? Duration.zero
             : AppMotionSpec.chooseDuration(
                 context,
-                const Duration(milliseconds: 360),
+                const Duration(milliseconds: 650),
                 const Duration(milliseconds: 1),
               );
         final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.30;
+        final contentTop = constraints.maxHeight * 0.22;
         final contentPaddingX = responsiveClamp(context, 18, 24, 30);
         final contentPaddingY = responsiveClamp(context, 12, 18, 24);
         final stageHeight = responsiveClamp(context, 86, 118, 142);
@@ -4026,9 +4150,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     required String remainingLetters,
     required String replacementLetters,
   }) {
-    final wordSize = responsiveClamp(context, 30, 42, 52);
-    final formulaSize = responsiveClamp(context, 22, 30, 38);
-    final finalSize = responsiveClamp(context, 34, 48, 58);
+    final textSize = responsiveClamp(context, 28, 36, 44);
+    final wordSize = textSize;
+    final formulaSize = textSize;
+    final finalSize = textSize;
     const black = Color(0xFF111827);
     const red = Color(0xFFE63946);
     const green = Color(0xFF16A34A);
@@ -4059,15 +4184,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       final slotHeight = responsiveClamp(context, 78, 100, 120);
       final arrowSize = responsiveClamp(context, 24, 34, 42);
       final lift = responsiveClamp(context, 28, 38, 46);
-      final replacementLift = responsiveClamp(context, 4, 7, 9);
+      const replacementLift = 0.0;
       final reduceMotion = AppMotionSpec.reduceMotion(context);
 
       Widget content(double value) {
+        final circleProgress = Curves.easeOutCubic.transform(
+          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
+        );
         final removeProgress = Curves.easeIn.transform(
-          (value / 0.55).clamp(0.0, 1.0),
+          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
         );
         final addProgress = Curves.easeOut.transform(
-          ((value - 0.50) / 0.50).clamp(0.0, 1.0),
+          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
         );
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -4085,17 +4213,21 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     opacity: 1 - removeProgress,
                     child: Transform.translate(
                       offset: Offset(0, -lift * removeProgress),
-                      child: Container(
-                        width: circleSize,
-                        height: circleSize,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: red, width: 3),
+                      child: CustomPaint(
+                        painter: _CircleProgressPainter(
+                          color: red,
+                          progress: circleProgress,
+                          strokeWidth: 3,
                         ),
-                        child: Text(
-                          circledLetter,
-                          style: style(formulaSize, red),
+                        child: SizedBox(
+                          width: circleSize,
+                          height: circleSize,
+                          child: Center(
+                            child: Text(
+                              circledLetter,
+                              style: style(formulaSize, red),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -4176,7 +4308,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             finalWord,
             key: ValueKey('$stepId-stage-3'),
             maxLines: 1,
-            style: style(finalSize, green),
+            style: style(finalSize, black),
           ),
         );
     }
@@ -4457,6 +4589,45 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 }
 
+class _CircleProgressPainter extends CustomPainter {
+  const _CircleProgressPainter({
+    required this.color,
+    required this.progress,
+    required this.strokeWidth,
+  });
+
+  final Color color;
+  final double progress;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0) {
+      return;
+    }
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final inset = strokeWidth / 2;
+    final rect = Rect.fromLTWH(
+      inset,
+      inset,
+      size.width - strokeWidth,
+      size.height - strokeWidth,
+    );
+    canvas.drawArc(rect, -math.pi / 2, math.pi * 2 * progress, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CircleProgressPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.progress != progress ||
+        oldDelegate.strokeWidth != strokeWidth;
+  }
+}
+
 List<LearningStep> _buildSteps() {
   return const [
     LearningStep(
@@ -4606,19 +4777,22 @@ List<LearningStep> _buildSteps() {
       tableHeaders: ['Awalan meN-', 'Huruf awal'],
       tableRows: [
         LearningRuleRow(
-          cells: ['me-', 'l, m, n, r, w'],
+          cells: [
+            'me-',
+            'l, m, n, ng, ny, r, w \np (menjadi m) \nt (menjadi n) \nk (menjadi ng) \ns (menjadi ny)',
+          ],
           backgroundColor: Color(0xFFA5D6A7),
         ),
         LearningRuleRow(
-          cells: ['mem-', 'b, f (p gugur)'],
+          cells: ['mem-', 'b, f'],
           backgroundColor: Color(0xFF90CAF9),
         ),
         LearningRuleRow(
-          cells: ['men-', 'c, d, j, z (t gugur)'],
+          cells: ['men-', 'c, d, j, z, sy'],
           backgroundColor: Color(0xFFFFB74D),
         ),
         LearningRuleRow(
-          cells: ['meng-', 'a, e, i, o, u, g, h \n(k gugur)'],
+          cells: ['meng-', 'a, e, i, o, u (vokal) \ng, h'],
           backgroundColor: Color(0xFFEF9A9A),
         ),
         LearningRuleRow(
@@ -4634,7 +4808,7 @@ List<LearningStep> _buildSteps() {
       subtitle: 'Gunakan imbuhan me- apabila kata dasar bermula dengan huruf:',
       backgroundTop: Color(0xFFFFF8D2),
       backgroundBottom: Color(0xFFFFEBB1),
-      highlightedLetters: ['l', 'm', 'n', 'r', 'w', 'y'],
+      highlightedLetters: ['l', 'm', 'n', 'ng', 'ny', 'r', 'w'],
       afterHighlightLine: 'Huruf awal tidak berubah.',
       exampleSubheading: 'Contoh',
       arrowRows: [
@@ -4938,7 +5112,7 @@ List<LearningStep> _buildSteps() {
           label: 'mengajar',
           baseWord: 'ajar',
           derivedWord: 'mengajar',
-          alignment: Alignment(0.30, -0.70),
+          alignment: Alignment(0.06, -0.72),
           ruleNote: 'Huruf vokal "a" menggunakan imbuhan meng-',
         ),
         LearningHotspot(
@@ -5129,7 +5303,7 @@ List<LearningStep> _buildSteps() {
       summaryCards: [
         LearningSummaryCard(
           prefix: 'me-',
-          ruleText: 'Huruf: l, m, n, r, w',
+          ruleText: 'Huruf: l, m, n, ng, ny, r, w',
           example: 'melukis',
         ),
         LearningSummaryCard(

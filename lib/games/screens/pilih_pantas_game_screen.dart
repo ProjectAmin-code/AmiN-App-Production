@@ -92,7 +92,7 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
     _nextWordTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
-    unawaited(GameBackgroundAudio.stop());
+    unawaited(GameBackgroundAudio.stopAll());
     super.dispose();
   }
 
@@ -220,6 +220,11 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
         _burstKey += 1;
       }
     });
+    unawaited(
+      correct
+          ? GameBackgroundAudio.playCorrectSfx()
+          : GameBackgroundAudio.playWrongSfx(),
+    );
 
     _nextWordTimer?.cancel();
     _nextWordTimer = Timer(

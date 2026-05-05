@@ -9,8 +9,8 @@ import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_spec.dart';
 import '../../shared/motion/app_motion_widgets.dart';
-import '../../shared/navigation/app_screen_wiring.dart';
 import '../../shared/progress/progress_tracker.dart';
+import 'game_menu_screen.dart';
 import '../widgets/game_audio_toggle_button.dart';
 import '../widgets/game_completion_template.dart';
 import '../widgets/game_score_badge.dart';
@@ -642,7 +642,9 @@ class BetulAtauSalahResultScreen extends StatelessWidget {
       onPlayAgain: () {
         pushReplacementAdaptive(context, const BetulAtauSalahGameScreen());
       },
-      onMainMenu: () => goToMainMenu(context),
+      onMainMenu: () {
+        pushReplacementAdaptive(context, const GameMenuScreen());
+      },
     );
   }
 }

@@ -25,6 +25,7 @@ class AudioPreloader {
     'assets/audio/games_audio/Game 4.mp3',
     'assets/audio/answer_audio/right answer.mp3',
     'assets/audio/answer_audio/wrong answer.mp3',
+    'assets/audio/winning_screens/winning_screen.mp3',
   ];
 
   static Future<void> preloadDefaults() async {

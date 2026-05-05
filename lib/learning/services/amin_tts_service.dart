@@ -109,7 +109,8 @@ class AminTtsService {
   }
 
   Future<void> _speakWithRetry(String text, int token) async {
-    final first = await _tts.speak(text);
+    final speechText = _normalizeSpeechText(text);
+    final first = await _tts.speak(speechText);
     if (token != _session) {
       await _safeStop();
       return;
@@ -122,7 +123,14 @@ class AminTtsService {
     if (token != _session) {
       return;
     }
-    await _tts.speak(text);
+    await _tts.speak(speechText);
+  }
+
+  String _normalizeSpeechText(String text) {
+    return text
+        .replaceAll('menge-', 'meng-geh')
+        .replaceAll('meN-', 'meh-en')
+        .replaceAll('me-', 'meh');
   }
 
   bool _isSuccess(dynamic result) {

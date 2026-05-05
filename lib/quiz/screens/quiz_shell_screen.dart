@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/audio/answer_audio_cue.dart';
+import '../../core/navigation/app_routes.dart';
 import '../../shared/design/app_design_tokens.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
@@ -325,6 +327,10 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     setState(() {
       _currentIndex += 1;
     });
+  }
+
+  void _goToMainMenu() {
+    context.go(AppRoutes.s003MainMenu);
   }
 
   Future<void> _showFeedbackDialog({
@@ -955,6 +961,18 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                         labelFontSize: isEasyCompact
                             ? QuizTokens.buttonTextSize - 2
                             : QuizTokens.buttonTextSize,
+                      ),
+                      const SizedBox(height: 8),
+                      AnimatedKidButton(
+                        label: 'Kembali ke Menu Utama',
+                        icon: Icons.home_rounded,
+                        onPressed: _goToMainMenu,
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: AppColors.textPrimary,
+                        height: isEasyCompact ? 46 : 52,
+                        labelFontSize: isEasyCompact
+                            ? QuizTokens.buttonTextSize - 3
+                            : QuizTokens.buttonTextSize - 1,
                       ),
                     ],
                   ),

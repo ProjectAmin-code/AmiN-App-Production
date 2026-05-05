@@ -1141,6 +1141,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return responsiveClamp(context, min, ideal, max);
   }
 
+  double _scenarioSmallPhoneScale(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return width < 360 ? 0.8 : 1.0;
+  }
+
   bool _isArrowEnhancedStep(LearningStep step) {
     return _enableB15ToB18ArrowEnhancements &&
         _arrowEnhancedStepIds.contains(step.id);
@@ -1777,13 +1782,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildTableStep(LearningStep step) {
-    final bodySize = _responsiveBodyFontSize(context, step);
+    final scale = _scenarioSmallPhoneScale(context);
+    final bodySize = _responsiveBodyFontSize(context, step) * scale;
     final subheadingSize = _responsiveLabelFontSize(
       context,
       _bodyFontSize + 2,
       min: 17,
       max: 22,
-    );
+    ) * scale;
     return _scrollableStepContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1862,7 +1868,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   Widget _tableCard(LearningStep step) {
     final columnWidths = _tableColumnWidths(step.tableHeaders.length);
-    final tableFontSize = _responsiveBodyFontSize(context, step);
+    final tableFontSize =
+        _responsiveBodyFontSize(context, step) * _scenarioSmallPhoneScale(context);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2151,18 +2158,19 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final shortScreen = constraints.maxHeight < 560;
+        final scale = _scenarioSmallPhoneScale(context);
         final headingSize = responsiveClamp(
           context,
           17,
           _stepHeadingFontSize(step) - (shortScreen ? 2 : 0),
           _stepHeadingFontSize(step),
-        );
+        ) * scale;
         final bodySize = responsiveClamp(
           context,
           14,
           _stepBodyFontSize(step) - (shortScreen ? 2 : 0),
           _stepBodyFontSize(step),
-        );
+        ) * scale;
         final instructionPadding = responsiveClamp(
           context,
           8,

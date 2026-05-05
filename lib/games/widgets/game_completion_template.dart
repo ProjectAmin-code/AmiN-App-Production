@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/audio/winning_screen_audio.dart';
 import '../../shared/gamification/gamification.dart';
 
 class GameCompletionTemplate extends StatelessWidget {
@@ -45,6 +46,7 @@ class GameCompletionTemplate extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            const WinningScreenAudioCue(),
             const Positioned.fill(child: CustomPaint(painter: _RaysPainter())),
             const Positioned.fill(child: _ConfettiDecor()),
             SafeArea(

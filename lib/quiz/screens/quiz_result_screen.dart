@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/audio/winning_screen_audio.dart';
 import '../../shared/gamification/gamification.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../logic/quiz_level_utils.dart';
@@ -385,33 +386,38 @@ class QuizResultScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFBF3),
-      body: SafeArea(
-        child: Center(
-          child: disableScrollForLevel
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SizedBox(
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.topCenter,
-                          child: SizedBox(
+      body: Stack(
+        children: [
+          const WinningScreenAudioCue(),
+          SafeArea(
+            child: Center(
+              child: disableScrollForLevel
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SizedBox(
                             width: constraints.maxWidth,
-                            child: resultContent,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-                  child: resultContent,
-                ),
-        ),
+                            height: constraints.maxHeight,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.topCenter,
+                              child: SizedBox(
+                                width: constraints.maxWidth,
+                                child: resultContent,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                      child: resultContent,
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

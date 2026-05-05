@@ -96,9 +96,7 @@ class _AminCharacterState extends State<AminCharacter>
     final assetPath =
         widget.placeholderAsset ??
         AminCharacter.defaultAssetForPose(widget.pose);
-    final useSeparatedParts = assetPath.endsWith(
-      'anim_char_without_eyehands.png',
-    );
+    final useSeparatedParts = assetPath.contains('anim_char_without_eyehands');
 
     return RepaintBoundary(
       child: AnimatedBuilder(
@@ -159,13 +157,23 @@ class _AminStaticPartsOverlay extends StatelessWidget {
     required this.reduceMotion,
   });
 
-  static const _sourceSize = Size(720, 1280);
+  static const _sourceSize = Size(853, 1280);
   static const _openEyesAsset =
       'assets/Action Figures/amin_parts/amin_eyes_open_pair.png';
   static const _handWaveAsset =
       'assets/Action Figures/amin_parts/amin_hand_wave.png';
-  static const _eyesRect = Rect.fromLTWH(300, 185, 130, 60);
-  static const _handRect = Rect.fromLTWH(58, 250, 200, 250);
+  static final Rect _eyesRect = _normalizedRect(
+    left: 323 / 853,
+    top: 212 / 1280,
+    width: 200 / 853,
+    height: 70 / 1280,
+  );
+  static final Rect _handRect = _normalizedRect(
+    left: 115 / 853,
+    top: 278 / 1280,
+    width: 237 / 853,
+    height: 250 / 1280,
+  );
 
   final bool enableBlink;
   final bool enableHandWave;
@@ -251,6 +259,20 @@ class _AminStaticPartsOverlay extends StatelessWidget {
       width: sourceRect.width * scaleX,
       height: sourceRect.height * scaleY,
       child: child,
+    );
+  }
+
+  static Rect _normalizedRect({
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+  }) {
+    return Rect.fromLTWH(
+      left * _sourceSize.width,
+      top * _sourceSize.height,
+      width * _sourceSize.width,
+      height * _sourceSize.height,
     );
   }
 }

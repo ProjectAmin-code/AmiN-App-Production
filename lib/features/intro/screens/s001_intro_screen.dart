@@ -93,7 +93,7 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final compactHeight = constraints.maxHeight < 620;
-                      const characterAspect = 720 / 1280;
+                      const characterAspect = 853 / 1280;
                       final maxHeightFromWidth =
                           constraints.maxWidth / characterAspect;
                       final maxHeightFromScreen =
@@ -109,14 +109,16 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                       final titleSize = compactHeight ? 22.0 : 26.0;
                       final subtitleSize = compactHeight ? 18.0 : 21.0;
 
-                      return SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
+                      return Transform.translate(
+                        offset: Offset(0, constraints.maxHeight * 0.10),
+                        child: SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
                               AminCharacter(
                                 width: characterWidth,
                                 height: characterHeight,
@@ -169,7 +171,8 @@ class _S001IntroScreenState extends State<S001IntroScreen>
                                 backgroundColor: const Color(0xFFFFC300),
                                 foregroundColor: const Color(0xFF1D3557),
                               ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );

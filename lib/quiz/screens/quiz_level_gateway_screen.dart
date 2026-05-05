@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/navigation/app_routes.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_widgets.dart';
 import '../models/quiz_level.dart';
@@ -54,6 +56,10 @@ class QuizLevelGatewayScreen extends StatelessWidget {
     );
   }
 
+  void _goToMainMenu(BuildContext context) {
+    context.go(AppRoutes.s003MainMenu);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,6 +90,7 @@ class QuizLevelGatewayScreen extends StatelessWidget {
                   final characterLeft = compact ? -26.0 : -40.0;
                   final speechBubbleLeft = compact ? 92.0 : 128.0;
                   final speechBubbleBottom = compact ? 28.0 : 40.0;
+                  final menuButtonLift = constraints.maxHeight * 0.10;
 
                   return Column(
                     children: [
@@ -119,6 +126,41 @@ class QuizLevelGatewayScreen extends StatelessWidget {
                           children: _levels
                               .map((item) => _buildLevelCard(context, item))
                               .toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Transform.translate(
+                        offset: Offset(0, -menuButtonLift),
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: menuButtonLift - 50),
+                          child: Center(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _goToMainMenu(context),
+                              icon: const Icon(Icons.home_rounded, size: 18),
+                              label: const Text('Kembali ke Menu Utama'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(
+                                  color: Color(0xCCFFFFFF),
+                                  width: 1.2,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 14,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                minimumSize: const Size(0, 0),
+                                backgroundColor: Colors.transparent,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],

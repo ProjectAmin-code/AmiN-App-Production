@@ -56,10 +56,12 @@ class BelajarTokens {
   static const double contentMaxWidthPhone = 560;
   static const double contentMaxWidthTablet = 760;
   static const double compactWidthBreakpoint = 360;
+  static const double compactHeightBreakpoint = 700;
   static const double tabletWidthBreakpoint = 720;
 
   static const double tableMinColumnWidth = 108;
   static const double characterHeightFactor = 0.18;
   static const double characterMinHeight = 104;
   static const double characterMaxHeight = 190;
+  static const double characterCompactScale = 0.8;
 }

@@ -24,13 +24,18 @@ class BelajarCharacter extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final screenHeight = MediaQuery.sizeOf(context).height;
+    final screenSize = MediaQuery.sizeOf(context);
+    final isCompactDevice =
+        screenSize.width < BelajarTokens.compactWidthBreakpoint ||
+        screenSize.height < BelajarTokens.compactHeightBreakpoint;
+    final screenHeight = screenSize.height;
     final responsiveHeight = clampDouble(
       screenHeight * BelajarTokens.characterHeightFactor,
       BelajarTokens.characterMinHeight,
       BelajarTokens.characterMaxHeight,
     );
-    final height = character.height ?? responsiveHeight;
+    final height = (character.height ?? responsiveHeight) *
+        (isCompactDevice ? BelajarTokens.characterCompactScale : 1.0);
 
     Widget image = AdaptiveAssetImage(
       assetPath: character.assetPath,
@@ -51,7 +56,9 @@ class BelajarCharacter extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: BelajarTokens.gapSm),
+      padding: EdgeInsets.only(
+        top: isCompactDevice ? BelajarTokens.gapXs : BelajarTokens.gapSm,
+      ),
       child: Align(alignment: _alignmentFor(character.position), child: image),
     );
   }

@@ -43,8 +43,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     Color(0xFFEF4444),
     Color(0xFFEC4899),
   ];
-  // Set this to false to remove all B15-B18 mascot animations and gap tuning.
-  static const bool _enableB15ToB18ArrowEnhancements = true;
+  // Keep B15-B18 free of the extra mascot overlay and spacing tuning.
+  static const bool _enableB15ToB18ArrowEnhancements = false;
   static const Set<String> _arrowEnhancedStepIds = {'B15', 'B16', 'B17', 'B18'};
   static const String _arrowMascotRightAsset =
       'assets/Action Figures/AmiN pointing right.svg';
@@ -1053,7 +1053,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   Widget _titleBubble(String text, {double fontSize = _headingFontSize}) {
     return Builder(
       builder: (context) {
-        final effectiveFontSize = responsiveClamp(context, 20, fontSize, 26);
+        final effectiveFontSize =
+            responsiveClamp(context, 20, fontSize, 26) *
+            _narrowWidthTextScale(context);
         return Text(
           text,
           style: TextStyle(
@@ -1144,6 +1146,17 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   double _scenarioSmallPhoneScale(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     return width < 360 ? 0.8 : 1.0;
+  }
+
+  double _narrowWidthTextScale(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    if (width < 340) {
+      return 0.82;
+    }
+    if (width < 380) {
+      return 0.9;
+    }
+    return 1.0;
   }
 
   bool _isArrowEnhancedStep(LearningStep step) {
@@ -2884,7 +2897,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final textSize = responsiveClamp(context, 28, 36, 44);
+    final textSize =
+        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
     final wordSize = textSize;
     final formulaSize = textSize;
     final finalSize = textSize;
@@ -3194,7 +3208,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final textSize = responsiveClamp(context, 28, 36, 44);
+    final textSize =
+        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
     final wordSize = textSize;
     final formulaSize = textSize;
     final finalSize = textSize;
@@ -3504,7 +3519,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final textSize = responsiveClamp(context, 28, 36, 44);
+    final textSize =
+        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
     final wordSize = textSize;
     final formulaSize = textSize;
     final finalSize = textSize;
@@ -3814,7 +3830,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     BuildContext context, {
     required int stage,
   }) {
-    final textSize = responsiveClamp(context, 28, 36, 44);
+    final textSize =
+        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
     final wordSize = textSize;
     final formulaSize = textSize;
     final finalSize = textSize;
@@ -4146,7 +4163,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     required String remainingLetters,
     required String replacementLetters,
   }) {
-    final textSize = responsiveClamp(context, 28, 36, 44);
+    final textSize =
+        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
     final wordSize = textSize;
     final formulaSize = textSize;
     final finalSize = textSize;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/navigation/app_routes.dart';
+import '../../shared/design/app_design_tokens.dart';
 import '../../shared/motion/app_motion_navigation.dart';
 import '../../shared/motion/app_motion_widgets.dart';
 import '../models/quiz_level.dart';
@@ -82,6 +83,7 @@ class QuizLevelGatewayScreen extends StatelessWidget {
                 builder: (context, constraints) {
                   final compact =
                       constraints.maxHeight < 720 || constraints.maxWidth < 360;
+                  final menuButtonFontSize = compact ? 15.0 : 18.0;
                   final bannerHeight = constraints.maxHeight
                       .clamp(0.0, compact ? 176.0 : 214.0)
                       .toDouble();
@@ -90,7 +92,6 @@ class QuizLevelGatewayScreen extends StatelessWidget {
                   final characterLeft = compact ? -26.0 : -40.0;
                   final speechBubbleLeft = compact ? 92.0 : 128.0;
                   final speechBubbleBottom = compact ? 28.0 : 40.0;
-                  final menuButtonLift = constraints.maxHeight * 0.10;
 
                   return Column(
                     children: [
@@ -128,37 +129,30 @@ class QuizLevelGatewayScreen extends StatelessWidget {
                               .toList(),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Transform.translate(
-                        offset: Offset(0, -menuButtonLift),
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: menuButtonLift - 50),
-                          child: Center(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _goToMainMenu(context),
-                              icon: const Icon(Icons.home_rounded, size: 18),
-                              label: const Text('Kembali ke Menu Utama'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                side: const BorderSide(
-                                  color: Color(0xCCFFFFFF),
-                                  width: 1.2,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 14,
-                                ),
-                                textStyle: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                minimumSize: const Size(0, 0),
-                                backgroundColor: Colors.transparent,
-                              ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          bottom: constraints.maxHeight * 0.09,
+                        ),
+                        child: OutlinedButton.icon(
+                          onPressed: () => _goToMainMenu(context),
+                          icon: Icon(
+                            Icons.home_rounded,
+                            size: compact ? 20 : 22,
+                          ),
+                          label: const Text('Kembali ke Menu Utama'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.background,
+                            side: const BorderSide(
+                              color: Colors.white70,
+                              width: 1.2,
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: compact ? 14 : 18,
+                              vertical: compact ? 10 : 12,
+                            ),
+                            textStyle: TextStyle(
+                              fontSize: menuButtonFontSize,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                         ),

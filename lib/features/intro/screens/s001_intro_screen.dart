@@ -68,9 +68,12 @@ class _S001IntroScreenState extends State<S001IntroScreen>
       body: Stack(
         children: [
           Positioned.fill(
-            child: AdaptiveAssetImage(
-              assetPath: 'assets/background/backgroundImg1.jpg',
-              fit: BoxFit.cover,
+            child: ColoredBox(
+              color: AppColors.background,
+              child: AdaptiveAssetImage(
+                assetPath: 'assets/background/backgroundImg1.jpg',
+                fit: BoxFit.fill,
+              ),
             ),
           ),
           const Positioned.fill(

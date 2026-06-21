@@ -13,6 +13,9 @@ class AnimatedKidButton extends StatefulWidget {
     required this.onPressed,
     this.icon,
     this.backgroundColor = AppColors.primary,
+    this.hoverBackgroundColor,
+    this.pressedBackgroundColor,
+    this.shadowColor,
     this.foregroundColor = Colors.white,
     this.height = 54,
     this.labelFontSize = 18,
@@ -23,6 +26,9 @@ class AnimatedKidButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
   final Color backgroundColor;
+  final Color? hoverBackgroundColor;
+  final Color? pressedBackgroundColor;
+  final Color? shadowColor;
   final Color foregroundColor;
   final double height;
   final double labelFontSize;
@@ -36,6 +42,7 @@ class _AnimatedKidButtonState extends State<AnimatedKidButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   bool _hovered = false;
+  bool _pressed = false;
 
   @override
   void initState() {
@@ -73,16 +80,29 @@ class _AnimatedKidButtonState extends State<AnimatedKidButton>
 
   @override
   Widget build(BuildContext context) {
+    final buttonColor = widget.onPressed == null
+        ? widget.backgroundColor.withValues(alpha: 0.45)
+        : _pressed
+        ? (widget.pressedBackgroundColor ?? widget.backgroundColor)
+        : _hovered
+        ? (widget.hoverBackgroundColor ?? widget.backgroundColor)
+        : widget.backgroundColor;
     final child = SizedBox(
       width: double.infinity,
       height: widget.height,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: widget.onPressed == null
-              ? widget.backgroundColor.withValues(alpha: 0.45)
-              : widget.backgroundColor,
+          color: buttonColor,
           borderRadius: BorderRadius.circular(AppRadii.sm),
-          boxShadow: _hovered ? AppShadows.floaty : AppShadows.soft,
+          boxShadow: widget.shadowColor == null
+              ? (_hovered ? AppShadows.floaty : AppShadows.soft)
+              : [
+                  BoxShadow(
+                    color: widget.shadowColor!,
+                    blurRadius: _hovered ? 12 : 8,
+                    offset: Offset(0, _hovered ? 5 : 3),
+                  ),
+                ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -90,6 +110,21 @@ class _AnimatedKidButtonState extends State<AnimatedKidButton>
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadii.sm),
             onTap: _handleTap,
+            onTapDown: (_) {
+              if (mounted) {
+                setState(() => _pressed = true);
+              }
+            },
+            onTapUp: (_) {
+              if (mounted) {
+                setState(() => _pressed = false);
+              }
+            },
+            onTapCancel: () {
+              if (mounted) {
+                setState(() => _pressed = false);
+              }
+            },
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),

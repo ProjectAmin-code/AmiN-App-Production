@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/audio/answer_audio_cue.dart';
@@ -32,6 +33,8 @@ class QuizShellScreen extends StatefulWidget {
 }
 
 class _QuizShellScreenState extends State<QuizShellScreen> {
+  // Debug-only quiz jump control. Set to false to hide it without removing code.
+  static const bool _enableQuizBypasser = kDebugMode;
   late final List<QuizQuestion> _questions;
   final Map<String, Set<String>> _selectedOptionIds = <String, Set<String>>{};
   final Map<String, String> _typedAnswers = <String, String>{};
@@ -325,6 +328,58 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     setState(() {
       _currentIndex += 1;
     });
+  }
+
+  void _jumpToQuestion(int questionIndex) {
+    if (questionIndex < 0 ||
+        questionIndex >= _questions.length ||
+        questionIndex == _currentIndex) {
+      return;
+    }
+    setState(() {
+      _currentIndex = questionIndex;
+    });
+  }
+
+  Future<void> _openQuizBypasser() async {
+    final selectedIndex = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Jump to quiz question'),
+          content: SizedBox(
+            width: 360,
+            height: 420,
+            child: ListView.builder(
+              itemCount: _questions.length,
+              itemBuilder: (context, index) {
+                final question = _questions[index];
+                final isCurrentQuestion = index == _currentIndex;
+                return ListTile(
+                  dense: true,
+                  selected: isCurrentQuestion,
+                  leading: CircleAvatar(
+                    radius: 16,
+                    child: Text('${index + 1}'),
+                  ),
+                  title: Text(question.id),
+                  subtitle: Text(
+                    question.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: isCurrentQuestion ? const Icon(Icons.check) : null,
+                  onTap: () => Navigator.of(dialogContext).pop(index),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+    if (selectedIndex != null) {
+      _jumpToQuestion(selectedIndex);
+    }
   }
 
   Future<void> _showFeedbackDialog({
@@ -774,6 +829,15 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
     return Scaffold(
       backgroundColor: quizLevelBackground(question.level),
+      // Remove this property to delete the bypasser entirely.
+      floatingActionButton: _enableQuizBypasser
+          ? FloatingActionButton.small(
+              heroTag: 'quiz-bypasser',
+              tooltip: 'Jump to quiz question',
+              onPressed: _openQuizBypasser,
+              child: const Icon(Icons.skip_next_rounded),
+            )
+          : null,
       appBar: AppBar(
         backgroundColor: quizLevelBackground(question.level),
         elevation: 0,

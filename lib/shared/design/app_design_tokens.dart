@@ -51,8 +51,8 @@ class AppSpacing {
 class AppTypography {
   const AppTypography._();
 
+  static const String fontFamily = 'Century Gothic';
   static const List<String> fallbackFamilies = [
-    'Poppins',
     'Roboto',
     'Noto Sans',
     'Arial',
@@ -61,7 +61,7 @@ class AppTypography {
   static TextTheme buildTextTheme(TextTheme base) {
     TextStyle withFallback(TextStyle style) {
       return style.copyWith(
-        fontFamily: 'Poppins',
+        fontFamily: fontFamily,
         fontFamilyFallback: fallbackFamilies,
       );
     }

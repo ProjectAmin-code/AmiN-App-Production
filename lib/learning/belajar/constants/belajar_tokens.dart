@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BelajarTokens {
   const BelajarTokens._();
 
-  static const String fontFamily = 'Poppins';
+  static const String fontFamily = 'Century Gothic';
   static const List<String> fontFallback = ['Roboto', 'Noto Sans', 'Arial'];
 
   static const FontWeight titleWeight = FontWeight.w900;

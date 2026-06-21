@@ -26,6 +26,7 @@ void main() {
             data: MediaQueryData(
               size: size,
               textScaler: const TextScaler.linear(1.3),
+              disableAnimations: true,
             ),
             child: LearningFlowScreen(key: ValueKey(size), name: 'Tester'),
           ),
@@ -34,10 +35,33 @@ void main() {
       await tester.pump();
       expect(tester.takeException(), isNull, reason: 'initial size $size');
 
-      for (var index = 0; index < 11; index += 1) {
+      for (var index = 0; index < 6; index += 1) {
         await tester.tap(find.byIcon(Icons.arrow_forward_rounded).last);
         await tester.pump(const Duration(milliseconds: 500));
         expect(tester.takeException(), isNull, reason: 'step $index at $size');
+      }
+
+      final animationTapPoint = Offset(
+        size.width * 0.62,
+        size.height * (size.width > size.height ? 0.28 : 0.36),
+      );
+      for (var step = 7; step <= 14; step += 1) {
+        for (var stage = 0; stage < 2; stage += 1) {
+          await tester.tapAt(animationTapPoint);
+          await tester.pump(const Duration(milliseconds: 80));
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: 'B$step stage $stage at $size',
+          );
+        }
+        await tester.tap(find.byIcon(Icons.arrow_forward_rounded).last);
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: 'B$step continue at $size',
+        );
       }
     }
   });

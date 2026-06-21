@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/responsive/responsive_utils.dart';
@@ -15,6 +16,118 @@ import '../../shared/widgets/adaptive_asset_image.dart';
 import '../models/learning_models.dart';
 import '../services/amin_tts_service.dart';
 
+const Color _b01HeadingColor = Color(0xFF0F9FB0);
+const Color _b01TitleBoxColor = Color(0xFFD6F3F6);
+const Color _b01TitleBorderColor = Color(0xFF9ADFE7);
+const Color _b01TitleTextColor = Color(0xFF064C55);
+const Color _b01ImbuhanColor = Color(0xFFFF6B81);
+const Color _b01KataDasarColor = Color(0xFF29B6F6);
+const Color _b01KataTerbitanColor = Color(0xFF4EDEAE);
+const Color _b01MainTextColor = Color(0xFF16325C);
+const Color _b01CardColor = Color(0xFFFFFFFF);
+const Color _b01ScreenBgColor = Color(0xFFEAF7FF);
+const Color _b01ButtonColor = Color(0xFFFF6B81);
+const Color _b01WhiteColor = Color(0xFFFFFFFF);
+
+const Color _b04MeColor = Color(0xFF00F5D4);
+const Color _b04MemColor = Color(0xFF00BBF9);
+const Color _b04MenColor = Color(0xFFFEE440);
+const Color _b04MengColor = Color(0xFFF15BB5);
+const Color _b04MengeColor = Color(0xFF9B5DE5);
+const Color _b04TableHeaderColor = Color(0xFF005F73);
+const Color _b04ScreenBgColor = Color(0xFFFFF8E7);
+const Color _b04WhiteColor = Color(0xFFFFFFFF);
+const Color _b04ProgressGreen = Color(0xFF5ACB33);
+const Color _b04MeLightBg = Color(0xFFE8FFFB);
+const Color _b04MemLightBg = Color(0xFFEAF8FF);
+const Color _b04MenLightBg = Color(0xFFFFFBE3);
+const Color _b04MengLightBg = Color(0xFFFFEAF6);
+const Color _b04MengeLightBg = Color(0xFFF3EAFF);
+const Color _b04MeTextColor = Color(0xFF009688);
+const Color _b04MemTextColor = Color(0xFF087CB0);
+const Color _b04MenTextColor = Color(0xFFA67C00);
+const Color _b04MengTextColor = Color(0xFFB0307A);
+const Color _b04MengeTextColor = Color(0xFF6F42C1);
+
+const Color _b05MainColor = Color(0xFF2E8B57);
+const Color _b05LightBackground = Color(0xFFEAF7EF);
+const Color _b05AccentColor = Color(0xFF66BB8A);
+const Color _b05DarkerAccentColor = Color(0xFF256F46);
+const Color _b05TextOnColoredBox = Color(0xFFFFFFFF);
+const Color _b05TextOnLightArea = Color(0xFF1F2937);
+
+const Color _b15MainColor = Color(0xFF3B82F6);
+const Color _b15LightBackground = Color(0xFFEAF3FF);
+const Color _b15AccentColor = Color(0xFF93C5FD);
+const Color _b15DarkerAccentColor = Color(0xFF2563EB);
+const Color _b15TextOnColoredBox = Color(0xFFFFFFFF);
+const Color _b15TextOnLightArea = Color(0xFF1F2937);
+
+const Color _b16MainColor = Color(0xFFD4A017);
+const Color _b16LightBackground = Color(0xFFFFF8E1);
+const Color _b16AccentColor = Color(0xFFF6D365);
+const Color _b16DarkerAccentColor = Color(0xFFA87C00);
+const Color _b16TextOnColoredBox = Color(0xFF1F2937);
+const Color _b16TextOnLightArea = Color(0xFF1F2937);
+
+const Color _b17MainColor = Color(0xFFD65A8C);
+const Color _b17LightBackground = Color(0xFFFDECF3);
+const Color _b17AccentColor = Color(0xFFF3A8C5);
+const Color _b17DarkerAccentColor = Color(0xFFB84472);
+const Color _b17TextOnColoredBox = Color(0xFFFFFFFF);
+const Color _b17TextOnLightArea = Color(0xFF1F2937);
+
+const Color _b18MainColor = Color(0xFF7C4DCC);
+const Color _b18LightBackground = Color(0xFFF1EBFF);
+const Color _b18AccentColor = Color(0xFFB39DDB);
+const Color _b18DarkerAccentColor = Color(0xFF5E35B1);
+const Color _b18TextOnColoredBox = Color(0xFFFFFFFF);
+const Color _b18TextOnLightArea = Color(0xFF1F2937);
+
+const Color _b25PageBackground = Color(0xFFFFFDF8);
+const Color _b25MainText = Color(0xFF1F2937);
+const Color _b25SecondaryText = Color(0xFF4B5563);
+const Color _b25Border = Color(0xFFD9E2EC);
+const Color _b25HeadingStart = Color(0xFF155E75);
+const Color _b25HeadingEnd = Color(0xFF0E7490);
+const Color _b25HeadingSubtitle = Color(0xFFE0F2FE);
+const Color _b25HeadingAccent = Color(0xFFFACC15);
+const Color _b25Button = Color(0xFFFF6B6B);
+const Color _b25ButtonPressed = Color(0xFFEF4444);
+const Color _b25ButtonShadow = Color(0xFFFCA5A5);
+
+class _SummaryCardPalette {
+  const _SummaryCardPalette({
+    required this.background,
+    required this.main,
+    required this.accent,
+    required this.darkAccent,
+    required this.textOnMain,
+  });
+
+  final Color background;
+  final Color main;
+  final Color accent;
+  final Color darkAccent;
+  final Color textOnMain;
+}
+
+class _AnimatedWordSpec {
+  const _AnimatedWordSpec({
+    required this.rootWord,
+    required this.finalWord,
+    required this.originalLetter,
+    required this.replacementLetters,
+    required this.remainingLetters,
+  });
+
+  final String rootWord;
+  final String finalWord;
+  final String originalLetter;
+  final String replacementLetters;
+  final String remainingLetters;
+}
+
 class LearningFlowScreen extends StatefulWidget {
   const LearningFlowScreen({super.key, required this.name});
 
@@ -26,11 +139,13 @@ class LearningFlowScreen extends StatefulWidget {
 
 class _LearningFlowScreenState extends State<LearningFlowScreen>
     with SingleTickerProviderStateMixin {
+  // Debug-only lesson jump control. Set to false to hide it without removing code.
+  static const bool _enableLessonBypasser = kDebugMode;
   static const double _headingFontSize = 25;
   static const double _bodyFontSize = 20;
   static const double _buttonFontSize = 20;
   static const List<String> _fontFallback = [
-    'Poppins',
+    'Century Gothic',
     'Roboto',
     'Noto Sans',
     'Arial',
@@ -50,6 +165,64 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       'assets/Action Figures/AmiN pointing right.svg';
   static const String _arrowMascotPointingAsset =
       'assets/Action Figures/AmiN Pointing.svg';
+  static const Map<String, _AnimatedWordSpec> _animatedWordSpecs = {
+    'B07': _AnimatedWordSpec(
+      rootWord: 'Salin',
+      finalWord: 'menyalin',
+      originalLetter: 'S',
+      replacementLetters: 'ny',
+      remainingLetters: 'alin',
+    ),
+    'B08': _AnimatedWordSpec(
+      rootWord: 'simpan',
+      finalWord: 'menyimpan',
+      originalLetter: 's',
+      replacementLetters: 'ny',
+      remainingLetters: 'impan',
+    ),
+    'B09': _AnimatedWordSpec(
+      rootWord: 'pilih',
+      finalWord: 'memilih',
+      originalLetter: 'p',
+      replacementLetters: 'm',
+      remainingLetters: 'ilih',
+    ),
+    'B10': _AnimatedWordSpec(
+      rootWord: 'pakai',
+      finalWord: 'memakai',
+      originalLetter: 'p',
+      replacementLetters: 'm',
+      remainingLetters: 'akai',
+    ),
+    'B11': _AnimatedWordSpec(
+      rootWord: 'tarik',
+      finalWord: 'menarik',
+      originalLetter: 't',
+      replacementLetters: 'n',
+      remainingLetters: 'arik',
+    ),
+    'B12': _AnimatedWordSpec(
+      rootWord: 'tanam',
+      finalWord: 'menanam',
+      originalLetter: 't',
+      replacementLetters: 'n',
+      remainingLetters: 'anam',
+    ),
+    'B13': _AnimatedWordSpec(
+      rootWord: 'kumpul',
+      finalWord: 'mengumpul',
+      originalLetter: 'k',
+      replacementLetters: 'ng',
+      remainingLetters: 'umpul',
+    ),
+    'B14': _AnimatedWordSpec(
+      rootWord: 'kunci',
+      finalWord: 'mengunci',
+      originalLetter: 'k',
+      replacementLetters: 'ng',
+      remainingLetters: 'unci',
+    ),
+  };
 
   late final AnimationController _pulseController;
   late final List<LearningStep> _steps;
@@ -191,6 +364,85 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     await _speakCurrentStep();
   }
 
+  Future<void> _jumpToStep(int stepIndex) async {
+    if (stepIndex < 0 ||
+        stepIndex >= _steps.length ||
+        stepIndex == _currentIndex) {
+      return;
+    }
+    await AminTtsService.instance.stop();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _currentIndex = stepIndex;
+      _resetB07AnimationIfNeeded();
+      _resetB08AnimationIfNeeded();
+      _resetB09AnimationIfNeeded();
+      _resetB10AnimationIfNeeded();
+      _resetB11ToB14AnimationIfNeeded();
+    });
+    ProgressTracker.instance.updateLearningStep(
+      reachedStep: _currentIndex + 1,
+      totalSteps: _steps.length,
+    );
+    await _speakCurrentStep();
+  }
+
+  Future<void> _openLessonBypasser() async {
+    final selectedIndex = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Jump to lesson screen'),
+          content: SizedBox(
+            width: 360,
+            height: 420,
+            child: ListView.builder(
+              itemCount: _steps.length,
+              itemBuilder: (context, index) {
+                final step = _steps[index];
+                final isCurrentStep = index == _currentIndex;
+                return ListTile(
+                  dense: true,
+                  selected: isCurrentStep,
+                  leading: CircleAvatar(
+                    radius: 16,
+                    child: Text(step.id.replaceFirst('B', '')),
+                  ),
+                  title: Text(step.id),
+                  subtitle: Text(
+                    step.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: isCurrentStep ? const Icon(Icons.check) : null,
+                  onTap: () => Navigator.of(dialogContext).pop(index),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+    if (selectedIndex != null) {
+      await _jumpToStep(selectedIndex);
+    }
+  }
+
+  Widget _buildLessonBypasser() {
+    return Positioned(
+      right: 16,
+      bottom: 16,
+      child: FloatingActionButton.small(
+        heroTag: 'learning-flow-bypasser',
+        tooltip: 'Jump to lesson screen',
+        onPressed: _openLessonBypasser,
+        child: const Icon(Icons.skip_next_rounded),
+      ),
+    );
+  }
+
   GamificationController? _tryGetGamificationController() {
     final element = context
         .getElementForInheritedWidgetOfExactType<GamificationScope>();
@@ -210,7 +462,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Future<void> _advanceB07AnimationStage() async {
-    if (_isB07StageAnimating || _b07AnimationStage >= 3) {
+    if (_isB07StageAnimating || _b07AnimationStage >= 2) {
       return;
     }
     final reduceMotion = AppMotionSpec.reduceMotion(context);
@@ -250,7 +502,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Future<void> _advanceB08AnimationStage() async {
-    if (_isB08StageAnimating || _b08AnimationStage >= 3) {
+    if (_isB08StageAnimating || _b08AnimationStage >= 2) {
       return;
     }
     final reduceMotion = AppMotionSpec.reduceMotion(context);
@@ -290,7 +542,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Future<void> _advanceB09AnimationStage() async {
-    if (_isB09StageAnimating || _b09AnimationStage >= 3) {
+    if (_isB09StageAnimating || _b09AnimationStage >= 2) {
       return;
     }
     final reduceMotion = AppMotionSpec.reduceMotion(context);
@@ -330,7 +582,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Future<void> _advanceB10AnimationStage() async {
-    if (_isB10StageAnimating || _b10AnimationStage >= 3) {
+    if (_isB10StageAnimating || _b10AnimationStage >= 2) {
       return;
     }
     final reduceMotion = AppMotionSpec.reduceMotion(context);
@@ -371,7 +623,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   Future<void> _advanceB11ToB14AnimationStage(String stepId) async {
     final currentStage = _animationStageForSpecialStep(stepId);
-    if (_isAnimationRunningForSpecialStep(stepId) || currentStage >= 3) {
+    if (_isAnimationRunningForSpecialStep(stepId) || currentStage >= 2) {
       return;
     }
     final reduceMotion = AppMotionSpec.reduceMotion(context);
@@ -599,19 +851,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           hotspot: hotspot,
                           revealAnswer: revealAnswer,
                           fontSize: derivedWordFontSize,
-                          stepId: _currentStep.id,
                         ),
                         if (revealAnswer &&
                             hotspot.ruleNote.trim().isNotEmpty) ...[
                           const SizedBox(height: 10),
-                          Text(
-                            hotspot.ruleNote,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: noteFontSize,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF334155),
-                            ),
+                          _buildHotspotRuleNote(
+                            hotspot: hotspot,
+                            fontSize: noteFontSize,
                           ),
                         ],
                       ],
@@ -638,7 +884,6 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     required LearningHotspot hotspot,
     required bool revealAnswer,
     required double fontSize,
-    required String stepId,
   }) {
     if (!revealAnswer) {
       return Text(
@@ -652,221 +897,117 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     }
 
     final derivedWord = hotspot.derivedWord;
-    final normalizedBaseWord = hotspot.baseWord.trim().toLowerCase();
-    if (stepId == 'B21' && normalizedBaseWord == 'kejar') {
-      final lower = derivedWord.toLowerCase();
-      final clusterIndex = lower.indexOf('ng');
-      if (clusterIndex >= 0) {
-        final before = derivedWord.substring(0, clusterIndex);
-        final highlighted = derivedWord.substring(
-          clusterIndex,
-          clusterIndex + 2,
-        );
-        final after = derivedWord.substring(clusterIndex + 2);
-        return Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: before),
-              TextSpan(
-                text: highlighted,
-                style: const TextStyle(
-                  color: Color(0xFFEC4899),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              TextSpan(text: after),
-            ],
-          ),
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w900,
-            color: const Color(0xFF0B7285),
-          ),
-        );
-      }
-    }
-    if (stepId == 'B21' &&
-        normalizedBaseWord == 'tendang' &&
-        derivedWord.length >= 3) {
-      final before = derivedWord.substring(0, 2);
-      final highlighted = derivedWord.substring(2, 3);
-      final after = derivedWord.substring(3);
-      return Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: before),
-            TextSpan(
-              text: highlighted,
-              style: const TextStyle(
-                color: Color(0xFFEC4899),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            TextSpan(text: after),
-          ],
-        ),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          color: const Color(0xFF0B7285),
-        ),
-      );
-    }
-    if (stepId == 'B22' &&
-        normalizedBaseWord == 'potong' &&
-        derivedWord.length >= 3) {
-      final before = derivedWord.substring(0, 2);
-      final highlighted = derivedWord.substring(2, 3);
-      final after = derivedWord.substring(3);
-      return Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: before),
-            TextSpan(
-              text: highlighted,
-              style: const TextStyle(
-                color: Color(0xFFEC4899),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            TextSpan(text: after),
-          ],
-        ),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          color: const Color(0xFF0B7285),
-        ),
-      );
-    }
-    if (stepId == 'B20' &&
-        normalizedBaseWord == 'tulis' &&
-        derivedWord.length >= 3) {
-      final before = derivedWord.substring(0, 2);
-      final highlighted = derivedWord.substring(2, 3);
-      final after = derivedWord.substring(3);
-      return Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: before),
-            TextSpan(
-              text: highlighted,
-              style: const TextStyle(
-                color: Color(0xFFEC4899),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            TextSpan(text: after),
-          ],
-        ),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          color: const Color(0xFF0B7285),
-        ),
-      );
-    }
-    if (normalizedBaseWord == 'pangkas' && derivedWord.length >= 3) {
-      final before = derivedWord.substring(0, 2);
-      final highlighted = derivedWord.substring(2, 3);
-      final after = derivedWord.substring(3);
-      return Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: before),
-            TextSpan(
-              text: highlighted,
-              style: const TextStyle(
-                color: Color(0xFFEC4899),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            TextSpan(text: after),
-          ],
-        ),
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          color: const Color(0xFF0B7285),
-        ),
-      );
-    }
-    final customCluster = switch (normalizedBaseWord) {
-      'kutip' => 'ng',
-      'sapu' => 'ny',
-      _ => null,
-    };
-    if (customCluster != null) {
-      final lower = derivedWord.toLowerCase();
-      final clusterIndex = lower.indexOf(customCluster);
-      if (clusterIndex >= 0) {
-        final before = derivedWord.substring(0, clusterIndex);
-        final highlighted = derivedWord.substring(
-          clusterIndex,
-          clusterIndex + customCluster.length,
-        );
-        final after = derivedWord.substring(
-          clusterIndex + customCluster.length,
-        );
-        return Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: before),
-              TextSpan(
-                text: highlighted,
-                style: const TextStyle(
-                  color: Color(0xFFEC4899),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              TextSpan(text: after),
-            ],
-          ),
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w900,
-            color: const Color(0xFF0B7285),
-          ),
-        );
-      }
-    }
-
-    final prefixLength = switch (normalizedBaseWord) {
-      'kejar' => 0,
-      'angkat' || 'angkar' => 4,
-      'cat' => 5,
-      'lap' => 5,
-      'lukis' => 2,
-      'lompat' => 2,
-      'masak' => 2,
-      'gunting' => 4,
-      'warna' => 2,
-      'ajar' => 4,
-      _ => 3,
-    };
-    final clampedPrefixLength = math.min(prefixLength, derivedWord.length);
-    final pinkPrefix = derivedWord.substring(0, clampedPrefixLength);
-    final suffix = derivedWord.substring(clampedPrefixLength);
+    final prefix = _derivedPrefixForBaseWord(hotspot.baseWord);
+    final prefixLength = math.min(prefix.length, derivedWord.length);
+    final highlightedPrefix = derivedWord.substring(0, prefixLength);
+    final suffix = derivedWord.substring(prefixLength);
+    final replacementSound = _replacementSoundForBaseWord(hotspot.baseWord);
+    final underlineLength =
+        replacementSound != null && suffix.startsWith(replacementSound)
+        ? replacementSound.length
+        : 0;
 
     return Text.rich(
       TextSpan(
         children: [
           TextSpan(
-            text: pinkPrefix,
-            style: const TextStyle(
-              color: Color(0xFFEC4899),
+            text: highlightedPrefix,
+            style: TextStyle(
+              color: _prefixHighlightColor(prefix),
               fontWeight: FontWeight.w900,
             ),
           ),
-          TextSpan(text: suffix),
+          if (underlineLength > 0)
+            TextSpan(
+              text: suffix.substring(0, underlineLength),
+              style: const TextStyle(decoration: TextDecoration.underline),
+            ),
+          TextSpan(text: suffix.substring(underlineLength)),
         ],
       ),
       style: TextStyle(
         fontSize: fontSize,
         fontWeight: FontWeight.w900,
-        color: const Color(0xFF0B7285),
+        // Keep the non-highlighted part of the derived word consistent with
+        // the base word shown above it.
+        color: const Color(0xFF1D3557),
       ),
     );
+  }
+
+  String? _replacementSoundForBaseWord(String baseWord) {
+    final normalizedBaseWord = baseWord.trim().toLowerCase();
+    return switch (normalizedBaseWord.isEmpty ? '' : normalizedBaseWord[0]) {
+      't' => 'n',
+      'k' => 'ng',
+      'p' => 'm',
+      's' => 'ny',
+      _ => null,
+    };
+  }
+
+  Widget _buildHotspotRuleNote({
+    required LearningHotspot hotspot,
+    required double fontSize,
+  }) {
+    return Text(
+      hotspot.ruleNote,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFF334155),
+      ),
+    );
+  }
+
+  String _derivedPrefixForBaseWord(String baseWord) {
+    final word = baseWord.trim().toLowerCase();
+    if (word.startsWith('p') ||
+        word.startsWith('t') ||
+        word.startsWith('k') ||
+        word.startsWith('s')) {
+      return 'me';
+    }
+    if (word == 'cat' || word == 'lap') {
+      return 'menge';
+    }
+    if (word.startsWith('b') || word.startsWith('f')) {
+      return 'mem';
+    }
+    if (word.startsWith('c') ||
+        word.startsWith('d') ||
+        word.startsWith('j') ||
+        word.startsWith('z') ||
+        word.startsWith('sy')) {
+      return 'men';
+    }
+    if (word.startsWith('a') ||
+        word.startsWith('e') ||
+        word.startsWith('i') ||
+        word.startsWith('o') ||
+        word.startsWith('u') ||
+        word.startsWith('g') ||
+        word.startsWith('h')) {
+      return 'meng';
+    }
+    return 'me';
+  }
+
+  Color _prefixHighlightColor(String prefix) {
+    if (prefix == 'mem') {
+      return _b15DarkerAccentColor;
+    }
+    if (prefix == 'men' || prefix == 'meny') {
+      return _b16DarkerAccentColor;
+    }
+    if (prefix == 'meng') {
+      return _b17DarkerAccentColor;
+    }
+    if (prefix == 'menge') {
+      return _b18DarkerAccentColor;
+    }
+    return _b05DarkerAccentColor;
   }
 
   Alignment _hotspotAlignmentForStep(
@@ -1018,24 +1159,40 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   Widget _buildTopBar() {
     final progress = (_currentIndex + 1) / _steps.length;
+    final isB04 = _currentStep.id == 'B04';
+    final isB25 = _currentStep.id == 'B25';
+    final iconColor = isB25 ? _b25MainText : null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
       child: Row(
         children: [
           IconButton(
             onPressed: _goBack,
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: iconColor),
           ),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: LinearProgressIndicator(value: progress, minHeight: 6),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isB25
+                      ? _b05MainColor
+                      : isB04
+                      ? _b04ProgressGreen
+                      : const Color(0xFF10B981),
+                ),
+                backgroundColor: isB25
+                    ? const Color(0xFFE5E7EB)
+                    : const Color(0xFFE6EEF8),
+              ),
             ),
           ),
           const SizedBox(width: 4),
           IconButton(
             onPressed: _speakCurrentStep,
-            icon: const Icon(Icons.volume_up_rounded),
+            icon: Icon(Icons.volume_up_rounded, color: iconColor),
           ),
           IconButton(
             onPressed: _toggleVoice,
@@ -1043,6 +1200,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               _voiceEnabled
                   ? Icons.hearing_rounded
                   : Icons.hearing_disabled_rounded,
+              color: iconColor,
             ),
           ),
         ],
@@ -1050,21 +1208,44 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _titleBubble(String text, {double fontSize = _headingFontSize}) {
+  Widget _titleBubble(
+    String text, {
+    double fontSize = _headingFontSize,
+    Color backgroundColor = const Color(0xFFD97706),
+    Color textColor = Colors.white,
+    Color? borderColor,
+    bool showBackground = true,
+  }) {
     return Builder(
       builder: (context) {
         final effectiveFontSize =
             responsiveClamp(context, 20, fontSize, 26) *
             _narrowWidthTextScale(context);
-        return Text(
+        final titleText = Text(
           text,
           style: TextStyle(
             fontSize: effectiveFontSize,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF1D3557),
-            fontFamily: 'Poppins',
+            fontWeight: textColor == _b01TitleTextColor
+                ? FontWeight.w900
+                : FontWeight.w800,
+            color: textColor,
+            fontFamily: 'Century Gothic',
             fontFamilyFallback: _fontFallback,
           ),
+        );
+        if (!showBackground) {
+          return titleText;
+        }
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            border: borderColor == null
+                ? null
+                : Border.all(color: borderColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: titleText,
         );
       },
     );
@@ -1079,6 +1260,76 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         borderRadius: BorderRadius.circular(16),
       ),
       child: child,
+    );
+  }
+
+  TextAlign _subtitleTextAlign(String text) {
+    final hasBulletLine = text
+        .split('\n')
+        .any((line) => line.trimLeft().startsWith('•'));
+    return hasBulletLine ? TextAlign.start : TextAlign.justify;
+  }
+
+  bool _isBulletLine(String line) {
+    final trimmed = line.trimLeft();
+    return trimmed.startsWith('•') || trimmed.startsWith('â€¢');
+  }
+
+  String _stripBulletMarker(String line) {
+    final trimmed = line.trimLeft();
+    if (trimmed.startsWith('•')) {
+      return trimmed.substring(1).trimLeft();
+    }
+    if (trimmed.startsWith('â€¢')) {
+      return trimmed.substring(3).trimLeft();
+    }
+    return trimmed;
+  }
+
+  Widget _subtitleContent(
+    String text,
+    TextStyle style, {
+    TextAlign? textAlign,
+  }) {
+    final lines = text.split('\n');
+    final hasBullets = lines.any(_isBulletLine);
+    if (!hasBullets) {
+      return Text(
+        text,
+        textAlign: textAlign ?? _subtitleTextAlign(text),
+        style: style,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          if (line.trim().isEmpty)
+            SizedBox(height: (style.fontSize ?? _bodyFontSize) * 0.35)
+          else if (_isBulletLine(line))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    child: Text('•', style: style, textAlign: TextAlign.left),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _stripBulletMarker(line),
+                      textAlign: TextAlign.start,
+                      style: style,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Text(line, textAlign: TextAlign.start, style: style),
+      ],
     );
   }
 
@@ -1261,6 +1512,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildEquationExamplesStep(LearningStep step) {
+    final usesB01Style = _usesB01Style(step);
     final bodySize = _responsiveBodyFontSize(context, step);
     final subheadingSize = _responsiveLabelFontSize(
       context,
@@ -1276,21 +1528,32 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: _titleBubble(step.title),
+            child: _titleBubble(
+              step.title,
+              backgroundColor: usesB01Style
+                  ? _b01TitleBoxColor
+                  : const Color(0xFFD97706),
+              textColor: usesB01Style ? _b01TitleTextColor : Colors.white,
+              borderColor: usesB01Style ? _b01TitleBorderColor : null,
+            ),
           ),
           if (step.subtitle.isNotEmpty) ...[
             const SizedBox(height: 12),
             _contentCard(
-              child: Text(
+              color: usesB01Style ? _b01CardColor : Colors.white,
+              child: _subtitleContent(
                 step.subtitle,
-                textAlign: TextAlign.justify,
-                style: TextStyle(
+                TextStyle(
                   fontSize: bodySize,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
+                  color: usesB01Style ? _b01MainTextColor : null,
+                  fontFamily: 'Century Gothic',
                   fontFamilyFallback: _fontFallback,
                 ),
+                textAlign: usesB01Style
+                    ? TextAlign.start
+                    : _subtitleTextAlign(step.subtitle),
               ),
             ),
           ],
@@ -1303,8 +1566,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 style: TextStyle(
                   fontSize: subheadingSize,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0B7285),
-                  fontFamily: 'Poppins',
+                  color: usesB01Style
+                      ? _b01HeadingColor
+                      : const Color(0xFF0B7285),
+                  fontFamily: 'Century Gothic',
                   fontFamilyFallback: _fontFallback,
                 ),
               ),
@@ -1313,6 +1578,39 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ...step.equationExamples.asMap().entries.map((entry) {
               final index = entry.key;
               final row = entry.value;
+              final baseChipWidth = usesB01Style ? 126.0 : null;
+              final resultChipWidth = usesB01Style ? 184.0 : null;
+              final chipHeight = usesB01Style ? 62.0 : null;
+              final chipFontSize = usesB01Style ? 23.0 : null;
+              final equationRow = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _equationChip(
+                    row.left,
+                    row.leftColor,
+                    width: baseChipWidth,
+                    height: chipHeight,
+                    fontSize: chipFontSize,
+                  ),
+                  _equationSymbol('+'),
+                  _equationChip(
+                    row.middle,
+                    row.middleColor,
+                    width: baseChipWidth,
+                    height: chipHeight,
+                    fontSize: chipFontSize,
+                  ),
+                  _equationSymbol('='),
+                  _equationChip(
+                    row.right,
+                    row.rightColor,
+                    width: resultChipWidth,
+                    height: chipHeight,
+                    fontSize: chipFontSize,
+                  ),
+                ],
+              );
+              final shouldNumberRow = _shouldNumberEquationExamples(step);
               return TweenAnimationBuilder<double>(
                 key: ValueKey('${_currentStep.id}-equation-$index'),
                 tween: Tween(begin: 0, end: 1),
@@ -1328,19 +1626,26 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _equationChip(row.left, row.leftColor),
-                        _equationSymbol('+'),
-                        _equationChip(row.middle, row.middleColor),
-                        _equationSymbol('='),
-                        _equationChip(row.right, row.rightColor),
-                      ],
-                    ),
-                  ),
+                  child: shouldNumberRow
+                      ? Row(
+                          children: [
+                            _exampleNumberBadge(
+                              index + 1,
+                              backgroundColor: usesB01Style
+                                  ? _b01HeadingColor
+                                  : const Color(0xFFD97706),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FittedBox(
+                                alignment: Alignment.centerLeft,
+                                fit: BoxFit.scaleDown,
+                                child: equationRow,
+                              ),
+                            ),
+                          ],
+                        )
+                      : FittedBox(fit: BoxFit.scaleDown, child: equationRow),
                 ),
               );
             }),
@@ -1348,7 +1653,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           if (step.colorLegends.isNotEmpty) ...[
             const SizedBox(height: 10),
             _contentCard(
-              color: const Color(0xFFFCFFFC),
+              color: usesB01Style ? _b01CardColor : const Color(0xFFFCFFFC),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: step.colorLegends.map((legend) {
@@ -1374,8 +1679,10 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                             style: TextStyle(
                               fontSize: legendSize,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF334155),
-                              fontFamily: 'Poppins',
+                              color: usesB01Style
+                                  ? _b01MainTextColor
+                                  : const Color(0xFF334155),
+                              fontFamily: 'Century Gothic',
                               fontFamilyFallback: _fontFallback,
                             ),
                           ),
@@ -1397,7 +1704,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF334155),
                 height: 1.35,
-                fontFamily: 'Poppins',
+                fontFamily: 'Century Gothic',
                 fontFamilyFallback: _fontFallback,
               ),
             ),
@@ -1408,6 +1715,12 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildArrowExamplesStep(LearningStep step) {
+    final isB05 = step.id == 'B05';
+    final isB15 = step.id == 'B15';
+    final isB16 = step.id == 'B16';
+    final isB17 = step.id == 'B17';
+    final isB18 = step.id == 'B18';
+    final usesTitleSubtitleStyle = _usesB01TitleSubtitleStyle(step);
     final extraBottomSpacing = _extraBottomSpacingForArrowEnhancedStep(step);
     final bodySize = _responsiveBodyFontSize(context, step);
     final subheadingSize = _responsiveLabelFontSize(
@@ -1448,53 +1761,220 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: _titleBubble(step.title),
+            child: isB05
+                ? _b05TitleBubble(step.title)
+                : isB15
+                ? _b15TitleBubble(step.title)
+                : isB16
+                ? _b16TitleBubble(step.title)
+                : isB17
+                ? _b17TitleBubble(step.title)
+                : isB18
+                ? _b18TitleBubble(step.title)
+                : _titleBubble(
+                    step.title,
+                    backgroundColor: usesTitleSubtitleStyle
+                        ? _b01TitleBoxColor
+                        : const Color(0xFFD97706),
+                    textColor: usesTitleSubtitleStyle
+                        ? _b01TitleTextColor
+                        : Colors.white,
+                    borderColor: usesTitleSubtitleStyle
+                        ? _b01TitleBorderColor
+                        : null,
+                  ),
           ),
           if (step.subtitle.isNotEmpty) ...[
             const SizedBox(height: 12),
             _contentCard(
+              color: isB05
+                  ? _b05LightBackground
+                  : isB15
+                  ? _b15LightBackground
+                  : isB16
+                  ? _b16LightBackground
+                  : isB17
+                  ? _b17LightBackground
+                  : isB18
+                  ? _b18LightBackground
+                  : usesTitleSubtitleStyle
+                  ? _b01CardColor
+                  : Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    step.subtitle,
-                    textAlign: TextAlign.justify,
-                    style: TextStyle(
-                      fontSize: bodySize,
-                      height: 1.4,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Poppins',
-                      fontFamilyFallback: _fontFallback,
+                  if (isB05)
+                    _b05CleanBulletTermContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b05TextOnLightArea,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  else if (isB15)
+                    _b15CleanBulletTermContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b15TextOnLightArea,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  else if (isB16)
+                    _b16CleanBulletTermContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b16TextOnLightArea,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  else if (isB17)
+                    _b17CleanBulletTermContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b17TextOnLightArea,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  else if (isB18)
+                    _b18TermStyledContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b18TextOnLightArea,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  else
+                    _subtitleContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: usesTitleSubtitleStyle
+                            ? _b01MainTextColor
+                            : null,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                      textAlign: usesTitleSubtitleStyle
+                          ? TextAlign.start
+                          : _subtitleTextAlign(step.subtitle),
                     ),
-                  ),
                   if (step.highlightedLetters.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text.rich(
-                      _highlightedLettersSpan(context, step),
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        fontSize: highlightSize,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF334155),
-                        height: 1.35,
-                        fontFamily: 'Poppins',
-                        fontFamilyFallback: _fontFallback,
+                    Padding(
+                      padding: EdgeInsets.only(left: isB17 ? 18 : 0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text.rich(
+                          _highlightedLettersSpan(context, step),
+                          textAlign: (isB05 || isB15 || isB16)
+                              ? TextAlign.center
+                              : isB17
+                              ? TextAlign.start
+                              : TextAlign.justify,
+                          style: TextStyle(
+                            fontSize: highlightSize,
+                            fontWeight: FontWeight.w700,
+                            color: isB05
+                                ? _b05TextOnLightArea
+                                : isB15
+                                ? _b15TextOnLightArea
+                                : isB16
+                                ? _b16TextOnLightArea
+                                : isB17
+                                ? _b17TextOnLightArea
+                                : const Color(0xFF334155),
+                            height: 1.35,
+                            fontFamily: 'Century Gothic',
+                            fontFamilyFallback: _fontFallback,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                   if (step.afterHighlightLine.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text(
-                      step.afterHighlightLine,
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        fontSize: bodySize,
-                        height: 1.4,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Poppins',
-                        fontFamilyFallback: _fontFallback,
+                    if (isB05)
+                      _b05CleanBulletTermContent(
+                        step.afterHighlightLine,
+                        TextStyle(
+                          fontSize: bodySize,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: _b05TextOnLightArea,
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
+                      )
+                    else if (isB15)
+                      _b15CleanBulletTermContent(
+                        step.afterHighlightLine,
+                        TextStyle(
+                          fontSize: bodySize,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: _b15TextOnLightArea,
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
+                      )
+                    else if (isB16)
+                      _b16CleanBulletTermContent(
+                        step.afterHighlightLine,
+                        TextStyle(
+                          fontSize: bodySize,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: _b16TextOnLightArea,
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
+                      )
+                    else if (isB17)
+                      _b17CleanBulletTermContent(
+                        step.afterHighlightLine,
+                        TextStyle(
+                          fontSize: bodySize,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: _b17TextOnLightArea,
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
+                      )
+                    else
+                      _subtitleContent(
+                        step.afterHighlightLine,
+                        TextStyle(
+                          fontSize: bodySize,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                    ),
                   ],
                 ],
               ),
@@ -1507,8 +1987,16 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               style: TextStyle(
                 fontSize: subheadingSize,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0B7285),
-                fontFamily: 'Poppins',
+                color: isB15
+                    ? _b15DarkerAccentColor
+                    : isB16
+                    ? _b16DarkerAccentColor
+                    : isB17
+                    ? _b17DarkerAccentColor
+                    : isB18
+                    ? _b18DarkerAccentColor
+                    : Color(0xFF0B7285),
+                fontFamily: 'Century Gothic',
                 fontFamilyFallback: _fontFallback,
               ),
             ),
@@ -1527,6 +2015,118 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       final index = entry.key;
                       final row = entry.value;
                       final showLetterChip = row.letter.trim().isNotEmpty;
+                      final arrowRow = isB05
+                          ? _buildB05AlignedArrowRow(
+                              row,
+                              arrowTextSize: arrowTextSize,
+                              arrowSymbolSize: arrowSymbolSize,
+                              letterChipFontSize: letterChipFontSize,
+                            )
+                          : isB15
+                          ? _buildB15AlignedArrowRow(
+                              row,
+                              arrowTextSize: arrowTextSize,
+                              arrowSymbolSize: arrowSymbolSize,
+                              letterChipFontSize: letterChipFontSize,
+                            )
+                          : isB16
+                          ? _buildB16AlignedArrowRow(
+                              row,
+                              arrowTextSize: arrowTextSize,
+                              arrowSymbolSize: arrowSymbolSize,
+                              letterChipFontSize: letterChipFontSize,
+                            )
+                          : isB17
+                          ? _buildB17AlignedArrowRow(
+                              row,
+                              arrowTextSize: arrowTextSize,
+                              arrowSymbolSize: arrowSymbolSize,
+                              letterChipFontSize: letterChipFontSize,
+                            )
+                          : isB18
+                          ? _buildB18AlignedArrowRow(
+                              row,
+                              arrowTextSize: arrowTextSize,
+                              arrowSymbolSize: arrowSymbolSize,
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (showLetterChip) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 9,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _arrowLetterColor(
+                                        step,
+                                        row,
+                                        index,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      row.letter,
+                                      style: TextStyle(
+                                        fontSize: letterChipFontSize,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        fontFamily: 'Century Gothic',
+                                        fontFamilyFallback: _fontFallback,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '\u2192',
+                                    style: TextStyle(
+                                      fontSize: arrowSymbolSize,
+                                      fontWeight: FontWeight.w900,
+                                      color: const Color(0xFF1D3557),
+                                      fontFamily: 'Century Gothic',
+                                      fontFamilyFallback: _fontFallback,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Text(
+                                  row.baseWord,
+                                  style: TextStyle(
+                                    fontSize: arrowTextSize,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF1D3557),
+                                    fontFamily: 'Century Gothic',
+                                    fontFamilyFallback: _fontFallback,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '\u2192',
+                                  style: TextStyle(
+                                    fontSize: arrowSymbolSize,
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFF1D3557),
+                                    fontFamily: 'Century Gothic',
+                                    fontFamilyFallback: _fontFallback,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                _highlightPrefixOnly(
+                                  row.derivedWord,
+                                  step.highlightedPrefix,
+                                  prefixColor: isB15
+                                      ? _b15DarkerAccentColor
+                                      : isB16
+                                      ? _b16DarkerAccentColor
+                                      : isB17
+                                      ? _b17DarkerAccentColor
+                                      : isB18
+                                      ? _b18DarkerAccentColor
+                                      : const Color(0xFFEC4899),
+                                ),
+                              ],
+                            );
                       return TweenAnimationBuilder<double>(
                         key: ValueKey('${_currentStep.id}-arrow-$index'),
                         tween: Tween(begin: 0, end: 1),
@@ -1542,72 +2142,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (showLetterChip) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 9,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _arrowLetterColor(step, row, index),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    row.letter,
-                                    style: TextStyle(
-                                      fontSize: letterChipFontSize,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                      fontFamily: 'Poppins',
-                                      fontFamilyFallback: _fontFallback,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '\u2192',
-                                  style: TextStyle(
-                                    fontSize: arrowSymbolSize,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFF1D3557),
-                                    fontFamily: 'Poppins',
-                                    fontFamilyFallback: _fontFallback,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              Text(
-                                row.baseWord,
-                                style: TextStyle(
-                                  fontSize: arrowTextSize,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1D3557),
-                                  fontFamily: 'Poppins',
-                                  fontFamilyFallback: _fontFallback,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '\u2192',
-                                style: TextStyle(
-                                  fontSize: arrowSymbolSize,
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFF1D3557),
-                                  fontFamily: 'Poppins',
-                                  fontFamilyFallback: _fontFallback,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              _highlightPrefixOnly(
-                                row.derivedWord,
-                                step.highlightedPrefix,
-                                prefixColor: const Color(0xFFEC4899),
-                              ),
-                            ],
-                          ),
+                          child: arrowRow,
                         ),
                       );
                     }).toList(),
@@ -1618,18 +2153,79 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           ],
           if (step.footerNote.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text(
-              step.footerNote,
-              textAlign: TextAlign.justify,
-              style: TextStyle(
-                fontSize: footerSize,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF334155),
-                height: 1.35,
-                fontFamily: 'Poppins',
-                fontFamilyFallback: _fontFallback,
+            if (isB05)
+              _b05CleanBulletTermContent(
+                step.footerNote,
+                TextStyle(
+                  fontSize: footerSize,
+                  fontWeight: FontWeight.w700,
+                  color: _b05TextOnLightArea,
+                  height: 1.35,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              )
+            else if (isB15)
+              _b15CleanBulletTermContent(
+                step.footerNote,
+                TextStyle(
+                  fontSize: footerSize,
+                  fontWeight: FontWeight.w700,
+                  color: _b15TextOnLightArea,
+                  height: 1.35,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              )
+            else if (isB16)
+              _b16CleanBulletTermContent(
+                step.footerNote,
+                TextStyle(
+                  fontSize: footerSize,
+                  fontWeight: FontWeight.w700,
+                  color: _b16TextOnLightArea,
+                  height: 1.35,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              )
+            else if (isB17)
+              _b17CleanBulletTermContent(
+                step.footerNote,
+                TextStyle(
+                  fontSize: footerSize,
+                  fontWeight: FontWeight.w700,
+                  color: _b17TextOnLightArea,
+                  height: 1.35,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              )
+            else if (isB18)
+              _b18TermStyledContent(
+                step.footerNote,
+                TextStyle(
+                  fontSize: footerSize,
+                  fontWeight: FontWeight.w700,
+                  color: _b18TextOnLightArea,
+                  height: 1.35,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              )
+            else
+              Text(
+                step.footerNote,
+                textAlign: TextAlign.justify,
+                style: TextStyle(
+                  fontSize: footerSize,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF334155),
+                  height: 1.35,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
               ),
-            ),
           ],
           if (extraBottomSpacing > 0) SizedBox(height: extraBottomSpacing),
         ],
@@ -1646,25 +2242,983 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
+  Widget _b05TitleBubble(String text) {
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize =
+            responsiveClamp(context, 20, _headingFontSize, 26) *
+            _narrowWidthTextScale(context);
+        final titleStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w800,
+          color: _b05TextOnColoredBox,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: _b05MainColor,
+            border: Border.all(color: _b05DarkerAccentColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text.rich(_b05TermTextSpan(text, titleStyle)),
+        );
+      },
+    );
+  }
+
+  Widget _b15TitleBubble(String text) {
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize =
+            responsiveClamp(context, 20, _headingFontSize, 26) *
+            _narrowWidthTextScale(context);
+        final titleStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w800,
+          color: _b15TextOnColoredBox,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: _b15MainColor,
+            border: Border.all(color: _b15DarkerAccentColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text.rich(_b15TermTextSpan(text, titleStyle)),
+        );
+      },
+    );
+  }
+
+  Widget _b16TitleBubble(String text) {
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize =
+            responsiveClamp(context, 20, _headingFontSize, 26) *
+            _narrowWidthTextScale(context);
+        final titleStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w800,
+          color: _b16TextOnColoredBox,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: _b16MainColor,
+            border: Border.all(color: _b16DarkerAccentColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text.rich(_b16TermTextSpan(text, titleStyle)),
+        );
+      },
+    );
+  }
+
+  Widget _b17TitleBubble(String text) {
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize =
+            responsiveClamp(context, 20, _headingFontSize, 26) *
+            _narrowWidthTextScale(context);
+        final titleStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w800,
+          color: _b17TextOnColoredBox,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: _b17MainColor,
+            border: Border.all(color: _b17DarkerAccentColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text.rich(_b17TermTextSpan(text, titleStyle)),
+        );
+      },
+    );
+  }
+
+  Widget _b18TitleBubble(String text) {
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize =
+            responsiveClamp(context, 20, _headingFontSize, 26) *
+            _narrowWidthTextScale(context);
+        final titleStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w800,
+          color: _b18TextOnColoredBox,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: _b18MainColor,
+            border: Border.all(color: _b18DarkerAccentColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text.rich(_b18TermTextSpan(text, titleStyle)),
+        );
+      },
+    );
+  }
+
+  Widget b05TermStyledContent(String text, TextStyle style) {
+    final lines = text.split('\n');
+    final hasBullets = lines.any(_isBulletLine);
+    if (!hasBullets) {
+      return Text.rich(
+        _b05TermTextSpan(text, style),
+        textAlign: TextAlign.start,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          if (line.trim().isEmpty)
+            SizedBox(height: (style.fontSize ?? _bodyFontSize) * 0.35)
+          else if (_isBulletLine(line))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    child: Text('â€¢', style: style, textAlign: TextAlign.left),
+                  ),
+                  Expanded(
+                    child: Text.rich(
+                      _b05TermTextSpan(_stripBulletMarker(line), style),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Text.rich(
+              _b05TermTextSpan(line, style),
+              textAlign: TextAlign.start,
+            ),
+      ],
+    );
+  }
+
+  Widget _b05CleanBulletTermContent(String text, TextStyle style) {
+    final lines = text.split('\n');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          if (line.trim().isEmpty)
+            SizedBox(height: (style.fontSize ?? _bodyFontSize) * 0.35)
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_isBulletLine(line)) ...[
+                    SizedBox(
+                      width: 18,
+                      child: Text(
+                        '\u2022',
+                        style: style,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                  Expanded(
+                    child: Text.rich(
+                      _b05TermTextSpan(_stripBulletMarker(line), style),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+
+  TextSpan _b05TermTextSpan(String text, TextStyle style) {
+    final spans = <InlineSpan>[];
+    final matches = RegExp(r'meN-|me-').allMatches(text);
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
+  Widget _b15CleanBulletTermContent(String text, TextStyle style) {
+    final lines = text.split('\n');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          if (line.trim().isEmpty)
+            SizedBox(height: (style.fontSize ?? _bodyFontSize) * 0.35)
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_isBulletLine(line)) ...[
+                    SizedBox(
+                      width: 18,
+                      child: Text(
+                        '\u2022',
+                        style: style,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                  Expanded(
+                    child: Text.rich(
+                      _b15TermTextSpan(_stripBulletMarker(line), style),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+
+  TextSpan _b15TermTextSpan(String text, TextStyle style) {
+    final spans = <InlineSpan>[];
+    final matches = RegExp(r'mem-').allMatches(text);
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
+  Widget _b16CleanBulletTermContent(String text, TextStyle style) {
+    final lines = text.split('\n');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          if (line.trim().isEmpty)
+            SizedBox(height: (style.fontSize ?? _bodyFontSize) * 0.35)
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_isBulletLine(line)) ...[
+                    SizedBox(
+                      width: 18,
+                      child: Text(
+                        '\u2022',
+                        style: style,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                  Expanded(
+                    child: Text.rich(
+                      _b16TermTextSpan(_stripBulletMarker(line), style),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+
+  TextSpan _b16TermTextSpan(String text, TextStyle style) {
+    final spans = <InlineSpan>[];
+    final matches = RegExp(r'men-').allMatches(text);
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
+  Widget _b17CleanBulletTermContent(String text, TextStyle style) {
+    final lines = text.split('\n');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          if (line.trim().isEmpty)
+            SizedBox(height: (style.fontSize ?? _bodyFontSize) * 0.35)
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_isBulletLine(line)) ...[
+                    SizedBox(
+                      width: 18,
+                      child: Text(
+                        '\u2022',
+                        style: style,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                  Expanded(
+                    child: Text.rich(
+                      _b17TermTextSpan(_stripBulletMarker(line), style),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+
+  TextSpan _b17TermTextSpan(String text, TextStyle style) {
+    final spans = <InlineSpan>[];
+    final matches = RegExp(r'meng-').allMatches(text);
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
+  Widget _b18TermStyledContent(String text, TextStyle style) {
+    return Text.rich(_b18TermTextSpan(text, style), textAlign: TextAlign.start);
+  }
+
+  TextSpan _b18TermTextSpan(String text, TextStyle style) {
+    final spans = <InlineSpan>[];
+    final matches = RegExp(r'menge-').allMatches(text);
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
+  Widget _buildB05AlignedArrowRow(
+    LearningArrowRow row, {
+    required double arrowTextSize,
+    required double arrowSymbolSize,
+    required double letterChipFontSize,
+  }) {
+    TextStyle wordStyle({Color color = _b05TextOnLightArea}) {
+      return TextStyle(
+        fontSize: arrowTextSize,
+        fontWeight: FontWeight.w800,
+        color: color,
+        fontFamily: 'Century Gothic',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    final arrowStyle = TextStyle(
+      fontSize: arrowSymbolSize,
+      fontWeight: FontWeight.w900,
+      color: _b05DarkerAccentColor,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 42,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 34),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _b05MainColor,
+                border: Border.all(color: _b05DarkerAccentColor, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                row.letter,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: letterChipFontSize,
+                  fontWeight: FontWeight.w900,
+                  color: _b05TextOnColoredBox,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 86,
+          child: Text(
+            row.baseWord,
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 118,
+          child: Text.rich(
+            TextSpan(
+              children: [
+                if (row.derivedWord.startsWith('me'))
+                  TextSpan(
+                    text: 'me',
+                    style: wordStyle(color: _b05DarkerAccentColor).copyWith(
+                      fontStyle: FontStyle.normal,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                TextSpan(
+                  text: row.derivedWord.startsWith('me')
+                      ? row.derivedWord.substring(2)
+                      : row.derivedWord,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildB15AlignedArrowRow(
+    LearningArrowRow row, {
+    required double arrowTextSize,
+    required double arrowSymbolSize,
+    required double letterChipFontSize,
+  }) {
+    TextStyle wordStyle({Color color = _b15TextOnLightArea}) {
+      return TextStyle(
+        fontSize: arrowTextSize,
+        fontWeight: FontWeight.w800,
+        color: color,
+        fontFamily: 'Century Gothic',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    final arrowStyle = TextStyle(
+      fontSize: arrowSymbolSize,
+      fontWeight: FontWeight.w900,
+      color: _b15DarkerAccentColor,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 42,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 34),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _b15MainColor,
+                border: Border.all(color: _b15DarkerAccentColor, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                row.letter,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: letterChipFontSize,
+                  fontWeight: FontWeight.w900,
+                  color: _b15TextOnColoredBox,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 86,
+          child: Text(
+            row.baseWord,
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 118,
+          child: Text.rich(
+            TextSpan(
+              children: [
+                if (row.derivedWord.startsWith('mem'))
+                  TextSpan(
+                    text: 'mem',
+                    style: wordStyle(
+                      color: _b15DarkerAccentColor,
+                    ).copyWith(fontWeight: FontWeight.w900),
+                  ),
+                TextSpan(
+                  text: row.derivedWord.startsWith('mem')
+                      ? row.derivedWord.substring(3)
+                      : row.derivedWord,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildB16AlignedArrowRow(
+    LearningArrowRow row, {
+    required double arrowTextSize,
+    required double arrowSymbolSize,
+    required double letterChipFontSize,
+  }) {
+    TextStyle wordStyle({Color color = _b16TextOnLightArea}) {
+      return TextStyle(
+        fontSize: arrowTextSize,
+        fontWeight: FontWeight.w800,
+        color: color,
+        fontFamily: 'Century Gothic',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    final arrowStyle = TextStyle(
+      fontSize: arrowSymbolSize,
+      fontWeight: FontWeight.w900,
+      color: _b16DarkerAccentColor,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 42,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 34),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _b16MainColor,
+                border: Border.all(color: _b16DarkerAccentColor, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                row.letter,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: letterChipFontSize,
+                  fontWeight: FontWeight.w900,
+                  color: _b16TextOnColoredBox,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 86,
+          child: Text(
+            row.baseWord,
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 118,
+          child: Text.rich(
+            TextSpan(
+              children: [
+                if (row.derivedWord.startsWith('men'))
+                  TextSpan(
+                    text: 'men',
+                    style: wordStyle(
+                      color: _b16DarkerAccentColor,
+                    ).copyWith(fontWeight: FontWeight.w900),
+                  ),
+                TextSpan(
+                  text: row.derivedWord.startsWith('men')
+                      ? row.derivedWord.substring(3)
+                      : row.derivedWord,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildB17AlignedArrowRow(
+    LearningArrowRow row, {
+    required double arrowTextSize,
+    required double arrowSymbolSize,
+    required double letterChipFontSize,
+  }) {
+    TextStyle wordStyle({Color color = _b17TextOnLightArea}) {
+      return TextStyle(
+        fontSize: arrowTextSize,
+        fontWeight: FontWeight.w800,
+        color: color,
+        fontFamily: 'Century Gothic',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    final arrowStyle = TextStyle(
+      fontSize: arrowSymbolSize,
+      fontWeight: FontWeight.w900,
+      color: _b17DarkerAccentColor,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 42,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 34),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _b17MainColor,
+                border: Border.all(color: _b17DarkerAccentColor, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                row.letter,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: letterChipFontSize,
+                  fontWeight: FontWeight.w900,
+                  color: _b17TextOnColoredBox,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 86,
+          child: Text(
+            row.baseWord,
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 132,
+          child: Text.rich(
+            TextSpan(
+              children: [
+                if (row.derivedWord.startsWith('meng'))
+                  TextSpan(
+                    text: 'meng',
+                    style: wordStyle(
+                      color: _b17DarkerAccentColor,
+                    ).copyWith(fontWeight: FontWeight.w900),
+                  ),
+                TextSpan(
+                  text: row.derivedWord.startsWith('meng')
+                      ? row.derivedWord.substring(4)
+                      : row.derivedWord,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.visible,
+            style: wordStyle(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildB18AlignedArrowRow(
+    LearningArrowRow row, {
+    required double arrowTextSize,
+    required double arrowSymbolSize,
+  }) {
+    TextStyle wordStyle({Color color = _b18TextOnLightArea}) {
+      return TextStyle(
+        fontSize: arrowTextSize,
+        fontWeight: FontWeight.w800,
+        color: color,
+        fontFamily: 'Century Gothic',
+        fontFamilyFallback: _fontFallback,
+      );
+    }
+
+    final arrowStyle = TextStyle(
+      fontSize: arrowSymbolSize,
+      fontWeight: FontWeight.w900,
+      color: _b18DarkerAccentColor,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 86,
+          child: Text(
+            row.baseWord,
+            textAlign: TextAlign.center,
+            style: wordStyle(),
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text('\u2192', textAlign: TextAlign.center, style: arrowStyle),
+        ),
+        SizedBox(
+          width: 118,
+          child: Text.rich(
+            TextSpan(
+              children: [
+                if (row.derivedWord.startsWith('menge'))
+                  TextSpan(
+                    text: 'menge',
+                    style: wordStyle(
+                      color: _b18DarkerAccentColor,
+                    ).copyWith(fontWeight: FontWeight.w900),
+                  ),
+                TextSpan(
+                  text: row.derivedWord.startsWith('menge')
+                      ? row.derivedWord.substring(5)
+                      : row.derivedWord,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.visible,
+            style: wordStyle(),
+          ),
+        ),
+      ],
+    );
+  }
+
   TextSpan _highlightedLettersSpan(BuildContext context, LearningStep step) {
+    if (step.id == 'B05') {
+      return _commaSeparatedHighlightedLetters(
+        context,
+        step.highlightedLetters,
+        color: _b05DarkerAccentColor,
+      );
+    }
+    if (step.id == 'B15') {
+      return _commaSeparatedHighlightedLetters(
+        context,
+        step.highlightedLetters,
+        color: _b15DarkerAccentColor,
+      );
+    }
+    if (step.id == 'B16') {
+      return _commaSeparatedHighlightedLetters(
+        context,
+        step.highlightedLetters,
+        color: _b16DarkerAccentColor,
+      );
+    }
     if (step.id == 'B17' && step.highlightedLetters.length >= 7) {
       final letters = step.highlightedLetters;
       return TextSpan(
         children: [
           const TextSpan(text: 'huruf vokal ('),
-          _coloredLetterSpan(context, letters[0], 0),
+          _coloredLetterSpan(
+            context,
+            letters[0],
+            0,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(context, letters[1], 1),
+          _coloredLetterSpan(
+            context,
+            letters[1],
+            1,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(context, letters[2], 2),
+          _coloredLetterSpan(
+            context,
+            letters[2],
+            2,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(context, letters[3], 3),
+          _coloredLetterSpan(
+            context,
+            letters[3],
+            3,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ', '),
-          _coloredLetterSpan(context, letters[4], 4),
+          _coloredLetterSpan(
+            context,
+            letters[4],
+            4,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ') dan huruf konsonan ('),
-          _coloredLetterSpan(context, letters[5], 5),
+          _coloredLetterSpan(
+            context,
+            letters[5],
+            5,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ','),
-          _coloredLetterSpan(context, letters[6], 6),
+          _coloredLetterSpan(
+            context,
+            letters[6],
+            6,
+            color: _b17DarkerAccentColor,
+          ),
           const TextSpan(text: ')'),
         ],
       );
@@ -1674,11 +3228,12 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
 
   TextSpan _commaSeparatedHighlightedLetters(
     BuildContext context,
-    List<String> letters,
-  ) {
+    List<String> letters, {
+    Color? color,
+  }) {
     final children = <InlineSpan>[];
     for (var i = 0; i < letters.length; i++) {
-      children.add(_coloredLetterSpan(context, letters[i], i));
+      children.add(_coloredLetterSpan(context, letters[i], i, color: color));
       if (i < letters.length - 1) {
         children.add(const TextSpan(text: ', '));
       } else {
@@ -1688,11 +3243,16 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return TextSpan(children: children);
   }
 
-  TextSpan _coloredLetterSpan(BuildContext context, String text, int index) {
+  TextSpan _coloredLetterSpan(
+    BuildContext context,
+    String text,
+    int index, {
+    Color? color,
+  }) {
     return TextSpan(
       text: text,
       style: TextStyle(
-        color: _highlightColorForIndex(index),
+        color: color ?? _highlightColorForIndex(index),
         fontWeight: FontWeight.w900,
         fontSize: _responsiveLabelFontSize(context, 22, min: 17, max: 22),
       ),
@@ -1729,7 +3289,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
           color: Color(0xFF1D3557),
-          fontFamily: 'Poppins',
+          fontFamily: 'Century Gothic',
           fontFamilyFallback: _fontFallback,
         ),
       );
@@ -1749,17 +3309,28 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         fontSize: fontSize,
         fontWeight: FontWeight.w700,
         color: Color(0xFF1D3557),
-        fontFamily: 'Poppins',
+        fontFamily: 'Century Gothic',
         fontFamilyFallback: _fontFallback,
       ),
     );
   }
 
-  Widget _equationChip(String text, Color color) {
-    final fontSize = _responsiveLabelFontSize(context, 18, min: 14, max: 18);
+  Widget _equationChip(
+    String text,
+    Color color, {
+    double? width,
+    double? height,
+    double? fontSize,
+  }) {
+    final effectiveFontSize = fontSize == null
+        ? _responsiveLabelFontSize(context, 18, min: 14, max: 18)
+        : _responsiveLabelFontSize(context, fontSize, min: 16, max: fontSize);
     return Container(
+      width: width,
+      height: height,
       margin: const EdgeInsets.symmetric(horizontal: 3),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(10),
@@ -1768,9 +3339,47 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         text,
         style: TextStyle(
           color: Colors.white,
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w800,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        ),
+      ),
+    );
+  }
+
+  bool _shouldNumberEquationExamples(LearningStep step) {
+    return const {'B01', 'B02', 'B03'}.contains(step.id);
+  }
+
+  bool _usesB01Style(LearningStep step) {
+    return const {'B01', 'B02', 'B03'}.contains(step.id);
+  }
+
+  bool _usesB01TitleSubtitleStyle(LearningStep step) {
+    return const {'B01', 'B02', 'B03', 'B04', 'B05', 'B06'}.contains(step.id);
+  }
+
+  Widget _exampleNumberBadge(
+    int number, {
+    Color backgroundColor = const Color(0xFFD97706),
+  }) {
+    final fontSize = _responsiveLabelFontSize(context, 14, min: 12, max: 14);
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        '$number',
+        style: TextStyle(
+          color: Colors.white,
           fontSize: fontSize,
           fontWeight: FontWeight.w800,
-          fontFamily: 'Poppins',
+          fontFamily: 'Century Gothic',
           fontFamilyFallback: _fontFallback,
         ),
       ),
@@ -1787,43 +3396,90 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           color: Color(0xFF1D3557),
           fontSize: fontSize,
           fontWeight: FontWeight.w900,
-          fontFamily: 'Poppins',
+          fontFamily: 'Century Gothic',
           fontFamilyFallback: _fontFallback,
         ),
       ),
     );
   }
 
+  Widget _buildLearningContinueButton({
+    Key? key,
+    required String label,
+    required VoidCallback onPressed,
+    IconData icon = Icons.arrow_forward_rounded,
+  }) {
+    return AnimatedKidButton(
+      key: key,
+      label: label,
+      icon: icon,
+      onPressed: onPressed,
+      backgroundColor: _b01ButtonColor,
+      foregroundColor: _b01WhiteColor,
+      height: 54,
+      labelFontSize: _responsiveButtonFontSize(context),
+    );
+  }
+
+  Widget _buildPulsingLearningContinueButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final reduceMotion = AppMotionSpec.reduceMotion(context);
+        final angle = reduceMotion
+            ? 0.0
+            : math.sin(_pulseController.value * math.pi) * 0.02;
+        return Transform.rotate(angle: angle, child: child);
+      },
+      child: _buildLearningContinueButton(label: label, onPressed: onPressed),
+    );
+  }
+
   Widget _buildTableStep(LearningStep step) {
+    final isB04 = step.id == 'B04';
+    final usesTitleSubtitleStyle = _usesB01TitleSubtitleStyle(step);
     final scale = _scenarioSmallPhoneScale(context);
     final bodySize = _responsiveBodyFontSize(context, step) * scale;
-    final subheadingSize = _responsiveLabelFontSize(
-      context,
-      _bodyFontSize + 2,
-      min: 17,
-      max: 22,
-    ) * scale;
+    final subheadingSize =
+        _responsiveLabelFontSize(context, _bodyFontSize + 2, min: 17, max: 22) *
+        scale;
     return _scrollableStepContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _titleBubble(step.title),
+          _titleBubble(
+            step.title,
+            backgroundColor: usesTitleSubtitleStyle
+                ? _b01TitleBoxColor
+                : const Color(0xFFD97706),
+            textColor: usesTitleSubtitleStyle
+                ? _b01TitleTextColor
+                : Colors.white,
+            borderColor: usesTitleSubtitleStyle ? _b01TitleBorderColor : null,
+          ),
           const SizedBox(height: 12),
           if (step.subtitle.isNotEmpty)
             _contentCard(
-              child: Text(
+              color: usesTitleSubtitleStyle ? _b01CardColor : Colors.white,
+              child: _subtitleContent(
                 step.subtitle,
-                textAlign: TextAlign.justify,
-                style: TextStyle(
+                TextStyle(
                   fontSize: bodySize,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
+                  color: usesTitleSubtitleStyle ? _b01MainTextColor : null,
+                  fontFamily: 'Century Gothic',
                   fontFamilyFallback: _fontFallback,
                 ),
+                textAlign: usesTitleSubtitleStyle
+                    ? TextAlign.start
+                    : _subtitleTextAlign(step.subtitle),
               ),
             ),
-          if (step.exampleSubheading.isNotEmpty) ...[
+          if (!isB04 && step.exampleSubheading.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
               step.exampleSubheading,
@@ -1831,7 +3487,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 fontSize: subheadingSize,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF0B7285),
-                fontFamily: 'Poppins',
+                fontFamily: 'Century Gothic',
                 fontFamilyFallback: _fontFallback,
               ),
             ),
@@ -1847,7 +3503,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 height: 1.4,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF2F4858),
-                fontFamily: 'Poppins',
+                fontFamily: 'Century Gothic',
                 fontFamilyFallback: _fontFallback,
               ),
             ),
@@ -1855,6 +3511,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         ],
       ),
     );
+  }
+
+  Color _darkenColor(Color color, [double amount = 0.42]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl
+        .withLightness((hsl.lightness * (1 - amount)).clamp(0.0, 1.0))
+        .withSaturation((hsl.saturation * 1.12).clamp(0.0, 1.0))
+        .toColor();
   }
 
   Map<int, TableColumnWidth> _tableColumnWidths(int columnCount) {
@@ -1880,94 +3544,147 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _tableCard(LearningStep step) {
+    final isB04 = step.id == 'B04';
     final columnWidths = _tableColumnWidths(step.tableHeaders.length);
-    final tableFontSize =
-        _responsiveBodyFontSize(context, step) * _scenarioSmallPhoneScale(context);
+    final tableFontSize = isB04
+        ? _responsiveLabelFontSize(context, 22, min: 16, max: 22)
+        : _responsiveBodyFontSize(context, step) *
+              _scenarioSmallPhoneScale(context);
+    if (isB04) {
+      return _b04TableCard(step, tableFontSize);
+    }
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD0E6F5)),
+        borderRadius: BorderRadius.circular(isB04 ? 24 : 16),
+        border: Border.all(color: isB04 ? _b04WhiteColor : Colors.black),
+        boxShadow: isB04
+            ? const [
+                BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
-      child: Table(
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-        defaultColumnWidth: const FlexColumnWidth(),
-        columnWidths: columnWidths,
-        border: const TableBorder(
-          horizontalInside: BorderSide(color: Color(0xFFE8F1F8)),
-          verticalInside: BorderSide(color: Color(0xFFE8F1F8)),
-        ),
-        children: [
-          TableRow(
-            decoration: const BoxDecoration(color: Color(0xFF0B7285)),
-            children: step.tableHeaders
-                .map(
-                  (header) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    child: Text(
-                      header,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: tableFontSize,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'Poppins',
-                        fontFamilyFallback: _fontFallback,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        width: double.infinity,
+        child: Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          defaultColumnWidth: const FlexColumnWidth(),
+          columnWidths: columnWidths,
+          border: TableBorder(
+            horizontalInside: BorderSide(
+              color: isB04 ? _b04WhiteColor : Colors.black,
+              width: isB04 ? 2 : 1,
+            ),
+            verticalInside: BorderSide(
+              color: isB04 ? _b04WhiteColor : Colors.black,
+              width: isB04 ? 2 : 1,
+            ),
           ),
-          ...step.tableRows.asMap().entries.map((rowEntry) {
-            final rowIndex = rowEntry.key;
-            final row = rowEntry.value;
-            return TableRow(
-              decoration: BoxDecoration(
-                color:
-                    row.backgroundColor ??
-                    (rowIndex.isEven
-                        ? const Color(0xFFF6FCFF)
-                        : const Color(0xFFEFF8FF)),
-              ),
-              children: row.cells.asMap().entries.map((cellEntry) {
-                final cellIndex = cellEntry.key;
-                final cell = cellEntry.value;
-                return TweenAnimationBuilder<double>(
-                  key: ValueKey(
-                    '${_currentStep.id}-table-$rowIndex-$cellIndex',
-                  ),
-                  tween: Tween(begin: 0, end: 1),
-                  duration: Duration(milliseconds: 300 + (rowIndex * 80)),
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, (1 - value) * 8),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
+          children: [
+            TableRow(
+              decoration: const BoxDecoration(color: _b04TableHeaderColor),
+              children: step.tableHeaders
+                  .map(
+                    (header) => _tableCell(
+                      header,
+                      backgroundColor: isB04
+                          ? _b04TableHeaderColor
+                          : const Color(0xFF0B7285),
+                      textColor: Colors.white,
+                      fontSize: tableFontSize,
+                      fontWeight: FontWeight.w900,
+                      verticalPadding: isB04 ? 22 : 12,
                     ),
-                    child: Text(
-                      cell,
-                      style: TextStyle(
-                        fontSize: tableFontSize,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
-                        fontFamily: 'Poppins',
-                        fontFamilyFallback: _fontFallback,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                  )
+                  .toList(),
+            ),
+            ...step.tableRows.asMap().entries.map((rowEntry) {
+              final rowIndex = rowEntry.key;
+              final row = rowEntry.value;
+              return TableRow(
+                children: row.cells.asMap().entries.map((cellEntry) {
+                  final cellIndex = cellEntry.key;
+                  final cell = cellEntry.value;
+                  final palette = _b04TablePalette(rowIndex);
+                  final backgroundColor = isB04
+                      ? (cellIndex == 0
+                            ? palette.leftColor
+                            : palette.rightBackgroundColor)
+                      : Colors.white;
+                  final textColor = isB04
+                      ? (cellIndex == 0 ? Colors.white : palette.rightTextColor)
+                      : _darkenColor(
+                          row.backgroundColor ?? const Color(0xFF1D3557),
+                        );
+                  return _tableCell(
+                    cell,
+                    backgroundColor: backgroundColor,
+                    textColor: textColor,
+                    fontSize: tableFontSize,
+                    fontWeight: isB04 ? FontWeight.w900 : FontWeight.w600,
+                    verticalPadding: isB04 ? (rowIndex == 0 ? 28 : 25) : 12,
+                    textAlign: cellIndex == 0
+                        ? TextAlign.center
+                        : TextAlign.start,
+                  );
+                }).toList(),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _b04TableCard(LearningStep step, double tableFontSize) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _b04WhiteColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _b04WhiteColor),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 14,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          _b04TableRow(
+            rowIndex: -1,
+            leftText: step.tableHeaders[0],
+            rightText: step.tableHeaders[1],
+            leftBackgroundColor: _b04TableHeaderColor,
+            rightBackgroundColor: _b04TableHeaderColor,
+            leftTextColor: _b04WhiteColor,
+            rightTextColor: _b04WhiteColor,
+            fontSize: tableFontSize,
+            fontWeight: FontWeight.w900,
+            verticalPadding: 22,
+          ),
+          ...step.tableRows.asMap().entries.map((entry) {
+            final palette = _b04TablePalette(entry.key);
+            final cells = entry.value.cells;
+            return _b04TableRow(
+              rowIndex: entry.key,
+              leftText: cells[0],
+              rightText: cells[1],
+              leftBackgroundColor: palette.leftColor,
+              rightBackgroundColor: palette.rightBackgroundColor,
+              leftTextColor: _b04WhiteColor,
+              rightTextColor: palette.rightTextColor,
+              fontSize: tableFontSize,
+              fontWeight: FontWeight.w900,
+              verticalPadding: entry.key == 0 ? 28 : 25,
             );
           }),
         ],
@@ -1975,29 +3692,362 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
+  Widget _b04TableRow({
+    required int rowIndex,
+    required String leftText,
+    required String rightText,
+    required Color leftBackgroundColor,
+    required Color rightBackgroundColor,
+    required Color leftTextColor,
+    required Color rightTextColor,
+    required double fontSize,
+    required FontWeight fontWeight,
+    required double verticalPadding,
+  }) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            flex: 11,
+            child: _filledTableCell(
+              leftText,
+              backgroundColor: leftBackgroundColor,
+              textColor: leftTextColor,
+              fontSize: fontSize,
+              fontWeight: fontWeight,
+              verticalPadding: verticalPadding,
+              textAlign: TextAlign.center,
+              child: _singleLineTableText(
+                leftText,
+                color: leftTextColor,
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          const SizedBox(width: 2),
+          Expanded(
+            flex: 21,
+            child: _filledTableCell(
+              rightText,
+              backgroundColor: rightBackgroundColor,
+              textColor: rightTextColor,
+              fontSize: fontSize,
+              fontWeight: fontWeight,
+              verticalPadding: verticalPadding,
+              textAlign: TextAlign.start,
+              child: _b04RightCellContent(
+                rightText,
+                rowIndex: rowIndex,
+                textColor: rightTextColor,
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filledTableCell(
+    String text, {
+    required Color backgroundColor,
+    required Color textColor,
+    required double fontSize,
+    required FontWeight fontWeight,
+    required double verticalPadding,
+    required TextAlign textAlign,
+    Widget? child,
+  }) {
+    return Container(
+      alignment: textAlign == TextAlign.center
+          ? Alignment.center
+          : Alignment.centerLeft,
+      color: backgroundColor,
+      padding: EdgeInsets.symmetric(horizontal: 18, vertical: verticalPadding),
+      child:
+          child ??
+          Text(
+            text,
+            textAlign: textAlign,
+            style: TextStyle(
+              color: textColor,
+              fontSize: fontSize,
+              fontWeight: fontWeight,
+              height: 1.32,
+              fontFamily: 'Century Gothic',
+              fontFamilyFallback: _fontFallback,
+            ),
+          ),
+    );
+  }
+
+  Widget _singleLineTableText(
+    String text, {
+    required Color color,
+    required double fontSize,
+    required FontWeight fontWeight,
+    required TextAlign textAlign,
+  }) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: textAlign == TextAlign.center
+          ? Alignment.center
+          : Alignment.centerLeft,
+      child: Text(
+        text,
+        maxLines: 1,
+        softWrap: false,
+        textAlign: textAlign,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          height: 1.32,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        ),
+      ),
+    );
+  }
+
+  Widget _b04RightCellContent(
+    String text, {
+    required int rowIndex,
+    required Color textColor,
+    required double fontSize,
+    required FontWeight fontWeight,
+  }) {
+    final baseStyle = TextStyle(
+      color: textColor,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      height: 1.32,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+    final blackStyle = TextStyle(
+      color: Colors.black,
+      fontSize: fontSize,
+      fontWeight: FontWeight.w900,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+      height: 1.32,
+    );
+
+    if (rowIndex == 0) {
+      final lines = text.split('\n');
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (lines.isNotEmpty) Text(lines.first, style: baseStyle),
+          _b04MeRuleTable(lines.skip(1), baseStyle, blackStyle),
+        ],
+      );
+    }
+
+    if (rowIndex == 3) {
+      return RichText(
+        text: TextSpan(
+          style: baseStyle,
+          children: [
+            const TextSpan(text: 'a, e, i, o, u '),
+            TextSpan(text: '(vokal)', style: blackStyle),
+            const TextSpan(text: ',\ng, h'),
+          ],
+        ),
+      );
+    }
+
+    return Text(text, style: baseStyle);
+  }
+
+  Widget _b04MeRuleTable(
+    Iterable<String> lines,
+    TextStyle baseStyle,
+    TextStyle blackStyle,
+  ) {
+    final pattern = RegExp(r'^(\S+)\s+\(?menjadi\s+([^)]+)\)?$');
+    final menjadiPainter = TextPainter(
+      text: TextSpan(text: 'menjadi', style: blackStyle),
+      maxLines: 1,
+      textDirection: Directionality.of(context),
+    )..layout();
+    final menjadiWidth =
+        menjadiPainter.width + responsiveClamp(context, 4, 6, 8);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lines.map((line) {
+        final match = pattern.firstMatch(line.trim());
+        if (match == null) {
+          return Text(line, style: baseStyle);
+        }
+
+        return FittedBox(
+          alignment: Alignment.centerLeft,
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                child: Text(
+                  match.group(1)!,
+                  style: baseStyle,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+              SizedBox(
+                width: menjadiWidth,
+                child: Text(
+                  'menjadi',
+                  style: blackStyle,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+              Text(
+                match.group(2)!,
+                style: baseStyle,
+                maxLines: 1,
+                softWrap: false,
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  ({Color leftColor, Color rightBackgroundColor, Color rightTextColor})
+  _b04TablePalette(int rowIndex) {
+    const palettes = [
+      (
+        leftColor: _b04MeColor,
+        rightBackgroundColor: _b04MeLightBg,
+        rightTextColor: _b04MeTextColor,
+      ),
+      (
+        leftColor: _b04MemColor,
+        rightBackgroundColor: _b04MemLightBg,
+        rightTextColor: _b04MemTextColor,
+      ),
+      (
+        leftColor: _b04MenColor,
+        rightBackgroundColor: _b04MenLightBg,
+        rightTextColor: _b04MenTextColor,
+      ),
+      (
+        leftColor: _b04MengColor,
+        rightBackgroundColor: _b04MengLightBg,
+        rightTextColor: _b04MengTextColor,
+      ),
+      (
+        leftColor: _b04MengeColor,
+        rightBackgroundColor: _b04MengeLightBg,
+        rightTextColor: _b04MengeTextColor,
+      ),
+    ];
+    return palettes[rowIndex % palettes.length];
+  }
+
+  Widget _tableCell(
+    String text, {
+    required Color backgroundColor,
+    required Color textColor,
+    required double fontSize,
+    required FontWeight fontWeight,
+    required double verticalPadding,
+    TextAlign textAlign = TextAlign.center,
+  }) {
+    return TableCell(
+      verticalAlignment: TableCellVerticalAlignment.fill,
+      child: Container(
+        alignment: textAlign == TextAlign.center
+            ? Alignment.center
+            : Alignment.centerLeft,
+        color: backgroundColor,
+        padding: EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: verticalPadding,
+        ),
+        child: Text(
+          text,
+          textAlign: textAlign,
+          style: TextStyle(
+            color: textColor,
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            height: 1.32,
+            fontFamily: 'Century Gothic',
+            fontFamilyFallback: _fontFallback,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildChangeCardsStep(LearningStep step) {
+    final isB06 = step.id == 'B06';
+    final usesTitleSubtitleStyle = _usesB01TitleSubtitleStyle(step);
     final bodySize = _responsiveBodyFontSize(context, step);
     final letterSize = _responsiveLabelFontSize(context, 24, min: 18, max: 24);
     return _scrollableStepContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _titleBubble(step.title),
+          if (isB06)
+            _b06TitleBubble(step.title)
+          else
+            _titleBubble(
+              step.title,
+              backgroundColor: usesTitleSubtitleStyle
+                  ? _b01TitleBoxColor
+                  : const Color(0xFFD97706),
+              textColor: usesTitleSubtitleStyle
+                  ? _b01TitleTextColor
+                  : Colors.white,
+              borderColor: usesTitleSubtitleStyle ? _b01TitleBorderColor : null,
+            ),
           if (step.subtitle.isNotEmpty) ...[
             const SizedBox(height: 12),
             _contentCard(
-              color: const Color(0xFFFFF5E0),
-              child: Text(
-                step.subtitle,
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  fontSize: bodySize,
-                  height: 1.4,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                  fontFamilyFallback: _fontFallback,
-                ),
-              ),
+              color: usesTitleSubtitleStyle
+                  ? _b01CardColor
+                  : const Color(0xFFFFF5E0),
+              child: isB06
+                  ? _b06TermStyledText(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b01MainTextColor,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  : _subtitleContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: usesTitleSubtitleStyle
+                            ? _b01MainTextColor
+                            : null,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                      textAlign: usesTitleSubtitleStyle
+                          ? TextAlign.start
+                          : _subtitleTextAlign(step.subtitle),
+                    ),
             ),
           ],
           const SizedBox(height: 12),
@@ -2005,6 +4055,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             final index = entry.key;
             final card = entry.value;
             final accentColor = card.accentColor;
+            final exampleText = card.example;
             return TweenAnimationBuilder<double>(
               key: ValueKey('${_currentStep.id}-change-$index'),
               tween: Tween(begin: 0, end: 1),
@@ -2056,23 +4107,29 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            card.example,
-                            style: TextStyle(
-                              fontSize: bodySize,
-                              fontWeight: FontWeight.w900,
-                              color: accentColor,
-                              fontFamily: 'Poppins',
-                              fontFamilyFallback: _fontFallback,
+                          Text.rich(
+                            _highlightBracketedText(
+                              exampleText,
+                              accentColor: accentColor,
                             ),
-                          ),
-                          Text(
-                            card.note,
                             style: TextStyle(
                               fontSize: bodySize,
                               fontWeight: FontWeight.w700,
-                              color: accentColor.withValues(alpha: 0.9),
-                              fontFamily: 'Poppins',
+                              color: Color(0xFF111827),
+                              fontFamily: 'Century Gothic',
+                              fontFamilyFallback: _fontFallback,
+                            ),
+                          ),
+                          Text.rich(
+                            _highlightBracketedText(
+                              card.note,
+                              accentColor: accentColor,
+                            ),
+                            style: TextStyle(
+                              fontSize: bodySize,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                              fontFamily: 'Century Gothic',
                               fontFamilyFallback: _fontFallback,
                             ),
                           ),
@@ -2092,13 +4149,91 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 fontSize: bodySize,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1D3557),
-                fontFamily: 'Poppins',
+                fontFamily: 'Century Gothic',
                 fontFamilyFallback: _fontFallback,
               ),
             ),
         ],
       ),
     );
+  }
+
+  Widget _b06TitleBubble(String text) {
+    return Builder(
+      builder: (context) {
+        final effectiveFontSize =
+            responsiveClamp(context, 20, _headingFontSize, 26) *
+            _narrowWidthTextScale(context);
+        final titleStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: FontWeight.w900,
+          color: _b01TitleTextColor,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: _b01TitleBoxColor,
+            border: Border.all(color: _b01TitleBorderColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text.rich(_b06TermTextSpan(text, titleStyle)),
+        );
+      },
+    );
+  }
+
+  Widget _b06TermStyledText(String text, TextStyle style) {
+    return Text.rich(_b06TermTextSpan(text, style), textAlign: TextAlign.start);
+  }
+
+  TextSpan _b06TermTextSpan(String text, TextStyle style) {
+    final spans = <InlineSpan>[];
+    final matches = RegExp(r'meN-').allMatches(text);
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
+  TextSpan _highlightBracketedText(String text, {required Color accentColor}) {
+    final spans = <TextSpan>[];
+    final pattern = RegExp(r'\[([^\]]+)\]');
+    var currentIndex = 0;
+
+    for (final match in pattern.allMatches(text)) {
+      if (match.start > currentIndex) {
+        spans.add(TextSpan(text: text.substring(currentIndex, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(1),
+          style: TextStyle(color: accentColor, fontWeight: FontWeight.w900),
+        ),
+      );
+      currentIndex = match.end;
+    }
+
+    if (currentIndex < text.length) {
+      spans.add(TextSpan(text: text.substring(currentIndex)));
+    }
+
+    return TextSpan(children: spans);
   }
 
   Widget _buildB19ImageHeadingStep(LearningStep step) {
@@ -2143,16 +4278,18 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       ),
                     ),
                     const SizedBox(height: 14),
-                    Text(
-                      step.title,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: headingSize,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1D3557),
-                        fontFamily: 'Poppins',
-                        fontFamilyFallback: _fontFallback,
+                    Text.rich(
+                      _meNItalicTextSpan(
+                        step.title,
+                        TextStyle(
+                          fontSize: headingSize,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1D3557),
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -2164,6 +4301,32 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
+  TextSpan _meNItalicTextSpan(String text, TextStyle style) {
+    final matches = RegExp(r'meN-').allMatches(text);
+    if (matches.isEmpty) {
+      return TextSpan(text: text, style: style);
+    }
+
+    final spans = <InlineSpan>[];
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
   Widget _buildSituationStep(LearningStep step) {
     final paragraphAlign = _useLeftAlignedParagraphs(step)
         ? TextAlign.left
@@ -2172,18 +4335,22 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       builder: (context, constraints) {
         final shortScreen = constraints.maxHeight < 560;
         final scale = _scenarioSmallPhoneScale(context);
-        final headingSize = responsiveClamp(
-          context,
-          17,
-          _stepHeadingFontSize(step) - (shortScreen ? 2 : 0),
-          _stepHeadingFontSize(step),
-        ) * scale;
-        final bodySize = responsiveClamp(
-          context,
-          14,
-          _stepBodyFontSize(step) - (shortScreen ? 2 : 0),
-          _stepBodyFontSize(step),
-        ) * scale;
+        final headingSize =
+            responsiveClamp(
+              context,
+              17,
+              _stepHeadingFontSize(step) - (shortScreen ? 2 : 0),
+              _stepHeadingFontSize(step),
+            ) *
+            scale;
+        final bodySize =
+            responsiveClamp(
+              context,
+              14,
+              _stepBodyFontSize(step) - (shortScreen ? 2 : 0),
+              _stepBodyFontSize(step),
+            ) *
+            scale;
         final instructionPadding = responsiveClamp(
           context,
           8,
@@ -2220,23 +4387,25 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                               fontSize: headingSize,
                               fontWeight: FontWeight.w900,
                               color: Color(0xFF1D3557),
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Century Gothic',
                               fontFamilyFallback: _fontFallback,
                             ),
                           ),
                         if (step.instructionBody.isNotEmpty) ...[
                           SizedBox(height: shortScreen ? 6 : 8),
-                          Text(
-                            step.instructionBody,
-                            textAlign: paragraphAlign,
-                            style: TextStyle(
-                              fontSize: bodySize,
-                              height: 1.4,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF334155),
-                              fontFamily: 'Poppins',
-                              fontFamilyFallback: _fontFallback,
+                          Text.rich(
+                            _meNItalicTextSpan(
+                              step.instructionBody,
+                              TextStyle(
+                                fontSize: bodySize,
+                                height: 1.4,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF334155),
+                                fontFamily: 'Century Gothic',
+                                fontFamilyFallback: _fontFallback,
+                              ),
                             ),
+                            textAlign: paragraphAlign,
                           ),
                         ],
                       ],
@@ -2378,25 +4547,34 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _titleBubble(step.title, fontSize: headingSize),
-              if (step.subtitle.isNotEmpty) ...[
+              if (isB25)
+                _buildB25HeadingBox(
+                  title: step.title,
+                  subtitle: step.subtitle,
+                  headingSize: headingSize,
+                  bodySize: bodySize,
+                )
+              else
+                _titleBubble(step.title, fontSize: headingSize),
+              if (!isB25 && step.subtitle.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 _contentCard(
                   child: Text(
                     step.subtitle,
-                    textAlign: TextAlign.justify,
+                    textAlign: _subtitleTextAlign(step.subtitle),
                     style: TextStyle(
                       fontSize: bodySize,
                       fontWeight: FontWeight.w700,
                       height: 1.35,
                       color: Color(0xFF334155),
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Century Gothic',
                       fontFamilyFallback: _fontFallback,
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
               ],
+              if (isB25) const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -2451,54 +4629,355 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
+  Widget _buildB25HeadingBox({
+    required String title,
+    required String subtitle,
+    required double headingSize,
+    required double bodySize,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_b25HeadingStart, _b25HeadingEnd],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _b25Border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: headingSize,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    fontFamily: 'Century Gothic',
+                    fontFamilyFallback: _fontFallback,
+                  ),
+                ),
+              ),
+              const Icon(Icons.star_rounded, color: _b25HeadingAccent),
+            ],
+          ),
+          if (subtitle.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            for (final line in subtitle.split('\n'))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '\u2022',
+                      style: TextStyle(
+                        fontSize: bodySize,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                        color: _b25HeadingSubtitle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        line.replaceFirst('\u2022', '').trim(),
+                        style: TextStyle(
+                          fontSize: bodySize,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                          color: _b25HeadingSubtitle,
+                          fontFamily: 'Century Gothic',
+                          fontFamilyFallback: _fontFallback,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildB25ContinueButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return AnimatedKidButton(
+      label: label,
+      icon: Icons.home_rounded,
+      onPressed: onPressed,
+      backgroundColor: _b25Button,
+      hoverBackgroundColor: _b25ButtonPressed,
+      pressedBackgroundColor: _b25ButtonPressed,
+      shadowColor: _b25ButtonShadow,
+      foregroundColor: Colors.white,
+      height: 54,
+      labelFontSize: _responsiveButtonFontSize(context),
+    );
+  }
+
   Widget _summaryCard(
     LearningSummaryCard card, {
     required double headingSize,
     required double bodySize,
     required bool useDarkerBackground,
   }) {
-    final accentColor = _summaryCardAccentColor(card.prefix);
-    final backgroundAlpha = useDarkerBackground ? 0.3 : 0.14;
-    final borderAlpha = useDarkerBackground ? 0.72 : 0.5;
-    final boxColor = Color.alphaBlend(
-      accentColor.withValues(alpha: backgroundAlpha),
-      Colors.white,
-    );
+    final b25Palette = useDarkerBackground
+        ? _b25SummaryCardPalette(card.prefix)
+        : null;
+    final accentColor =
+        b25Palette?.darkAccent ?? _summaryCardAccentColor(card.prefix);
+    final boxColor =
+        b25Palette?.background ??
+        Color.alphaBlend(accentColor.withValues(alpha: 0.14), Colors.white);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: boxColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accentColor.withValues(alpha: borderAlpha)),
+        border: Border.all(
+          color: b25Palette?.accent ?? accentColor.withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            card.prefix,
-            style: TextStyle(
-              fontSize: headingSize,
-              fontWeight: FontWeight.w900,
-              color: accentColor,
-              fontFamily: 'Poppins',
-              fontFamilyFallback: _fontFallback,
+          if (b25Palette != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: b25Palette.main,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: b25Palette.darkAccent),
+              ),
+              child: Text(
+                card.prefix,
+                style: TextStyle(
+                  fontSize: headingSize,
+                  fontWeight: FontWeight.w900,
+                  color: b25Palette.textOnMain,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              ),
+            )
+          else
+            Text(
+              card.prefix,
+              style: TextStyle(
+                fontSize: headingSize,
+                fontWeight: FontWeight.w900,
+                color: accentColor,
+                fontFamily: 'Century Gothic',
+                fontFamilyFallback: _fontFallback,
+              ),
             ),
-          ),
           const SizedBox(height: 8),
-          Text(
-            card.ruleText,
-            style: TextStyle(
-              fontSize: bodySize,
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-              color: const Color(0xFF1D3557),
-              fontFamily: 'Poppins',
-              fontFamilyFallback: _fontFallback,
+          if (useDarkerBackground && card.prefix.trim().toLowerCase() == 'me-')
+            _buildB25MeRuleText(card.ruleText, bodySize)
+          else if (useDarkerBackground &&
+              card.prefix.trim().toLowerCase() == 'meng-')
+            _buildB25MengRuleText(card.ruleText, bodySize)
+          else
+            Text(
+              card.ruleText,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                fontSize: bodySize,
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+                color: useDarkerBackground
+                    ? _b25MainText
+                    : const Color(0xFF1D3557),
+                fontFamily: 'Century Gothic',
+                fontFamilyFallback: _fontFallback,
+              ),
             ),
-          ),
         ],
       ),
     );
+  }
+
+  Widget _buildB25MeRuleText(String ruleText, double bodySize) {
+    final baseStyle = TextStyle(
+      fontSize: bodySize,
+      fontWeight: FontWeight.w700,
+      height: 1.35,
+      color: _b25MainText,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+    final secondaryStyle = baseStyle.copyWith(color: _b25SecondaryText);
+    final lines = ruleText.split('\n');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (lines.isNotEmpty)
+          Text(lines.first, textAlign: TextAlign.start, style: baseStyle),
+        _buildB25MeRuleTable(lines.skip(1), baseStyle, secondaryStyle),
+      ],
+    );
+  }
+
+  Widget _buildB25MeRuleTable(
+    Iterable<String> lines,
+    TextStyle baseStyle,
+    TextStyle secondaryStyle,
+  ) {
+    final pattern = RegExp(r'^(\S+)\s+\(?menjadi\s+([^)]+)\)?$');
+    final becomingPainter = TextPainter(
+      text: TextSpan(text: 'menjadi', style: secondaryStyle),
+      maxLines: 1,
+      textDirection: Directionality.of(context),
+    )..layout();
+    final becomingWidth =
+        becomingPainter.width + responsiveClamp(context, 4, 6, 8);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lines.map((line) {
+        final match = pattern.firstMatch(line.trim());
+        if (match == null) {
+          return Text(line, textAlign: TextAlign.start, style: baseStyle);
+        }
+
+        return FittedBox(
+          alignment: Alignment.centerLeft,
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                child: Text(
+                  match.group(1)!,
+                  style: baseStyle,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+              SizedBox(
+                width: becomingWidth,
+                child: Text(
+                  'menjadi',
+                  style: secondaryStyle,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+              Text(
+                match.group(2)!,
+                style: baseStyle,
+                maxLines: 1,
+                softWrap: false,
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildB25MengRuleText(String ruleText, double bodySize) {
+    final textStyle = TextStyle(
+      fontSize: bodySize,
+      fontWeight: FontWeight.w700,
+      height: 1.35,
+      color: _b25MainText,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+    final lines = ruleText.split('\n');
+    final firstLine = lines.first;
+    final secondLine = lines.length > 1 ? lines.skip(1).join('\n') : '';
+    final firstVowelIndex = firstLine.indexOf('a');
+    final leadingText = firstVowelIndex < 0
+        ? ''
+        : firstLine.substring(0, firstVowelIndex);
+    final leadingTextPainter = TextPainter(
+      text: TextSpan(text: leadingText, style: textStyle),
+      maxLines: 1,
+      textDirection: Directionality.of(context),
+    )..layout();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(firstLine, textAlign: TextAlign.start, style: textStyle),
+        if (secondLine.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(left: leadingTextPainter.width),
+            child: Text(
+              secondLine,
+              textAlign: TextAlign.start,
+              style: textStyle,
+            ),
+          ),
+      ],
+    );
+  }
+
+  _SummaryCardPalette _b25SummaryCardPalette(String prefix) {
+    switch (prefix.trim().toLowerCase()) {
+      case 'me-':
+        return const _SummaryCardPalette(
+          background: _b05LightBackground,
+          main: _b05MainColor,
+          accent: _b05AccentColor,
+          darkAccent: _b05DarkerAccentColor,
+          textOnMain: _b05TextOnColoredBox,
+        );
+      case 'mem-':
+        return const _SummaryCardPalette(
+          background: _b15LightBackground,
+          main: _b15MainColor,
+          accent: _b15AccentColor,
+          darkAccent: _b15DarkerAccentColor,
+          textOnMain: _b15TextOnColoredBox,
+        );
+      case 'men-':
+        return const _SummaryCardPalette(
+          background: _b16LightBackground,
+          main: _b16MainColor,
+          accent: _b16AccentColor,
+          darkAccent: _b16DarkerAccentColor,
+          textOnMain: _b16TextOnColoredBox,
+        );
+      case 'meng-':
+        return const _SummaryCardPalette(
+          background: _b17LightBackground,
+          main: _b17MainColor,
+          accent: _b17AccentColor,
+          darkAccent: _b17DarkerAccentColor,
+          textOnMain: _b17TextOnColoredBox,
+        );
+      case 'menge-':
+        return const _SummaryCardPalette(
+          background: _b18LightBackground,
+          main: _b18MainColor,
+          accent: _b18AccentColor,
+          darkAccent: _b18DarkerAccentColor,
+          textOnMain: _b18TextOnColoredBox,
+        );
+      default:
+        return const _SummaryCardPalette(
+          background: Colors.white,
+          main: _b25HeadingStart,
+          accent: _b25Border,
+          darkAccent: _b25HeadingEnd,
+          textOnMain: Colors.white,
+        );
+    }
   }
 
   Color _summaryCardAccentColor(String prefix) {
@@ -2604,7 +5083,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                                 fontSize: titleSize,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Century Gothic',
                                 fontFamilyFallback: _fontFallback,
                               ),
                             ),
@@ -2617,22 +5096,16 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                                 color: Colors.white70,
                                 height: 1.35,
                                 fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Century Gothic',
                                 fontFamilyFallback: _fontFallback,
                               ),
                             ),
                             const SizedBox(height: 40),
                             SizedBox(
                               width: math.min(constraints.maxWidth * 0.72, 220),
-                              child: AnimatedKidButton(
+                              child: _buildLearningContinueButton(
                                 label: step.buttonText,
-                                icon: Icons.arrow_forward_rounded,
                                 onPressed: _goNext,
-                                backgroundColor: const Color(0xFFFFC300),
-                                foregroundColor: const Color(0xFF1D3557),
-                                labelFontSize: _responsiveButtonFontSize(
-                                  context,
-                                ),
                               ),
                             ),
                           ],
@@ -2736,7 +5209,38 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _buildB07SalinAnimationStep(LearningStep step) {
+  double _animatedWordTextScale(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    if (size.width > size.height) {
+      return 0.72;
+    }
+    if (size.width < 340 || size.height < 570) {
+      return 0.78;
+    }
+    if (size.height < 640) {
+      return 0.86;
+    }
+    if (size.width < 380) {
+      return 0.92;
+    }
+    return 1.0;
+  }
+
+  Widget _buildResponsiveWordAnimationStep({
+    required LearningStep step,
+    required int stage,
+    required bool isAnimating,
+    required VoidCallback onAdvance,
+    required Key continueVisibleKey,
+    required Key continueHiddenKey,
+    required Widget Function(
+      BuildContext context,
+      int stage,
+      bool animationComplete,
+    )
+    stageBuilder,
+    bool showTapHint = false,
+  }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final reduceMotion = AppMotionSpec.reduceMotion(context);
@@ -2747,17 +5251,65 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 const Duration(milliseconds: 650),
                 const Duration(milliseconds: 1),
               );
-        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.22;
-        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
-        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
-        final stageHeight = responsiveClamp(context, 86, 118, 142);
+        final isLandscape = constraints.maxWidth > constraints.maxHeight;
+        final isShort = constraints.maxHeight < 620;
+        final animationComplete = stage >= 2 && !isAnimating;
+        final horizontalPadding = responsiveClamp(
+          context,
+          12,
+          isLandscape ? 18 : 20,
+          24,
+        );
+        final hasTransformStage = stage >= 2;
+        final stageHeight = hasTransformStage
+            ? responsiveClamp(
+                context,
+                isLandscape ? 164 : 184,
+                isLandscape
+                    ? 196
+                    : isShort
+                    ? 214
+                    : 258,
+                isLandscape
+                    ? 232
+                    : isShort
+                    ? 252
+                    : 316,
+              )
+            : responsiveClamp(
+                context,
+                isLandscape ? 74 : 82,
+                isShort ? 96 : 114,
+                isShort ? 118 : 142,
+              );
+        final baseSafeTop = isLandscape
+            ? responsiveClamp(context, 10, 14, 18)
+            : math.max(
+                constraints.maxHeight * (isShort ? 0.18 : 0.21),
+                responsiveClamp(context, 74, 96, 124),
+              );
+        final bottomReserve = responsiveClamp(
+          context,
+          isLandscape ? 62 : 82,
+          isShort ? 88 : 104,
+          isShort ? 102 : 118,
+        );
+        final maxSafeTop = math.max(
+          0.0,
+          constraints.maxHeight - bottomReserve - stageHeight,
+        );
+        final safeTop = math.min(baseSafeTop, maxSafeTop);
+        final availableHeight = math.max(
+          stageHeight,
+          constraints.maxHeight - safeTop - bottomReserve,
+        );
+        final safeZoneHeight = math.min(stageHeight, availableHeight);
         final stageAlignmentX = constraints.maxWidth < 360
-            ? 0.18
+            ? 0.16
             : constraints.maxWidth < 400
-            ? 0.26
-            : 0.34;
-        final showContinue = _b07AnimationStage >= 3 && !_isB07StageAnimating;
+            ? 0.24
+            : 0.32;
+        final showContinue = animationComplete;
         final backgroundImage = step.backgroundImage;
 
         return SizedBox.expand(
@@ -2792,380 +5344,54 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       },
                     ),
               _buildTapHintLayer(
-                show: _b07AnimationStage == 0 && !_isB07StageAnimating,
-                onTap: _advanceB07AnimationStage,
-              ),
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: contentTop,
-                      bottom: responsiveClamp(context, 90, 104, 118),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: showContinue
-                              ? null
-                              : _advanceB07AnimationStage,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: contentPaddingX,
-                                vertical: contentPaddingY,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: stageHeight,
-                                    child: Align(
-                                      alignment: Alignment(stageAlignmentX, 0),
-                                      child: AnimatedSwitcher(
-                                        duration: switchDuration,
-                                        switchInCurve: Curves.easeOutCubic,
-                                        switchOutCurve: Curves.easeInCubic,
-                                        transitionBuilder: (child, animation) {
-                                          if (reduceMotion) {
-                                            return child;
-                                          }
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: ScaleTransition(
-                                              scale: Tween<double>(
-                                                begin: 0.96,
-                                                end: 1,
-                                              ).animate(animation),
-                                              child: child,
-                                            ),
-                                          );
-                                        },
-                                        child: _buildB07SalinStageContent(
-                                          context,
-                                          stage: _b07AnimationStage,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                show: showTapHint && stage == 0 && !isAnimating,
+                onTap: onAdvance,
               ),
               Positioned(
-                left: responsiveClamp(context, 16, 20, 24),
-                right: responsiveClamp(context, 16, 20, 24),
-                bottom: responsiveClamp(context, 14, 18, 22),
-                child: AnimatedSwitcher(
-                  duration: switchDuration,
-                  child: showContinue
-                      ? AnimatedKidButton(
-                          key: const ValueKey('b07-continue-visible'),
-                          label: step.buttonText,
-                          icon: Icons.arrow_forward_rounded,
-                          onPressed: _goNext,
-                          backgroundColor: const Color(0xFFFFC300),
-                          foregroundColor: const Color(0xFF1D3557),
-                          labelFontSize: _responsiveButtonFontSize(context),
-                        )
-                      : const SizedBox(
-                          key: ValueKey('b07-continue-hidden'),
-                          height: 0,
-                        ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildB07SalinStageContent(
-    BuildContext context, {
-    required int stage,
-  }) {
-    final textSize =
-        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
-    final wordSize = textSize;
-    final formulaSize = textSize;
-    final finalSize = textSize;
-    const black = Color(0xFF111827);
-    const red = Color(0xFFE63946);
-    const green = Color(0xFF16A34A);
-
-    TextStyle style(double size, Color color) {
-      return TextStyle(
-        fontSize: size,
-        fontWeight: FontWeight.w900,
-        color: color,
-        height: 1.05,
-        fontFamily: 'Poppins',
-        fontFamilyFallback: _fontFallback,
-      );
-    }
-
-    Widget scaled(Widget child) {
-      return FittedBox(fit: BoxFit.scaleDown, child: child);
-    }
-
-    Widget transformStage() {
-      final circleSize = responsiveClamp(context, 38, 50, 60);
-      final slotWidth = responsiveClamp(context, 46, 62, 74);
-      final slotHeight = responsiveClamp(context, 78, 100, 120);
-      final arrowSize = responsiveClamp(context, 24, 34, 42);
-      final lift = responsiveClamp(context, 28, 38, 46);
-      const nyLift = 0.0;
-      final reduceMotion = AppMotionSpec.reduceMotion(context);
-
-      Widget content(double value) {
-        final circleProgress = Curves.easeOutCubic.transform(
-          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
-        );
-        final removeProgress = Curves.easeIn.transform(
-          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
-        );
-        final addProgress = Curves.easeOut.transform(
-          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
-        );
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('me- + ', style: style(formulaSize, black)),
-            SizedBox(
-              width: slotWidth,
-              height: slotHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Opacity(
-                    opacity: 1 - removeProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, -lift * removeProgress),
-                      child: CustomPaint(
-                        painter: _CircleProgressPainter(
-                          color: red,
-                          progress: circleProgress,
-                          strokeWidth: 3,
+                left: horizontalPadding,
+                right: horizontalPadding,
+                top: safeTop,
+                height: safeZoneHeight,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: showContinue ? null : onAdvance,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: responsiveClamp(context, 10, 16, 22),
+                          vertical: responsiveClamp(context, 8, 10, 14),
                         ),
                         child: SizedBox(
-                          width: circleSize,
-                          height: circleSize,
-                          child: Center(
-                            child: Text('S', style: style(formulaSize, red)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: addProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, (1 - addProgress) * 18),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.translate(
-                            offset: Offset(0, -nyLift),
-                            child: Text('ny', style: style(formulaSize, green)),
-                          ),
-                          Positioned(
-                            top:
-                                slotHeight / 2 +
-                                responsiveClamp(context, 8, 12, 16),
-                            child: Icon(
-                              Icons.arrow_upward_rounded,
-                              color: green,
-                              size: arrowSize,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text('alin', style: style(formulaSize, black)),
-          ],
-        );
-      }
-
-      if (reduceMotion) {
-        return content(1);
-      }
-      return TweenAnimationBuilder<double>(
-        key: const ValueKey('b07-stage-2-transform'),
-        tween: Tween(begin: 0, end: 1),
-        duration: _b07StageDuration(2),
-        curve: Curves.linear,
-        builder: (context, value, child) => content(value),
-      );
-    }
-
-    switch (stage) {
-      case 0:
-        return scaled(
-          Text(
-            'Salin',
-            key: const ValueKey('b07-stage-0'),
-            maxLines: 1,
-            style: style(wordSize, black),
-          ),
-        );
-      case 1:
-        return scaled(
-          Text(
-            'me -',
-            key: const ValueKey('b07-stage-1'),
-            maxLines: 1,
-            style: style(formulaSize, black),
-          ),
-        );
-      case 2:
-        return scaled(transformStage());
-      default:
-        return scaled(
-          Text(
-            'menyalin',
-            key: const ValueKey('b07-stage-3'),
-            maxLines: 1,
-            style: style(finalSize, black),
-          ),
-        );
-    }
-  }
-
-  Widget _buildB08SimpanAnimationStep(LearningStep step) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final reduceMotion = AppMotionSpec.reduceMotion(context);
-        final switchDuration = reduceMotion
-            ? Duration.zero
-            : AppMotionSpec.chooseDuration(
-                context,
-                const Duration(milliseconds: 650),
-                const Duration(milliseconds: 1),
-              );
-        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.22;
-        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
-        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
-        final stageHeight = responsiveClamp(context, 86, 118, 142);
-        final stageAlignmentX = constraints.maxWidth < 360
-            ? 0.18
-            : constraints.maxWidth < 400
-            ? 0.26
-            : 0.34;
-        final showContinue = _b08AnimationStage >= 3 && !_isB08StageAnimating;
-        final backgroundImage = step.backgroundImage;
-
-        return SizedBox.expand(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              backgroundImage == null || backgroundImage.isEmpty
-                  ? const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      backgroundImage,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: contentTop,
-                      bottom: responsiveClamp(context, 90, 104, 118),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: showContinue
-                              ? null
-                              : _advanceB08AnimationStage,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: contentPaddingX,
-                                vertical: contentPaddingY,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: stageHeight,
-                                    child: Align(
-                                      alignment: Alignment(stageAlignmentX, 0),
-                                      child: AnimatedSwitcher(
-                                        duration: switchDuration,
-                                        switchInCurve: Curves.easeOutCubic,
-                                        switchOutCurve: Curves.easeInCubic,
-                                        transitionBuilder: (child, animation) {
-                                          if (reduceMotion) {
-                                            return child;
-                                          }
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: ScaleTransition(
-                                              scale: Tween<double>(
-                                                begin: 0.96,
-                                                end: 1,
-                                              ).animate(animation),
-                                              child: child,
-                                            ),
-                                          );
-                                        },
-                                        child: _buildB08SimpanStageContent(
-                                          context,
-                                          stage: _b08AnimationStage,
-                                        ),
-                                      ),
-                                    ),
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Align(
+                            alignment: Alignment(stageAlignmentX, 0),
+                            child: AnimatedSwitcher(
+                              duration: switchDuration,
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              transitionBuilder: (child, animation) {
+                                if (reduceMotion) {
+                                  return child;
+                                }
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: ScaleTransition(
+                                    scale: Tween<double>(
+                                      begin: 0.96,
+                                      end: 1,
+                                    ).animate(animation),
+                                    child: child,
                                   ),
-                                ],
+                                );
+                              },
+                              child: stageBuilder(
+                                context,
+                                stage,
+                                animationComplete,
                               ),
                             ),
                           ),
@@ -3182,19 +5408,12 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 child: AnimatedSwitcher(
                   duration: switchDuration,
                   child: showContinue
-                      ? AnimatedKidButton(
-                          key: const ValueKey('b08-continue-visible'),
+                      ? _buildLearningContinueButton(
+                          key: continueVisibleKey,
                           label: step.buttonText,
-                          icon: Icons.arrow_forward_rounded,
                           onPressed: _goNext,
-                          backgroundColor: const Color(0xFFFFC300),
-                          foregroundColor: const Color(0xFF1D3557),
-                          labelFontSize: _responsiveButtonFontSize(context),
                         )
-                      : const SizedBox(
-                          key: ValueKey('b08-continue-hidden'),
-                          height: 0,
-                        ),
+                      : SizedBox(key: continueHiddenKey, height: 0),
                 ),
               ),
             ],
@@ -3204,1128 +5423,359 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _buildB08SimpanStageContent(
-    BuildContext context, {
-    required int stage,
-  }) {
-    final textSize =
-        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
-    final wordSize = textSize;
-    final formulaSize = textSize;
-    final finalSize = textSize;
-    const black = Color(0xFF111827);
-    const red = Color(0xFFE63946);
-    const green = Color(0xFF16A34A);
-
-    TextStyle style(double size, Color color) {
-      return TextStyle(
-        fontSize: size,
-        fontWeight: FontWeight.w900,
-        color: color,
-        height: 1.05,
-        fontFamily: 'Poppins',
-        fontFamilyFallback: _fontFallback,
-      );
-    }
-
-    Widget scaled(Widget child) {
-      return FittedBox(fit: BoxFit.scaleDown, child: child);
-    }
-
-    Widget transformStage() {
-      final circleSize = responsiveClamp(context, 38, 50, 60);
-      final slotWidth = responsiveClamp(context, 46, 62, 74);
-      final slotHeight = responsiveClamp(context, 78, 100, 120);
-      final arrowSize = responsiveClamp(context, 24, 34, 42);
-      final lift = responsiveClamp(context, 28, 38, 46);
-      const nyLift = 0.0;
-      final reduceMotion = AppMotionSpec.reduceMotion(context);
-
-      Widget content(double value) {
-        final circleProgress = Curves.easeOutCubic.transform(
-          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
-        );
-        final removeProgress = Curves.easeIn.transform(
-          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
-        );
-        final addProgress = Curves.easeOut.transform(
-          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
-        );
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('me- + ', style: style(formulaSize, black)),
-            SizedBox(
-              width: slotWidth,
-              height: slotHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Opacity(
-                    opacity: 1 - removeProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, -lift * removeProgress),
-                      child: CustomPaint(
-                        painter: _CircleProgressPainter(
-                          color: red,
-                          progress: circleProgress,
-                          strokeWidth: 3,
-                        ),
-                        child: SizedBox(
-                          width: circleSize,
-                          height: circleSize,
-                          child: Center(
-                            child: Text('s', style: style(formulaSize, red)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: addProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, (1 - addProgress) * 18),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.translate(
-                            offset: Offset(0, -nyLift),
-                            child: Text('ny', style: style(formulaSize, green)),
-                          ),
-                          Positioned(
-                            top:
-                                slotHeight / 2 +
-                                responsiveClamp(context, 8, 12, 16),
-                            child: Icon(
-                              Icons.arrow_upward_rounded,
-                              color: green,
-                              size: arrowSize,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text('impan', style: style(formulaSize, black)),
-          ],
-        );
-      }
-
-      if (reduceMotion) {
-        return content(1);
-      }
-      return TweenAnimationBuilder<double>(
-        key: const ValueKey('b08-stage-2-transform'),
-        tween: Tween(begin: 0, end: 1),
-        duration: _b08StageDuration(2),
-        curve: Curves.linear,
-        builder: (context, value, child) => content(value),
-      );
-    }
-
-    switch (stage) {
-      case 0:
-        return scaled(
-          Text(
-            'simpan',
-            key: const ValueKey('b08-stage-0'),
-            maxLines: 1,
-            style: style(wordSize, black),
-          ),
-        );
-      case 1:
-        return scaled(
-          Text(
-            'me-',
-            key: const ValueKey('b08-stage-1'),
-            maxLines: 1,
-            style: style(formulaSize, black),
-          ),
-        );
-      case 2:
-        return scaled(transformStage());
+  int _wordAnimationStageForStep(String stepId) {
+    switch (stepId) {
+      case 'B07':
+        return _b07AnimationStage;
+      case 'B08':
+        return _b08AnimationStage;
+      case 'B09':
+        return _b09AnimationStage;
+      case 'B10':
+        return _b10AnimationStage;
       default:
-        return scaled(
-          Text(
-            'menyimpan',
-            key: const ValueKey('b08-stage-3'),
-            maxLines: 1,
-            style: style(finalSize, black),
-          ),
-        );
+        return _animationStageForSpecialStep(stepId);
     }
   }
 
-  Widget _buildB09PilihAnimationStep(LearningStep step) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final reduceMotion = AppMotionSpec.reduceMotion(context);
-        final switchDuration = reduceMotion
-            ? Duration.zero
-            : AppMotionSpec.chooseDuration(
-                context,
-                const Duration(milliseconds: 650),
-                const Duration(milliseconds: 1),
-              );
-        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.22;
-        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
-        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
-        final stageHeight = responsiveClamp(context, 86, 118, 142);
-        final stageAlignmentX = constraints.maxWidth < 360
-            ? 0.18
-            : constraints.maxWidth < 400
-            ? 0.26
-            : 0.34;
-        final showContinue = _b09AnimationStage >= 3 && !_isB09StageAnimating;
-        final backgroundImage = step.backgroundImage;
-
-        return SizedBox.expand(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              backgroundImage == null || backgroundImage.isEmpty
-                  ? const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      backgroundImage,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: contentTop,
-                      bottom: responsiveClamp(context, 90, 104, 118),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: showContinue
-                              ? null
-                              : _advanceB09AnimationStage,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: contentPaddingX,
-                                vertical: contentPaddingY,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: stageHeight,
-                                    child: Align(
-                                      alignment: Alignment(stageAlignmentX, 0),
-                                      child: AnimatedSwitcher(
-                                        duration: switchDuration,
-                                        switchInCurve: Curves.easeOutCubic,
-                                        switchOutCurve: Curves.easeInCubic,
-                                        transitionBuilder: (child, animation) {
-                                          if (reduceMotion) {
-                                            return child;
-                                          }
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: ScaleTransition(
-                                              scale: Tween<double>(
-                                                begin: 0.96,
-                                                end: 1,
-                                              ).animate(animation),
-                                              child: child,
-                                            ),
-                                          );
-                                        },
-                                        child: _buildB09PilihStageContent(
-                                          context,
-                                          stage: _b09AnimationStage,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: responsiveClamp(context, 16, 20, 24),
-                right: responsiveClamp(context, 16, 20, 24),
-                bottom: responsiveClamp(context, 14, 18, 22),
-                child: AnimatedSwitcher(
-                  duration: switchDuration,
-                  child: showContinue
-                      ? AnimatedKidButton(
-                          key: const ValueKey('b09-continue-visible'),
-                          label: step.buttonText,
-                          icon: Icons.arrow_forward_rounded,
-                          onPressed: _goNext,
-                          backgroundColor: const Color(0xFFFFC300),
-                          foregroundColor: const Color(0xFF1D3557),
-                          labelFontSize: _responsiveButtonFontSize(context),
-                        )
-                      : const SizedBox(
-                          key: ValueKey('b09-continue-hidden'),
-                          height: 0,
-                        ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildB09PilihStageContent(
-    BuildContext context, {
-    required int stage,
-  }) {
-    final textSize =
-        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
-    final wordSize = textSize;
-    final formulaSize = textSize;
-    final finalSize = textSize;
-    const black = Color(0xFF111827);
-    const red = Color(0xFFE63946);
-    const green = Color(0xFF16A34A);
-
-    TextStyle style(double size, Color color) {
-      return TextStyle(
-        fontSize: size,
-        fontWeight: FontWeight.w900,
-        color: color,
-        height: 1.05,
-        fontFamily: 'Poppins',
-        fontFamilyFallback: _fontFallback,
-      );
-    }
-
-    Widget scaled(Widget child) {
-      return FittedBox(fit: BoxFit.scaleDown, child: child);
-    }
-
-    Widget transformStage() {
-      final circleSize = responsiveClamp(context, 38, 50, 60);
-      final slotWidth = responsiveClamp(context, 46, 62, 74);
-      final slotHeight = responsiveClamp(context, 78, 100, 120);
-      final arrowSize = responsiveClamp(context, 24, 34, 42);
-      final lift = responsiveClamp(context, 28, 38, 46);
-      const replacementLift = 0.0;
-      final reduceMotion = AppMotionSpec.reduceMotion(context);
-
-      Widget content(double value) {
-        final circleProgress = Curves.easeOutCubic.transform(
-          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
-        );
-        final removeProgress = Curves.easeIn.transform(
-          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
-        );
-        final addProgress = Curves.easeOut.transform(
-          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
-        );
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('me- + ', style: style(formulaSize, black)),
-            SizedBox(
-              width: slotWidth,
-              height: slotHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Opacity(
-                    opacity: 1 - removeProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, -lift * removeProgress),
-                      child: CustomPaint(
-                        painter: _CircleProgressPainter(
-                          color: red,
-                          progress: circleProgress,
-                          strokeWidth: 3,
-                        ),
-                        child: SizedBox(
-                          width: circleSize,
-                          height: circleSize,
-                          child: Center(
-                            child: Text('p', style: style(formulaSize, red)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: addProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, (1 - addProgress) * 18),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.translate(
-                            offset: Offset(0, -replacementLift),
-                            child: Text('m', style: style(formulaSize, green)),
-                          ),
-                          Positioned(
-                            top:
-                                slotHeight / 2 +
-                                responsiveClamp(context, 8, 12, 16),
-                            child: Icon(
-                              Icons.arrow_upward_rounded,
-                              color: green,
-                              size: arrowSize,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text('ilih', style: style(formulaSize, black)),
-          ],
-        );
-      }
-
-      if (reduceMotion) {
-        return content(1);
-      }
-      return TweenAnimationBuilder<double>(
-        key: const ValueKey('b09-stage-2-transform'),
-        tween: Tween(begin: 0, end: 1),
-        duration: _b09StageDuration(2),
-        curve: Curves.linear,
-        builder: (context, value, child) => content(value),
-      );
-    }
-
-    switch (stage) {
-      case 0:
-        return scaled(
-          Text(
-            'pilih',
-            key: const ValueKey('b09-stage-0'),
-            maxLines: 1,
-            style: style(wordSize, black),
-          ),
-        );
-      case 1:
-        return scaled(
-          Text(
-            'me-',
-            key: const ValueKey('b09-stage-1'),
-            maxLines: 1,
-            style: style(formulaSize, black),
-          ),
-        );
-      case 2:
-        return scaled(transformStage());
+  bool _isWordAnimationRunningForStep(String stepId) {
+    switch (stepId) {
+      case 'B07':
+        return _isB07StageAnimating;
+      case 'B08':
+        return _isB08StageAnimating;
+      case 'B09':
+        return _isB09StageAnimating;
+      case 'B10':
+        return _isB10StageAnimating;
       default:
-        return scaled(
-          Text(
-            'memilih',
-            key: const ValueKey('b09-stage-3'),
-            maxLines: 1,
-            style: style(finalSize, black),
-          ),
-        );
+        return _isAnimationRunningForSpecialStep(stepId);
     }
   }
 
-  Widget _buildB10PakaiAnimationStep(LearningStep step) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final reduceMotion = AppMotionSpec.reduceMotion(context);
-        final switchDuration = reduceMotion
-            ? Duration.zero
-            : AppMotionSpec.chooseDuration(
-                context,
-                const Duration(milliseconds: 650),
-                const Duration(milliseconds: 1),
-              );
-        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.22;
-        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
-        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
-        final stageHeight = responsiveClamp(context, 86, 118, 142);
-        final stageAlignmentX = constraints.maxWidth < 360
-            ? 0.18
-            : constraints.maxWidth < 400
-            ? 0.26
-            : 0.34;
-        final showContinue = _b10AnimationStage >= 3 && !_isB10StageAnimating;
-        final backgroundImage = step.backgroundImage;
-
-        return SizedBox.expand(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              backgroundImage == null || backgroundImage.isEmpty
-                  ? const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      backgroundImage,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: contentTop,
-                      bottom: responsiveClamp(context, 90, 104, 118),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: showContinue
-                              ? null
-                              : _advanceB10AnimationStage,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: contentPaddingX,
-                                vertical: contentPaddingY,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: stageHeight,
-                                    child: Align(
-                                      alignment: Alignment(stageAlignmentX, 0),
-                                      child: AnimatedSwitcher(
-                                        duration: switchDuration,
-                                        switchInCurve: Curves.easeOutCubic,
-                                        switchOutCurve: Curves.easeInCubic,
-                                        transitionBuilder: (child, animation) {
-                                          if (reduceMotion) {
-                                            return child;
-                                          }
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: ScaleTransition(
-                                              scale: Tween<double>(
-                                                begin: 0.96,
-                                                end: 1,
-                                              ).animate(animation),
-                                              child: child,
-                                            ),
-                                          );
-                                        },
-                                        child: _buildB10PakaiStageContent(
-                                          context,
-                                          stage: _b10AnimationStage,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: responsiveClamp(context, 16, 20, 24),
-                right: responsiveClamp(context, 16, 20, 24),
-                bottom: responsiveClamp(context, 14, 18, 22),
-                child: AnimatedSwitcher(
-                  duration: switchDuration,
-                  child: showContinue
-                      ? AnimatedKidButton(
-                          key: const ValueKey('b10-continue-visible'),
-                          label: step.buttonText,
-                          icon: Icons.arrow_forward_rounded,
-                          onPressed: _goNext,
-                          backgroundColor: const Color(0xFFFFC300),
-                          foregroundColor: const Color(0xFF1D3557),
-                          labelFontSize: _responsiveButtonFontSize(context),
-                        )
-                      : const SizedBox(
-                          key: ValueKey('b10-continue-hidden'),
-                          height: 0,
-                        ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildB10PakaiStageContent(
-    BuildContext context, {
-    required int stage,
-  }) {
-    final textSize =
-        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
-    final wordSize = textSize;
-    final formulaSize = textSize;
-    final finalSize = textSize;
-    const black = Color(0xFF111827);
-    const red = Color(0xFFE63946);
-    const green = Color(0xFF16A34A);
-
-    TextStyle style(double size, Color color) {
-      return TextStyle(
-        fontSize: size,
-        fontWeight: FontWeight.w900,
-        color: color,
-        height: 1.05,
-        fontFamily: 'Poppins',
-        fontFamilyFallback: _fontFallback,
-      );
-    }
-
-    Widget scaled(Widget child) {
-      return FittedBox(fit: BoxFit.scaleDown, child: child);
-    }
-
-    Widget transformStage() {
-      final circleSize = responsiveClamp(context, 38, 50, 60);
-      final slotWidth = responsiveClamp(context, 46, 62, 74);
-      final slotHeight = responsiveClamp(context, 78, 100, 120);
-      final arrowSize = responsiveClamp(context, 24, 34, 42);
-      final lift = responsiveClamp(context, 28, 38, 46);
-      const replacementLift = 0.0;
-      final reduceMotion = AppMotionSpec.reduceMotion(context);
-
-      Widget content(double value) {
-        final circleProgress = Curves.easeOutCubic.transform(
-          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
-        );
-        final removeProgress = Curves.easeIn.transform(
-          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
-        );
-        final addProgress = Curves.easeOut.transform(
-          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
-        );
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('me- + ', style: style(formulaSize, black)),
-            SizedBox(
-              width: slotWidth,
-              height: slotHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Opacity(
-                    opacity: 1 - removeProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, -lift * removeProgress),
-                      child: CustomPaint(
-                        painter: _CircleProgressPainter(
-                          color: red,
-                          progress: circleProgress,
-                          strokeWidth: 3,
-                        ),
-                        child: SizedBox(
-                          width: circleSize,
-                          height: circleSize,
-                          child: Center(
-                            child: Text('p', style: style(formulaSize, red)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: addProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, (1 - addProgress) * 18),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.translate(
-                            offset: Offset(0, -replacementLift),
-                            child: Text('m', style: style(formulaSize, green)),
-                          ),
-                          Positioned(
-                            top:
-                                slotHeight / 2 +
-                                responsiveClamp(context, 8, 12, 16),
-                            child: Icon(
-                              Icons.arrow_upward_rounded,
-                              color: green,
-                              size: arrowSize,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text('akai', style: style(formulaSize, black)),
-          ],
-        );
-      }
-
-      if (reduceMotion) {
-        return content(1);
-      }
-      return TweenAnimationBuilder<double>(
-        key: const ValueKey('b10-stage-2-transform'),
-        tween: Tween(begin: 0, end: 1),
-        duration: _b10StageDuration(2),
-        curve: Curves.linear,
-        builder: (context, value, child) => content(value),
-      );
-    }
-
-    switch (stage) {
-      case 0:
-        return scaled(
-          Text(
-            'pakai',
-            key: const ValueKey('b10-stage-0'),
-            maxLines: 1,
-            style: style(wordSize, black),
-          ),
-        );
-      case 1:
-        return scaled(
-          Text(
-            'me-',
-            key: const ValueKey('b10-stage-1'),
-            maxLines: 1,
-            style: style(formulaSize, black),
-          ),
-        );
-      case 2:
-        return scaled(transformStage());
+  VoidCallback _wordAnimationAdvanceForStep(String stepId) {
+    switch (stepId) {
+      case 'B07':
+        return _advanceB07AnimationStage;
+      case 'B08':
+        return _advanceB08AnimationStage;
+      case 'B09':
+        return _advanceB09AnimationStage;
+      case 'B10':
+        return _advanceB10AnimationStage;
       default:
-        return scaled(
-          Text(
-            'memakai',
-            key: const ValueKey('b10-stage-3'),
-            maxLines: 1,
-            style: style(finalSize, black),
-          ),
-        );
+        return () => _advanceB11ToB14AnimationStage(stepId);
     }
   }
 
-  Widget _buildGenericWordAnimationStep({
-    required LearningStep step,
-    required String rootWord,
-    required String finalWord,
-    required String circledLetter,
-    required String remainingLetters,
-    required String replacementLetters,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final reduceMotion = AppMotionSpec.reduceMotion(context);
-        final switchDuration = reduceMotion
-            ? Duration.zero
-            : AppMotionSpec.chooseDuration(
-                context,
-                const Duration(milliseconds: 650),
-                const Duration(milliseconds: 1),
-              );
-        final horizontalPadding = responsiveClamp(context, 16, 24, 28);
-        final contentTop = constraints.maxHeight * 0.22;
-        final contentPaddingX = responsiveClamp(context, 18, 24, 30);
-        final contentPaddingY = responsiveClamp(context, 12, 18, 24);
-        final stageHeight = responsiveClamp(context, 86, 118, 142);
-        final stageAlignmentX = constraints.maxWidth < 360
-            ? 0.18
-            : constraints.maxWidth < 400
-            ? 0.26
-            : 0.34;
-        final stage = _animationStageForSpecialStep(step.id);
-        final showContinue =
-            stage >= 3 && !_isAnimationRunningForSpecialStep(step.id);
-        final backgroundImage = step.backgroundImage;
-
-        return SizedBox.expand(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              backgroundImage == null || backgroundImage.isEmpty
-                  ? const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      backgroundImage,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
-                      top: contentTop,
-                      bottom: responsiveClamp(context, 90, 104, 118),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: showContinue
-                              ? null
-                              : () => _advanceB11ToB14AnimationStage(step.id),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: contentPaddingX,
-                                vertical: contentPaddingY,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    height: stageHeight,
-                                    child: Align(
-                                      alignment: Alignment(stageAlignmentX, 0),
-                                      child: AnimatedSwitcher(
-                                        duration: switchDuration,
-                                        switchInCurve: Curves.easeOutCubic,
-                                        switchOutCurve: Curves.easeInCubic,
-                                        transitionBuilder: (child, animation) {
-                                          if (reduceMotion) {
-                                            return child;
-                                          }
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: ScaleTransition(
-                                              scale: Tween<double>(
-                                                begin: 0.96,
-                                                end: 1,
-                                              ).animate(animation),
-                                              child: child,
-                                            ),
-                                          );
-                                        },
-                                        child: _buildGenericWordStageContent(
-                                          context,
-                                          stepId: step.id,
-                                          stage: stage,
-                                          rootWord: rootWord,
-                                          finalWord: finalWord,
-                                          circledLetter: circledLetter,
-                                          remainingLetters: remainingLetters,
-                                          replacementLetters:
-                                              replacementLetters,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: responsiveClamp(context, 16, 20, 24),
-                right: responsiveClamp(context, 16, 20, 24),
-                bottom: responsiveClamp(context, 14, 18, 22),
-                child: AnimatedSwitcher(
-                  duration: switchDuration,
-                  child: showContinue
-                      ? AnimatedKidButton(
-                          key: ValueKey('${step.id}-continue-visible'),
-                          label: step.buttonText,
-                          icon: Icons.arrow_forward_rounded,
-                          onPressed: _goNext,
-                          backgroundColor: const Color(0xFFFFC300),
-                          foregroundColor: const Color(0xFF1D3557),
-                          labelFontSize: _responsiveButtonFontSize(context),
-                        )
-                      : SizedBox(
-                          key: ValueKey('${step.id}-continue-hidden'),
-                          height: 0,
-                        ),
-                ),
-              ),
-            ],
-          ),
+  Widget _buildAnimatedWordStep(LearningStep step, _AnimatedWordSpec spec) {
+    return _buildResponsiveWordAnimationStep(
+      step: step,
+      stage: _wordAnimationStageForStep(step.id),
+      isAnimating: _isWordAnimationRunningForStep(step.id),
+      onAdvance: _wordAnimationAdvanceForStep(step.id),
+      continueVisibleKey: ValueKey('${step.id}-continue-visible'),
+      continueHiddenKey: ValueKey('${step.id}-continue-hidden'),
+      showTapHint: step.id == 'B07',
+      stageBuilder: (context, stage, animationComplete) {
+        return _buildAnimatedWordStageContent(
+          context,
+          stepId: step.id,
+          spec: spec,
+          stage: stage,
+          animationComplete: animationComplete,
         );
       },
     );
   }
 
-  Widget _buildGenericWordStageContent(
+  Widget _buildAnimatedWordStageContent(
     BuildContext context, {
     required String stepId,
+    required _AnimatedWordSpec spec,
     required int stage,
-    required String rootWord,
-    required String finalWord,
-    required String circledLetter,
-    required String remainingLetters,
-    required String replacementLetters,
+    required bool animationComplete,
   }) {
-    final textSize =
-        responsiveClamp(context, 26, 34, 42) * _narrowWidthTextScale(context);
-    final wordSize = textSize;
-    final formulaSize = textSize;
-    final finalSize = textSize;
     const black = Color(0xFF111827);
-    const red = Color(0xFFE63946);
-    const green = Color(0xFF16A34A);
+    final baseSize =
+        responsiveClamp(context, 26, 34, 42) *
+        _narrowWidthTextScale(context) *
+        _animatedWordTextScale(context);
 
-    TextStyle style(double size, Color color) {
+    TextStyle wordStyle(double size, Color color) {
       return TextStyle(
         fontSize: size,
         fontWeight: FontWeight.w900,
         color: color,
         height: 1.05,
-        fontFamily: 'Poppins',
+        fontFamily: 'Century Gothic',
         fontFamilyFallback: _fontFallback,
       );
     }
 
-    Widget scaled(Widget child) {
+    Widget fit(Widget child) {
       return FittedBox(fit: BoxFit.scaleDown, child: child);
-    }
-
-    Widget transformStage() {
-      final circleSize = responsiveClamp(context, 38, 50, 60);
-      final slotWidth = responsiveClamp(
-        context,
-        replacementLetters.length > 1 ? 54 : 46,
-        replacementLetters.length > 1 ? 72 : 62,
-        replacementLetters.length > 1 ? 86 : 74,
-      );
-      final slotHeight = responsiveClamp(context, 78, 100, 120);
-      final arrowSize = responsiveClamp(context, 24, 34, 42);
-      final lift = responsiveClamp(context, 28, 38, 46);
-      const replacementLift = 0.0;
-      final reduceMotion = AppMotionSpec.reduceMotion(context);
-
-      Widget content(double value) {
-        final circleProgress = Curves.easeOutCubic.transform(
-          ((value - 0.18) / 0.24).clamp(0.0, 1.0),
-        );
-        final removeProgress = Curves.easeIn.transform(
-          ((value - 0.58) / 0.22).clamp(0.0, 1.0),
-        );
-        final addProgress = Curves.easeOut.transform(
-          ((value - 0.70) / 0.30).clamp(0.0, 1.0),
-        );
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('me- + ', style: style(formulaSize, black)),
-            SizedBox(
-              width: slotWidth,
-              height: slotHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Opacity(
-                    opacity: 1 - removeProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, -lift * removeProgress),
-                      child: CustomPaint(
-                        painter: _CircleProgressPainter(
-                          color: red,
-                          progress: circleProgress,
-                          strokeWidth: 3,
-                        ),
-                        child: SizedBox(
-                          width: circleSize,
-                          height: circleSize,
-                          child: Center(
-                            child: Text(
-                              circledLetter,
-                              style: style(formulaSize, red),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: addProgress,
-                    child: Transform.translate(
-                      offset: Offset(0, (1 - addProgress) * 18),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.translate(
-                            offset: Offset(0, -replacementLift),
-                            child: Text(
-                              replacementLetters,
-                              style: style(formulaSize, green),
-                            ),
-                          ),
-                          Positioned(
-                            top:
-                                slotHeight / 2 +
-                                responsiveClamp(context, 8, 12, 16),
-                            child: Icon(
-                              Icons.arrow_upward_rounded,
-                              color: green,
-                              size: arrowSize,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(remainingLetters, style: style(formulaSize, black)),
-          ],
-        );
-      }
-
-      if (reduceMotion) {
-        return content(1);
-      }
-      return TweenAnimationBuilder<double>(
-        key: ValueKey('$stepId-stage-2-transform'),
-        tween: Tween(begin: 0, end: 1),
-        duration: _wordAnimationStageDuration(2),
-        curve: Curves.linear,
-        builder: (context, value, child) => content(value),
-      );
     }
 
     switch (stage) {
       case 0:
-        return scaled(
+        return fit(
           Text(
-            rootWord,
-            key: ValueKey('$stepId-stage-0'),
+            spec.rootWord,
+            key: ValueKey('$stepId-word'),
             maxLines: 1,
-            style: style(wordSize, black),
+            style: wordStyle(baseSize, black),
           ),
         );
       case 1:
-        return scaled(
+        return fit(
           Text(
             'me-',
-            key: ValueKey('$stepId-stage-1'),
+            key: ValueKey('$stepId-prefix'),
             maxLines: 1,
-            style: style(formulaSize, black),
+            style: wordStyle(baseSize, black),
           ),
         );
-      case 2:
-        return scaled(transformStage());
       default:
-        return scaled(
-          Text(
-            finalWord,
-            key: ValueKey('$stepId-stage-3'),
-            maxLines: 1,
-            style: style(finalSize, black),
+        return fit(
+          _buildWordTransformSequence(
+            context: context,
+            stepId: stepId,
+            spec: spec,
+            animationComplete: animationComplete,
+            baseSize: baseSize,
+            style: wordStyle,
           ),
         );
     }
+  }
+
+  Widget _buildWordTransformSequence({
+    required BuildContext context,
+    required String stepId,
+    required _AnimatedWordSpec spec,
+    required bool animationComplete,
+    required double baseSize,
+    required TextStyle Function(double size, Color color) style,
+  }) {
+    Widget content(double rawValue) {
+      final value = animationComplete ? 1.0 : rawValue;
+      return _buildAnimatedFormulaLayout(
+        context: context,
+        spec: spec,
+        progress: value,
+        baseSize: baseSize,
+        style: style,
+      );
+    }
+
+    if (AppMotionSpec.reduceMotion(context)) {
+      return content(1);
+    }
+
+    return TweenAnimationBuilder<double>(
+      key: ValueKey('$stepId-transform-sequence'),
+      tween: Tween(begin: 0, end: 1),
+      duration: stepId == 'B07'
+          ? _b07StageDuration(2)
+          : stepId == 'B08'
+          ? _b08StageDuration(2)
+          : stepId == 'B09'
+          ? _b09StageDuration(2)
+          : stepId == 'B10'
+          ? _b10StageDuration(2)
+          : _wordAnimationStageDuration(2),
+      curve: Curves.linear,
+      builder: (context, value, child) => content(value),
+    );
+  }
+
+  Widget _buildAnimatedFormulaLayout({
+    required BuildContext context,
+    required _AnimatedWordSpec spec,
+    required double progress,
+    required double baseSize,
+    required TextStyle Function(double size, Color color) style,
+  }) {
+    const black = Color(0xFF111827);
+    const red = Color(0xFFE63946);
+    const green = Color(0xFF16A34A);
+    final mediaSize = MediaQuery.sizeOf(context);
+    final isLandscape = mediaSize.width > mediaSize.height;
+    final formulaSize = baseSize * 1.42;
+    final finalWordSize = baseSize;
+    final maxWidth = math.min(mediaSize.width * 0.88, 560.0);
+    final sequenceHeight = responsiveClamp(
+      context,
+      isLandscape ? 170 : 190,
+      isLandscape ? 210 : 250,
+      isLandscape ? 240 : 300,
+    );
+    final downDistance = sequenceHeight * (isLandscape ? 0.22 : 0.25);
+
+    final circleProgress = Curves.easeOutCubic.transform(
+      ((progress - 0.10) / 0.18).clamp(0.0, 1.0),
+    );
+    final arrowProgress = Curves.easeOutCubic.transform(
+      ((progress - 0.28) / 0.18).clamp(0.0, 1.0),
+    );
+    final originalMoveProgress = Curves.easeInOutCubic.transform(
+      ((progress - 0.46) / 0.20).clamp(0.0, 1.0),
+    );
+    final replacementProgress = Curves.easeOutCubic.transform(
+      ((progress - 0.62) / 0.18).clamp(0.0, 1.0),
+    );
+    final downProgress = Curves.easeInOutCubic.transform(
+      ((progress - 0.80) / 0.10).clamp(0.0, 1.0),
+    );
+    final finalRevealProgress = Curves.easeOutCubic.transform(
+      ((progress - 0.91) / 0.09).clamp(0.0, 1.0),
+    );
+
+    Widget sideText(String text, double rowHeight) {
+      return SizedBox(
+        height: rowHeight,
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(text, style: style(formulaSize, black)),
+        ),
+      );
+    }
+
+    Widget formulaRow() {
+      final circleSize = math.max(
+        formulaSize * 1.34,
+        responsiveClamp(context, 48, 62, 74),
+      );
+      final slotWidth = math.max(
+        circleSize + responsiveClamp(context, 10, 16, 20),
+        responsiveClamp(
+          context,
+          spec.replacementLetters.length > 1 ? 76 : 64,
+          spec.replacementLetters.length > 1 ? 98 : 84,
+          spec.replacementLetters.length > 1 ? 118 : 100,
+        ),
+      );
+      final slotHeight = math.max(
+        circleSize * 2.7,
+        responsiveClamp(context, 148, 184, 214),
+      );
+      final arrowSize = responsiveClamp(context, 22, 30, 38);
+      final arrowTop = (slotHeight / 2 - circleSize / 2 - arrowSize - 2).clamp(
+        0.0,
+        slotHeight,
+      );
+      final originalDrop =
+          (slotHeight / 2 + circleSize * 0.04) * originalMoveProgress;
+
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          sideText('me- + ', slotHeight),
+          SizedBox(
+            width: slotWidth,
+            height: slotHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  top: arrowTop,
+                  left: 0,
+                  right: 0,
+                  child: Opacity(
+                    opacity: arrowProgress,
+                    child: Icon(
+                      Icons.arrow_downward_rounded,
+                      color: green,
+                      size: arrowSize,
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Transform.translate(
+                    offset: Offset(0, originalDrop),
+                    child: CustomPaint(
+                      painter: _CircleProgressPainter(
+                        color: red,
+                        progress: circleProgress,
+                        strokeWidth: 3,
+                      ),
+                      child: SizedBox(
+                        width: circleSize,
+                        height: circleSize,
+                        child: Center(
+                          child: Text(
+                            spec.originalLetter,
+                            style: style(formulaSize, red),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Opacity(
+                    opacity: replacementProgress,
+                    child: Transform.scale(
+                      scale: 0.92 + replacementProgress * 0.08,
+                      child: Text(
+                        spec.replacementLetters,
+                        textAlign: TextAlign.center,
+                        style: style(formulaSize, green),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          sideText(spec.remainingLetters, slotHeight),
+        ],
+      );
+    }
+
+    final formula = Transform.translate(
+      offset: Offset(0, downDistance * downProgress),
+      child: FittedBox(fit: BoxFit.scaleDown, child: formulaRow()),
+    );
+    final finalWord = Opacity(
+      opacity: finalRevealProgress,
+      child: Transform.translate(
+        offset: Offset(0, (1 - finalRevealProgress) * 12),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(spec.finalWord, style: style(finalWordSize, black)),
+              SizedBox(width: responsiveClamp(context, 6, 8, 10)),
+              Icon(
+                Icons.check_circle_rounded,
+                color: green,
+                size: finalWordSize * 0.82,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return SizedBox(
+      width: maxWidth,
+      height: sequenceHeight,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Align(alignment: const Alignment(0, -0.68), child: finalWord),
+          Align(alignment: Alignment.center, child: formula),
+        ],
+      ),
+    );
   }
 
   Widget _buildCompletionStep() {
@@ -4366,7 +5816,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                       fontSize: bodySize,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1D3557),
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Century Gothic',
                       fontFamilyFallback: _fontFallback,
                     ),
                   ),
@@ -4395,7 +5845,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 color: Color(0xFF1D3557),
                 fontSize: bodySize,
                 fontWeight: FontWeight.w700,
-                fontFamily: 'Poppins',
+                fontFamily: 'Century Gothic',
                 fontFamilyFallback: _fontFallback,
               ),
             ),
@@ -4414,57 +5864,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
   }
 
   Widget _buildStepBody(LearningStep step) {
-    if (step.id == 'B07') {
-      return _buildB07SalinAnimationStep(step);
-    }
-    if (step.id == 'B08') {
-      return _buildB08SimpanAnimationStep(step);
-    }
-    if (step.id == 'B09') {
-      return _buildB09PilihAnimationStep(step);
-    }
-    if (step.id == 'B10') {
-      return _buildB10PakaiAnimationStep(step);
-    }
-    if (step.id == 'B11') {
-      return _buildGenericWordAnimationStep(
-        step: step,
-        rootWord: 'tarik',
-        finalWord: 'menarik',
-        circledLetter: 't',
-        remainingLetters: 'arik',
-        replacementLetters: 'n',
-      );
-    }
-    if (step.id == 'B12') {
-      return _buildGenericWordAnimationStep(
-        step: step,
-        rootWord: 'tanam',
-        finalWord: 'menanam',
-        circledLetter: 't',
-        remainingLetters: 'anam',
-        replacementLetters: 'n',
-      );
-    }
-    if (step.id == 'B13') {
-      return _buildGenericWordAnimationStep(
-        step: step,
-        rootWord: 'kumpul',
-        finalWord: 'mengumpul',
-        circledLetter: 'k',
-        remainingLetters: 'umpul',
-        replacementLetters: 'ng',
-      );
-    }
-    if (step.id == 'B14') {
-      return _buildGenericWordAnimationStep(
-        step: step,
-        rootWord: 'kunci',
-        finalWord: 'mengunci',
-        circledLetter: 'k',
-        remainingLetters: 'unci',
-        replacementLetters: 'ng',
-      );
+    final animatedWordSpec = _animatedWordSpecs[step.id];
+    if (animatedWordSpec != null) {
+      return _buildAnimatedWordStep(step, animatedWordSpec);
     }
     if (step.id == 'B19') {
       return _buildB19ImageHeadingStep(step);
@@ -4494,109 +5896,109 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     final step = _currentStep;
     final mediaQuery = MediaQuery.of(context);
     final isLevelTransition = step.type == LearningStepType.levelTransition;
+    final usesB01Style = _usesB01Style(step);
+    final isB04 = step.id == 'B04';
+    final isB25 = step.id == 'B25';
     return MediaQuery(
       data: mediaQuery.copyWith(textScaler: responsiveTextScaler(context)),
       child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [step.backgroundTop, step.backgroundBottom],
-            ),
-          ),
-          child: SafeArea(
-            child: DefaultTextStyle.merge(
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontFamilyFallback: _fontFallback,
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: usesB01Style
+                      ? const [_b01ScreenBgColor, _b01ScreenBgColor]
+                      : isB04
+                      ? const [_b04ScreenBgColor, _b04ScreenBgColor]
+                      : isB25
+                      ? const [_b25PageBackground, _b25PageBackground]
+                      : [step.backgroundTop, step.backgroundBottom],
+                ),
               ),
-              child: Column(
-                children: [
-                  _buildTopBar(),
-                  Expanded(
-                    child: Padding(
-                      padding: isLevelTransition
-                          ? EdgeInsets.zero
-                          : const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      child: AnimatedSwitcher(
-                        duration: AppMotionSpec.chooseDuration(
-                          context,
-                          AppMotionSpec.switcher,
-                          AppMotionSpec.switcherReduced,
-                        ),
-                        transitionBuilder: (child, animation) {
-                          return buildAdaptiveSwitcherTransition(
-                            context: context,
-                            animation: animation,
-                            child: child,
-                          );
-                        },
-                        child: Container(
-                          key: ValueKey(step.id),
-                          width: double.infinity,
+              child: SafeArea(
+                child: DefaultTextStyle.merge(
+                  style: const TextStyle(
+                    fontFamily: 'Century Gothic',
+                    fontFamilyFallback: _fontFallback,
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTopBar(),
+                      Expanded(
+                        child: Padding(
                           padding: isLevelTransition
                               ? EdgeInsets.zero
-                              : const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isLevelTransition
-                                ? Colors.transparent
-                                : Colors.white.withValues(alpha: 0.52),
-                            borderRadius: BorderRadius.circular(
-                              isLevelTransition ? 0 : 18,
+                              : const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                          child: AnimatedSwitcher(
+                            duration: AppMotionSpec.chooseDuration(
+                              context,
+                              AppMotionSpec.switcher,
+                              AppMotionSpec.switcherReduced,
                             ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: _buildStepBody(step)),
-                              if (step.type != LearningStepType.quizGateway &&
-                                  !isLevelTransition) ...[
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: AnimatedBuilder(
-                                    animation: _pulseController,
-                                    builder: (context, child) {
-                                      final reduceMotion =
-                                          AppMotionSpec.reduceMotion(context);
-                                      final angle = reduceMotion
-                                          ? 0.0
-                                          : math.sin(
-                                                  _pulseController.value *
-                                                      math.pi,
-                                                ) *
-                                                0.02;
-                                      return Transform.rotate(
-                                        angle: angle,
-                                        child: child,
-                                      );
-                                    },
-                                    child: AnimatedKidButton(
-                                      label: step.buttonText,
-                                      icon: Icons.arrow_forward_rounded,
-                                      onPressed: () {
-                                        _goNext();
-                                      },
-                                      backgroundColor: const Color(0xFFFFC300),
-                                      foregroundColor: const Color(0xFF1D3557),
-                                      labelFontSize: _responsiveButtonFontSize(
-                                        context,
-                                      ),
-                                    ),
-                                  ),
+                            transitionBuilder: (child, animation) {
+                              return buildAdaptiveSwitcherTransition(
+                                context: context,
+                                animation: animation,
+                                child: child,
+                              );
+                            },
+                            child: Container(
+                              key: ValueKey(step.id),
+                              width: double.infinity,
+                              padding: isLevelTransition
+                                  ? EdgeInsets.zero
+                                  : const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isLevelTransition
+                                    ? Colors.transparent
+                                    : isB25
+                                    ? _b25PageBackground
+                                    : Colors.white.withValues(alpha: 0.52),
+                                borderRadius: BorderRadius.circular(
+                                  isLevelTransition ? 0 : 18,
                                 ),
-                              ],
-                            ],
+                                border: isB25
+                                    ? Border.all(color: _b25Border)
+                                    : null,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: _buildStepBody(step)),
+                                  if (step.type !=
+                                          LearningStepType.quizGateway &&
+                                      !isLevelTransition) ...[
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: isB25
+                                          ? _buildB25ContinueButton(
+                                              label: step.buttonText,
+                                              onPressed: _goNext,
+                                            )
+                                          : _buildPulsingLearningContinueButton(
+                                              label: step.buttonText,
+                                              onPressed: _goNext,
+                                            ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+            // Remove this line to delete the bypasser entirely.
+            if (_enableLessonBypasser) _buildLessonBypasser(),
+          ],
         ),
       ),
     );
@@ -4650,44 +6052,56 @@ List<LearningStep> _buildSteps() {
       type: LearningStepType.equationExamples,
       subtitle:
           'Imbuhan ialah bahagian yang ditambah pada kata dasar untuk membentuk perkataan baharu.',
-      backgroundTop: Color(0xFFE9F6FF),
-      backgroundBottom: Color(0xFFD5ECFF),
+      backgroundTop: _b01ScreenBgColor,
+      backgroundBottom: _b01ScreenBgColor,
       exampleSubheading: 'Contoh',
       equationExamples: [
-        LearningEquationExample(left: 'ber', middle: 'lari', right: 'berlari'),
+        LearningEquationExample(
+          left: 'ber',
+          middle: 'lari',
+          right: 'berlari',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
         LearningEquationExample(
           left: 'men',
           middle: 'dengar',
           right: 'mendengar',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
         ),
         LearningEquationExample(
           left: 'makan',
           middle: 'an',
           right: 'makanan',
-          leftColor: Color(0xFF0EA5E9),
-          middleColor: Color(0xFFFACC15),
+          leftColor: _b01KataDasarColor,
+          middleColor: _b01ImbuhanColor,
+          rightColor: _b01KataTerbitanColor,
         ),
         LearningEquationExample(
           left: 'minum',
           middle: 'an',
           right: 'minuman',
-          leftColor: Color(0xFF0EA5E9),
-          middleColor: Color(0xFFFACC15),
+          leftColor: _b01KataDasarColor,
+          middleColor: _b01ImbuhanColor,
+          rightColor: _b01KataTerbitanColor,
         ),
       ],
       colorLegends: [
         LearningColorLegend(
-          color: Color(0xFFFACC15),
-          name: 'Kuning',
+          color: _b01ImbuhanColor,
+          name: 'Merah jambu',
           description: 'Imbuhan',
         ),
         LearningColorLegend(
-          color: Color(0xFF0EA5E9),
+          color: _b01KataDasarColor,
           name: 'Biru',
           description: 'Kata dasar',
         ),
         LearningColorLegend(
-          color: Color(0xFF4CAF50),
+          color: _b01KataTerbitanColor,
           name: 'Hijau',
           description: 'Perkataan baharu',
         ),
@@ -4699,37 +6113,64 @@ List<LearningStep> _buildSteps() {
       type: LearningStepType.equationExamples,
       subtitle:
           'Imbuhan awalan ialah imbuhan yang ditambah di hadapan kata dasar.',
-      backgroundTop: Color(0xFFFFF7E3),
-      backgroundBottom: Color(0xFFFFECCB),
+      backgroundTop: _b01ScreenBgColor,
+      backgroundBottom: _b01ScreenBgColor,
       exampleSubheading: 'Contoh',
       equationExamples: [
-        LearningEquationExample(left: 'ber', middle: 'lari', right: 'berlari'),
-        LearningEquationExample(left: 'di', middle: 'beli', right: 'dibeli'),
+        LearningEquationExample(
+          left: 'ber',
+          middle: 'lari',
+          right: 'berlari',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
+        LearningEquationExample(
+          left: 'di',
+          middle: 'beli',
+          right: 'dibeli',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
         LearningEquationExample(
           left: 'ter',
           middle: 'tidur',
           right: 'tertidur',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
         ),
-        LearningEquationExample(left: 'meN-', middle: 'baca', right: 'membaca'),
+        LearningEquationExample(
+          left: 'meN-',
+          middle: 'baca',
+          right: 'membaca',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
         LearningEquationExample(
           left: 'peN-',
           middle: 'tulis',
           right: 'penulis',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
         ),
       ],
       colorLegends: [
         LearningColorLegend(
-          color: Color(0xFFFACC15),
-          name: 'Kuning',
+          color: _b01ImbuhanColor,
+          name: 'Merah jambu',
           description: 'Imbuhan',
         ),
         LearningColorLegend(
-          color: Color(0xFF0EA5E9),
+          color: _b01KataDasarColor,
           name: 'Biru',
           description: 'Kata dasar',
         ),
         LearningColorLegend(
-          color: Color(0xFF4CAF50),
+          color: _b01KataTerbitanColor,
           name: 'Hijau',
           description: 'Perkataan baharu',
         ),
@@ -4740,39 +6181,66 @@ List<LearningStep> _buildSteps() {
       title: 'Kenali imbuhan meN-',
       type: LearningStepType.equationExamples,
       subtitle:
-          'Imbuhan meN- digunakan untuk membentuk kata kerja.\n'
-          'Kata kerja ialah perbuatan.',
-      backgroundTop: Color(0xFFEAF2FF),
-      backgroundBottom: Color(0xFFDCE9FF),
+          '• Imbuhan meN- digunakan untuk membentuk kata kerja.\n'
+          '• Kata kerja ialah perbuatan.',
+      backgroundTop: _b01ScreenBgColor,
+      backgroundBottom: _b01ScreenBgColor,
       exampleSubheading: 'Contoh',
       equationExamples: [
-        LearningEquationExample(left: 'meN-', middle: 'tari', right: 'menari'),
+        LearningEquationExample(
+          left: 'meN-',
+          middle: 'tari',
+          right: 'menari',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
         LearningEquationExample(
           left: 'meN-',
           middle: 'masak',
           right: 'memasak',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
         ),
-        LearningEquationExample(left: 'meN-', middle: 'cat', right: 'mengecat'),
+        LearningEquationExample(
+          left: 'meN-',
+          middle: 'cat',
+          right: 'mengecat',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
         LearningEquationExample(
           left: 'meN-',
           middle: 'tulis',
           right: 'menulis',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
         ),
-        LearningEquationExample(left: 'meN-', middle: 'sapu', right: 'menyapu'),
+        LearningEquationExample(
+          left: 'meN-',
+          middle: 'sapu',
+          right: 'menyapu',
+          leftColor: _b01ImbuhanColor,
+          middleColor: _b01KataDasarColor,
+          rightColor: _b01KataTerbitanColor,
+        ),
       ],
       colorLegends: [
         LearningColorLegend(
-          color: Color(0xFFFACC15),
-          name: 'Kuning',
+          color: _b01ImbuhanColor,
+          name: 'Merah jambu',
           description: 'Imbuhan',
         ),
         LearningColorLegend(
-          color: Color(0xFF0EA5E9),
+          color: _b01KataDasarColor,
           name: 'Biru',
           description: 'Kata dasar',
         ),
         LearningColorLegend(
-          color: Color(0xFF4CAF50),
+          color: _b01KataTerbitanColor,
           name: 'Hijau',
           description: 'Perkataan baharu',
         ),
@@ -4783,17 +6251,17 @@ List<LearningStep> _buildSteps() {
       title: 'Jenis imbuhan meN-',
       type: LearningStepType.table,
       subtitle:
-          'Imbuhan meN- digunakan untuk membentuk kata kerja.\n'
-          'Imbuhan ini berubah mengikut huruf awal kata dasar.',
+          '• Imbuhan meN- digunakan untuk membentuk kata kerja.\n'
+          '• Imbuhan ini berubah mengikut huruf awal kata dasar.',
       backgroundTop: Color(0xFFFFF8D2),
       backgroundBottom: Color(0xFFFFEBB1),
       exampleSubheading: 'Contoh',
-      tableHeaders: ['Awalan meN-', 'Huruf awal'],
+      tableHeaders: ['meN-', 'Huruf selepas meN-'],
       tableRows: [
         LearningRuleRow(
           cells: [
             'me-',
-            'l, m, n, ng, ny, r, w \np (menjadi m) \nt (menjadi n) \nk (menjadi ng) \ns (menjadi ny)',
+            'l, m, n, ng, ny, r, w \np menjadi m \nt menjadi n \nk menjadi ng \ns menjadi ny',
           ],
           backgroundColor: Color(0xFFA5D6A7),
         ),
@@ -4810,7 +6278,7 @@ List<LearningStep> _buildSteps() {
           backgroundColor: Color(0xFFEF9A9A),
         ),
         LearningRuleRow(
-          cells: ['menge-', 'kata dasar satu suku kata'],
+          cells: ['menge-', 'satu suku kata'],
           backgroundColor: Color(0xFFFFF176),
         ),
       ],
@@ -4819,11 +6287,12 @@ List<LearningStep> _buildSteps() {
       id: 'B05',
       title: 'Penggunaan imbuhan me-',
       type: LearningStepType.arrowExamples,
-      subtitle: 'Gunakan imbuhan me- apabila kata dasar bermula dengan huruf:',
-      backgroundTop: Color(0xFFFFF8D2),
-      backgroundBottom: Color(0xFFFFEBB1),
+      subtitle:
+          'â€¢ Gunakan imbuhan me- apabila kata dasar bermula dengan huruf:',
+      backgroundTop: _b05LightBackground,
+      backgroundBottom: _b05AccentColor,
       highlightedLetters: ['l', 'm', 'n', 'ng', 'ny', 'r', 'w'],
-      afterHighlightLine: 'Huruf awal tidak berubah.',
+      afterHighlightLine: 'â€¢ Huruf awal tidak berubah.',
       arrowRows: [
         LearningArrowRow(
           letter: 'l',
@@ -4852,8 +6321,8 @@ List<LearningStep> _buildSteps() {
         ),
       ],
       footerNote:
-          'Huruf lain seperti p, t, k dan s akan menyebabkan imbuhan meN- berubah.\n'
-          'Ini akan diterangkan dalam skrin seterusnya.',
+          'â€¢ Huruf lain seperti p, t, k dan s akan menyebabkan imbuhan meN- berubah.\n'
+          'â€¢ Ini akan diterangkan dalam skrin seterusnya.',
     ),
     LearningStep(
       id: 'B06',
@@ -4865,26 +6334,26 @@ List<LearningStep> _buildSteps() {
       changeCards: [
         LearningChangeCard(
           letter: 'p',
-          example: 'potong -> memotong',
-          note: 'p berubah menjadi m',
+          example: '[p]otong -> me[m]otong',
+          note: '[p] berubah menjadi [m]',
           accentColor: Color(0xFFEF4444),
         ),
         LearningChangeCard(
           letter: 't',
-          example: 'tulis -> menulis',
-          note: 't berubah menjadi n',
+          example: '[t]ulis -> me[n]ulis',
+          note: '[t] berubah menjadi [n]',
           accentColor: Color(0xFF8B5CF6),
         ),
         LearningChangeCard(
           letter: 'k',
-          example: 'kawal -> mengawal',
-          note: 'k berubah menjadi ng',
+          example: '[k]awal -> me[ng]awal',
+          note: '[k] berubah menjadi [ng]',
           accentColor: Color(0xFF059669),
         ),
         LearningChangeCard(
           letter: 's',
-          example: 'sapu -> menyapu',
-          note: 's berubah menjadi ny',
+          example: '[s]apu -> me[ny]apu',
+          note: '[s] berubah menjadi [ny]',
           accentColor: Color(0xFF0EA5E9),
         ),
       ],
@@ -4965,11 +6434,12 @@ List<LearningStep> _buildSteps() {
       id: 'B15',
       title: 'Penggunaan imbuhan mem-',
       type: LearningStepType.arrowExamples,
-      subtitle: 'Gunakan imbuhan mem- apabila kata dasar bermula dengan huruf:',
-      backgroundTop: Color(0xFFFFE5CD),
-      backgroundBottom: Color(0xFFFFD0A6),
+      subtitle:
+          '\u2022 Gunakan imbuhan mem- apabila kata dasar bermula dengan huruf:',
+      backgroundTop: _b15LightBackground,
+      backgroundBottom: _b15AccentColor,
       highlightedLetters: ['b', 'f'],
-      afterHighlightLine: 'Huruf awal tidak berubah.',
+      afterHighlightLine: '\u2022 Huruf awal tidak berubah.',
       exampleSubheading: 'Contoh:',
       arrowRows: [
         LearningArrowRow(letter: 'b', baseWord: 'beli', derivedWord: 'membeli'),
@@ -4995,11 +6465,12 @@ List<LearningStep> _buildSteps() {
       id: 'B16',
       title: 'Penggunaan imbuhan men-',
       type: LearningStepType.arrowExamples,
-      subtitle: 'Gunakan imbuhan men- apabila kata dasar bermula dengan huruf:',
-      backgroundTop: Color(0xFFFFF7D0),
-      backgroundBottom: Color(0xFFE0F8EF),
+      subtitle:
+          '\u2022 Gunakan imbuhan men- apabila kata dasar bermula dengan huruf:',
+      backgroundTop: _b16LightBackground,
+      backgroundBottom: _b16AccentColor,
       highlightedLetters: ['c', 'd', 'j', 'z', 'sy'],
-      afterHighlightLine: 'Huruf awal tidak berubah.',
+      afterHighlightLine: '\u2022 Huruf awal tidak berubah.',
       exampleSubheading: 'Contoh:',
       arrowRows: [
         LearningArrowRow(
@@ -5034,17 +6505,23 @@ List<LearningStep> _buildSteps() {
       id: 'B17',
       title: 'Penggunaan imbuhan meng-',
       type: LearningStepType.arrowExamples,
-      subtitle: 'Gunakan imbuhan meng- apabila kata dasar bermula dengan:',
-      backgroundTop: Color(0xFFE3F0FF),
-      backgroundBottom: Color(0xFFD2E6FF),
+      subtitle:
+          '\u2022 Gunakan imbuhan meng- apabila kata dasar bermula dengan:',
+      backgroundTop: _b17LightBackground,
+      backgroundBottom: _b17AccentColor,
       highlightedLetters: ['a', 'e', 'i', 'o', 'u', 'g', 'h'],
-      afterHighlightLine: 'Huruf awal tidak berubah.',
+      afterHighlightLine: '\u2022 Huruf awal tidak berubah.',
       exampleSubheading: 'Contoh',
       arrowRows: [
         LearningArrowRow(
           letter: 'a',
           baseWord: 'angkat',
           derivedWord: 'mengangkat',
+        ),
+        LearningArrowRow(
+          letter: 'e',
+          baseWord: 'elak',
+          derivedWord: 'mengelak',
         ),
         LearningArrowRow(
           letter: 'i',
@@ -5055,6 +6532,11 @@ List<LearningStep> _buildSteps() {
           letter: 'o',
           baseWord: 'otot',
           derivedWord: 'mengotot',
+        ),
+        LearningArrowRow(
+          letter: 'u',
+          baseWord: 'ukur',
+          derivedWord: 'mengukur',
         ),
         LearningArrowRow(
           letter: 'g',
@@ -5075,8 +6557,8 @@ List<LearningStep> _buildSteps() {
       type: LearningStepType.arrowExamples,
       subtitle:
           'Gunakan imbuhan menge- apabila kata dasar terdiri daripada satu suku kata.',
-      backgroundTop: Color(0xFFFFF3B7),
-      backgroundBottom: Color(0xFFFFE490),
+      backgroundTop: _b18LightBackground,
+      backgroundBottom: _b18AccentColor,
       exampleSubheading: 'Contoh',
       arrowRows: [
         LearningArrowRow(letter: '', baseWord: 'cat', derivedWord: 'mengecat'),
@@ -5088,7 +6570,7 @@ List<LearningStep> _buildSteps() {
     ),
     LearningStep(
       id: 'B19',
-      title: 'Mari kita belajar imbuhan awalan melalui situasi.',
+      title: 'Mari kita belajar imbuhan awalan meN- melalui situasi',
       type: LearningStepType.changeCards,
       backgroundTop: Color(0xFFFFF8D2),
       backgroundBottom: Color(0xFFFFE7A7),
@@ -5104,8 +6586,10 @@ List<LearningStep> _buildSteps() {
       sceneImageAsset: 'assets/Belajar/AmiN di dalam kelas.svg',
       instructionTitle: 'Situasi: AmiN di dalam kelas',
       instructionBody:
-          'Arahan: Tekan ⭐ dan cuba fikir jawapan dahulu.\n'
-          'Gunakan imbuhan yang betul berdasarkan huruf awal kata dasar.',
+          'Arahan: Tekan ⭐\n'
+          'Dengar kata dasar\n'
+          'Sebut imbuhan awalan meN- yang sesuai\n'
+          'Tekan lagi untuk semak jawapan',
       hotspots: [
         LearningHotspot(
           label: 'membaca',
@@ -5119,14 +6603,14 @@ List<LearningStep> _buildSteps() {
           baseWord: 'tulis',
           derivedWord: 'menulis',
           alignment: Alignment(0.64, -0.24),
-          ruleNote: 'Huruf t berubah menjadi n',
+          ruleNote: 'Huruf t gugur, bunyi "n" hadir',
         ),
         LearningHotspot(
           label: 'mengajar',
           baseWord: 'ajar',
           derivedWord: 'mengajar',
           alignment: Alignment(0.06, -0.72),
-          ruleNote: 'Huruf vokal "a" menggunakan imbuhan meng-',
+          ruleNote: 'Tiada perubahan huruf',
         ),
         LearningHotspot(
           label: 'menjawab',
@@ -5146,29 +6630,31 @@ List<LearningStep> _buildSteps() {
       sceneImageAsset: 'assets/Belajar/AmiN di padang sekolah.svg',
       instructionTitle: 'Situasi: AmiN di padang sekolah',
       instructionBody:
-          'Arahan: Tekan ⭐ dan cuba fikir jawapan dahulu.\n'
-          'Gunakan imbuhan yang betul berdasarkan huruf awal kata dasar.',
+          'Arahan: Tekan ⭐\n'
+          'Dengar kata dasar\n'
+          'Sebut imbuhan awalan meN- yang sesuai\n'
+          'Tekan lagi untuk semak jawapan',
       hotspots: [
         LearningHotspot(
           label: 'mengangkat',
           baseWord: 'angkat',
           derivedWord: 'mengangkat',
           alignment: Alignment(-0.14, 0.0),
-          ruleNote: 'Huruf vokal "a" menggunakan imbuhan meng-',
+          ruleNote: 'Tiada perubahan huruf',
         ),
         LearningHotspot(
           label: 'menendang',
           baseWord: 'tendang',
           derivedWord: 'menendang',
           alignment: Alignment(-0.62, -0.28),
-          ruleNote: 'Huruf t berubah menjadi n',
+          ruleNote: 'Huruf t gugur, bunyi "n" hadir',
         ),
         LearningHotspot(
           label: 'mengejar',
           baseWord: 'kejar',
           derivedWord: 'mengejar',
           alignment: Alignment(0.03, -0.64),
-          ruleNote: 'Huruf k digugurkan dan menggunakan imbuhan meng-',
+          ruleNote: 'Huruf k gugur, bunyi "ng" hadir',
         ),
         LearningHotspot(
           label: 'melompat',
@@ -5188,15 +6674,17 @@ List<LearningStep> _buildSteps() {
       sceneImageAsset: 'assets/Belajar/AmiN di dapur.svg',
       instructionTitle: 'Situasi: AmiN di dapur',
       instructionBody:
-          'Arahan: Tekan ⭐ dan cuba fikir jawapan dahulu.\n'
-          'Gunakan imbuhan yang betul berdasarkan huruf awal kata dasar.',
+          'Arahan: Tekan ⭐\n'
+          'Dengar kata dasar\n'
+          'Sebut imbuhan awalan meN- yang sesuai\n'
+          'Tekan lagi untuk semak jawapan',
       hotspots: [
         LearningHotspot(
           label: 'memotong',
           baseWord: 'potong',
           derivedWord: 'memotong',
           alignment: Alignment(0.60, -0.16),
-          ruleNote: 'Huruf p berubah menjadi m',
+          ruleNote: 'Huruf p gugur, bunyi "m" hadir',
         ),
         LearningHotspot(
           label: 'memasak',
@@ -5210,7 +6698,7 @@ List<LearningStep> _buildSteps() {
           baseWord: 'lap',
           derivedWord: 'mengelap',
           alignment: Alignment(-0.08, -0.64),
-          ruleNote: 'Kata satu suku kata menggunakan imbuhan menge-',
+          ruleNote: 'Tiada perubahan huruf',
         ),
         LearningHotspot(
           label: 'mencuci',
@@ -5230,8 +6718,10 @@ List<LearningStep> _buildSteps() {
       sceneImageAsset: 'assets/Belajar/AmiN dalam aktiviti seni.svg',
       instructionTitle: 'Situasi: AmiN dalam aktiviti seni',
       instructionBody:
-          'Arahan: Tekan ⭐ dan cuba fikir jawapan dahulu.\n'
-          'Gunakan imbuhan yang betul berdasarkan huruf awal kata dasar.',
+          'Arahan: Tekan ⭐\n'
+          'Dengar kata dasar\n'
+          'Sebut imbuhan awalan meN- yang sesuai\n'
+          'Tekan lagi untuk semak jawapan',
       hotspots: [
         LearningHotspot(
           label: 'melukis',
@@ -5245,14 +6735,14 @@ List<LearningStep> _buildSteps() {
           baseWord: 'cat',
           derivedWord: 'mengecat',
           alignment: Alignment(-0.62, -0.54),
-          ruleNote: 'Kata satu suku kata menggunakan imbuhan menge-',
+          ruleNote: 'Tiada perubahan huruf',
         ),
         LearningHotspot(
           label: 'menggunting',
           baseWord: 'gunting',
           derivedWord: 'menggunting',
           alignment: Alignment(0.36, 0.02),
-          ruleNote: 'Kata bermula dengan huruf g menggunakan imbuhan meng-',
+          ruleNote: 'Tiada perubahan huruf',
         ),
         LearningHotspot(
           label: 'mewarna',
@@ -5272,15 +6762,17 @@ List<LearningStep> _buildSteps() {
       sceneImageAsset: 'assets/Belajar/AmiN dalam aktiviti gotong-royong.svg',
       instructionTitle: 'Situasi: AmiN dalam aktiviti gotong-royong',
       instructionBody:
-          'Arahan: Tekan ⭐ dan cuba fikir jawapan dahulu.\n'
-          'Gunakan imbuhan yang betul berdasarkan huruf awal kata dasar.',
+          'Arahan: Tekan ⭐\n'
+          'Dengar kata dasar\n'
+          'Sebut imbuhan awalan meN- yang sesuai\n'
+          'Tekan lagi untuk semak jawapan',
       hotspots: [
         LearningHotspot(
           label: 'mengutip',
           baseWord: 'kutip',
           derivedWord: 'mengutip',
           alignment: Alignment(-0.08, 0.03),
-          ruleNote: 'Huruf k digugurkan, menggunakan imbuhan meng-',
+          ruleNote: 'Huruf k gugur, bunyi "ng" hadir',
         ),
         LearningHotspot(
           label: 'membuang',
@@ -5294,47 +6786,40 @@ List<LearningStep> _buildSteps() {
           baseWord: 'pangkas',
           derivedWord: 'memangkas',
           alignment: Alignment(0.22, -0.62),
-          ruleNote: 'Huruf p berubah menjadi m',
+          ruleNote: 'Huruf p gugur, bunyi "m" hadir',
         ),
         LearningHotspot(
           label: 'menyapu',
           baseWord: 'sapu',
           derivedWord: 'menyapu',
           alignment: Alignment(-0.64, -0.34),
-          ruleNote: 'Huruf s berubah menjadi ny',
+          ruleNote: 'Huruf s gugur, bunyi "ny" hadir',
         ),
       ],
     ),
     LearningStep(
       id: 'B25',
-      title: 'Ringkasan Imbuhan Awalan meN-',
+      title: 'Jom Ingat Semula!',
       type: LearningStepType.summary,
-      backgroundTop: Color(0xFFFFF8D5),
-      backgroundBottom: Color(0xFFFFE9B1),
-      subtitle: 'Perhatikan huruf awal untuk memilih imbuhan yang betul.',
+      backgroundTop: _b25PageBackground,
+      backgroundBottom: _b25PageBackground,
+      subtitle:
+          '\u2022 Lihat huruf awal kata dasar.\n'
+          '\u2022 Ingat semula imbuhan meN- yang sesuai.',
       buttonText: 'Kembali ke Menu Utama',
       summaryCards: [
         LearningSummaryCard(
           prefix: 'me-',
-          ruleText: 'Huruf: l, m, n, ng, ny, r, w  \np (menjadi m) \nt (menjadi n) \nk (menjadi ng) \ns (menjadi ny)',
-        ),
-        LearningSummaryCard(
-          prefix: 'mem-',
           ruleText:
-              'Huruf: b, f',
+              'Huruf: l, m, n, ng, ny, r, w  \np (menjadi m) \nt (menjadi n) \nk (menjadi ng) \ns (menjadi ny)',
         ),
-        LearningSummaryCard(
-          prefix: 'men-',
-          ruleText: 'Huruf: c, d, j, z, sy',
-        ),
+        LearningSummaryCard(prefix: 'mem-', ruleText: 'Huruf: b, f'),
+        LearningSummaryCard(prefix: 'men-', ruleText: 'Huruf: c, d, j, z, sy'),
         LearningSummaryCard(
           prefix: 'meng-',
-          ruleText: 'Huruf: a, e, i, o, u (vokal) \ng, h',
+          ruleText: 'Huruf: a, e, i, o, u (vokal)\ng, h (konsonan)',
         ),
-        LearningSummaryCard(
-          prefix: 'menge-',
-          ruleText: 'Kata satu suku kata guna imbuhan menge-',
-        ),
+        LearningSummaryCard(prefix: 'menge-', ruleText: 'Satu suku kata'),
       ],
     ),
   ];

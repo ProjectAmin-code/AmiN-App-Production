@@ -197,13 +197,16 @@ Widget buildQuizMatchingInput({
 }) {
   final isEasyCompact = question.id.startsWith('EK') && question.id != 'EK1';
   const textSize = QuizTokens.headingTextSize;
+  final itemSpacing = question.id == 'EK3'
+      ? (isEasyCompact ? 14.0 : 18.0)
+      : (isEasyCompact ? 8.0 : 12.0);
 
   return Column(
     children: List.generate(question.matchingLeft.length, (index) {
       final leftText = question.matchingLeft[index];
       final choices = choicesForIndex(index);
       return Container(
-        margin: EdgeInsets.only(bottom: isEasyCompact ? 8 : 12),
+        margin: EdgeInsets.only(bottom: itemSpacing),
         padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -320,8 +323,81 @@ Widget buildQuizDragInput({
         return DragTarget<String>(
           onAcceptWithDetails: (details) => onSetChoice(index, details.data),
           builder: (context, candidateData, rejectedData) {
+            if (question.id == 'EK10' ||
+                question.id == 'MK3' ||
+                question.id == 'MK10') {
+              final blankMatch = RegExp(r'_+').firstMatch(target);
+              final textBeforeBlank = blankMatch == null
+                  ? target
+                  : target.substring(0, blankMatch.start);
+              final textAfterBlank = blankMatch == null
+                  ? ''
+                  : target.substring(blankMatch.end);
+
+              return Container(
+                width: double.infinity,
+                margin: EdgeInsets.only(bottom: isEasyCompact ? 20 : 24),
+                padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: candidateData.isNotEmpty
+                        ? const Color(0xFF0EA5E9)
+                        : QuizTokens.answerPanelBorder,
+                  ),
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1D3557),
+                      fontSize: dragTextSize,
+                      height: 1.25,
+                    ),
+                    children: [
+                      TextSpan(text: textBeforeBlank),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: GestureDetector(
+                          onTap: assigned == null
+                              ? null
+                              : () => onClearChoice(index),
+                          child: Container(
+                            constraints: const BoxConstraints(minWidth: 54),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isEasyCompact ? 10 : 12,
+                              vertical: isEasyCompact ? 8 : 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: assigned == null
+                                  ? const Color(0xFFF3F7FB)
+                                  : const Color(0xFFDFF4FF),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              assigned ?? question.dropPlaceholder,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: dragTextSize,
+                                color: assigned == null
+                                    ? const Color(0xFF6B7280)
+                                    : const Color(0xFF0E7490),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      TextSpan(text: textAfterBlank),
+                    ],
+                  ),
+                ),
+              );
+            }
+
             return Container(
-              margin: EdgeInsets.only(bottom: isEasyCompact ? 8 : 12),
+              margin: EdgeInsets.only(bottom: isEasyCompact ? 14 : 16),
               padding: EdgeInsets.all(isEasyCompact ? 10 : 14),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -332,53 +408,62 @@ Widget buildQuizDragInput({
                       : QuizTokens.answerPanelBorder,
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    target,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1D3557),
-                      fontSize: dragTextSize,
-                      height: 1.25,
-                    ),
-                  ),
-                  SizedBox(height: isEasyCompact ? 6 : 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isEasyCompact ? 10 : 12,
-                            vertical: isEasyCompact ? 10 : 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: assigned == null
-                                ? const Color(0xFFF3F7FB)
-                                : const Color(0xFFDFF4FF),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            assigned ?? question.dropPlaceholder,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: dragTextSize,
-                              color: assigned == null
-                                  ? const Color(0xFF6B7280)
-                                  : const Color(0xFF0E7490),
+                  Expanded(
+                    flex: question.id == 'EK10' ? 1 : 2,
+                    child: Container(
+                      padding: EdgeInsets.only(
+                        left: isEasyCompact ? 10 : 12,
+                        right: assigned == null ? (isEasyCompact ? 10 : 12) : 4,
+                        top: isEasyCompact ? 10 : 12,
+                        bottom: isEasyCompact ? 10 : 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: assigned == null
+                            ? const Color(0xFFF3F7FB)
+                            : const Color(0xFFDFF4FF),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              assigned ?? question.dropPlaceholder,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: dragTextSize,
+                                color: assigned == null
+                                    ? const Color(0xFF6B7280)
+                                    : const Color(0xFF0E7490),
+                              ),
                             ),
                           ),
-                        ),
+                          if (assigned != null)
+                            IconButton(
+                              visualDensity: VisualDensity.compact,
+                              constraints: const BoxConstraints(),
+                              padding: const EdgeInsets.all(4),
+                              onPressed: () => onClearChoice(index),
+                              icon: const Icon(Icons.close_rounded, size: 20),
+                            ),
+                        ],
                       ),
-                      if (assigned != null) ...[
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: () => onClearChoice(index),
-                          icon: const Icon(Icons.close_rounded),
-                        ),
-                      ],
-                    ],
+                    ),
+                  ),
+                  SizedBox(width: isEasyCompact ? 12 : 16),
+                  Expanded(
+                    flex: question.id == 'EK10' ? 2 : 1,
+                    child: Text(
+                      target,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1D3557),
+                        fontSize: dragTextSize,
+                        height: 1.25,
+                      ),
+                    ),
                   ),
                 ],
               ),

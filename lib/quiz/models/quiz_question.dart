@@ -35,6 +35,7 @@ class QuizQuestion {
     this.correctFeedback = '',
     this.wrongFeedback = '',
     this.submitLabel,
+    this.feedbackButtonLabel,
     this.isBonus = false,
     this.showExplanationInFeedback = true,
     this.allowRepeatedChoices = false,
@@ -73,6 +74,7 @@ class QuizQuestion {
   final String correctFeedback;
   final String wrongFeedback;
   final String? submitLabel;
+  final String? feedbackButtonLabel;
   final bool isBonus;
   final bool showExplanationInFeedback;
   final bool allowRepeatedChoices;

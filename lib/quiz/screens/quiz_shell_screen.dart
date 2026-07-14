@@ -35,7 +35,7 @@ class QuizShellScreen extends StatefulWidget {
 class _QuizShellScreenState extends State<QuizShellScreen> {
   // Debug-only quiz jump control. Set to false to hide it without removing code.
   static const bool _enableQuizBypasser = kDebugMode;
-  late final List<QuizQuestion> _questions;
+  late List<QuizQuestion> _questions;
   final Map<String, Set<String>> _selectedOptionIds = <String, Set<String>>{};
   final Map<String, String> _typedAnswers = <String, String>{};
   final Map<String, List<String?>> _matchingSelections =
@@ -76,11 +76,18 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   @override
   void initState() {
     super.initState();
+    _reloadQuestionDefinitions();
+  }
+
+  void _reloadQuestionDefinitions() {
     final allQuestions = QuizBank.questions.toList()
       ..sort((a, b) => a.order.compareTo(b.order));
     _questions = widget.level == null
         ? allQuestions
         : allQuestions.where((q) => q.level == widget.level).toList();
+    _optionOrder.clear();
+    _matchingChoiceOrder.clear();
+    _dragChoiceOrder.clear();
     for (final question in _questions) {
       _optionOrder[question.id] =
           (question.shuffleOptions ||
@@ -102,6 +109,21 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     }
   }
 
+  @override
+  void reassemble() {
+    final currentQuestionId = _questions.isEmpty
+        ? null
+        : _questions[_currentIndex].id;
+    super.reassemble();
+    _reloadQuestionDefinitions();
+    if (currentQuestionId != null) {
+      final refreshedIndex = _questions.indexWhere(
+        (question) => question.id == currentQuestionId,
+      );
+      _currentIndex = refreshedIndex < 0 ? 0 : refreshedIndex;
+    }
+  }
+
   QuizQuestion get _currentQuestion => _questions[_currentIndex];
   bool get _isLastQuestion => _currentIndex == _questions.length - 1;
 
@@ -112,17 +134,45 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       _optionOrder[question.id] ?? question.options;
 
   List<String?> _matchingFor(QuizQuestion question) {
-    return _matchingSelections.putIfAbsent(
-      question.id,
-      () => List<String?>.filled(question.matchingLeft.length, null),
-    );
+    final expectedLength = question.matchingLeft.length;
+    final existing = _matchingSelections[question.id];
+    if (existing == null) {
+      return _matchingSelections[question.id] =
+          List<String?>.filled(expectedLength, null);
+    }
+    if (existing.length == expectedLength) {
+      return existing;
+    }
+
+    final resized = List<String?>.filled(expectedLength, null);
+    final copyLength = existing.length < expectedLength
+        ? existing.length
+        : expectedLength;
+    for (var i = 0; i < copyLength; i++) {
+      resized[i] = existing[i];
+    }
+    return _matchingSelections[question.id] = resized;
   }
 
   List<String?> _dragFor(QuizQuestion question) {
-    return _dragSelections.putIfAbsent(
-      question.id,
-      () => List<String?>.filled(question.dragTargets.length, null),
-    );
+    final expectedLength = question.dragTargets.length;
+    final existing = _dragSelections[question.id];
+    if (existing == null) {
+      return _dragSelections[question.id] =
+          List<String?>.filled(expectedLength, null);
+    }
+    if (existing.length == expectedLength) {
+      return existing;
+    }
+
+    final resized = List<String?>.filled(expectedLength, null);
+    final copyLength = existing.length < expectedLength
+        ? existing.length
+        : expectedLength;
+    for (var i = 0; i < copyLength; i++) {
+      resized[i] = existing[i];
+    }
+    return _dragSelections[question.id] = resized;
   }
 
   List<String> _matchingChoicesFor(QuizQuestion question, int index) {
@@ -232,7 +282,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     if (question.interactionType == QuizInteractionType.matching &&
         question.matchingAnswers.isNotEmpty) {
       final selected = _matchingFor(question);
-      if (selected.any((value) => value == null || value.trim().isEmpty)) {
+      if (selected.length != question.matchingAnswers.length ||
+          selected.any((value) => value == null || value.trim().isEmpty)) {
         return false;
       }
       for (var i = 0; i < question.matchingAnswers.length; i++) {
@@ -247,7 +298,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     if (question.interactionType == QuizInteractionType.dragDrop &&
         question.dragAnswers.isNotEmpty) {
       final selected = _dragFor(question);
-      if (selected.any((value) => value == null || value.trim().isEmpty)) {
+      if (selected.length != question.dragAnswers.length ||
+          selected.any((value) => value == null || value.trim().isEmpty)) {
         return false;
       }
       for (var i = 0; i < question.dragAnswers.length; i++) {
@@ -463,7 +515,11 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: AnimatedKidButton(
-                        label: question.submitLabel ?? 'Seterusnya',
+                        label: question.level == QuizLevel.medium
+                            ? 'Seterusnya'
+                            : question.feedbackButtonLabel ??
+                                  question.submitLabel ??
+                                  'Seterusnya',
                         icon: Icons.arrow_forward_rounded,
                         onPressed: () => Navigator.pop(context),
                         backgroundColor: const Color(0xFF2563EB),
@@ -788,6 +844,32 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     );
   }
 
+  TextSpan _italicizeMeN(String text, TextStyle style) {
+    final matches = RegExp(r'meN-').allMatches(text);
+    if (matches.isEmpty) {
+      return TextSpan(text: text, style: style);
+    }
+
+    final spans = <InlineSpan>[];
+    var start = 0;
+    for (final match in matches) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: style.copyWith(fontStyle: FontStyle.italic),
+        ),
+      );
+      start = match.end;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return TextSpan(style: style, children: spans);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
@@ -819,13 +901,14 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     final horizontalPagePadding = isWideImageQuestion
         ? 8.0
         : (isEasyCompact ? 12.0 : 16.0);
-    final actionLabel =
-        question.submitLabel ??
-        (_isLastQuestion
-            ? 'Selesai Kuiz'
-            : question.isAutoGraded
-            ? 'Semak dan Seterusnya'
-            : 'Tandakan Siap dan Seterusnya');
+    final actionLabel = question.level == QuizLevel.medium
+        ? 'Semak'
+        : question.submitLabel ??
+              (_isLastQuestion
+                  ? 'Selesai Kuiz'
+                  : question.isAutoGraded
+                  ? 'Semak dan Seterusnya'
+                  : 'Tandakan Siap dan Seterusnya');
 
     return Scaffold(
       backgroundColor: quizLevelBackground(question.level),
@@ -979,11 +1062,13 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                                     ),
                                   ),
                                   SizedBox(height: isEasyCompact ? 4 : 6),
-                                  Text(
-                                    question.prompt,
-                                    style: TextStyle(
+                                  Text.rich(
+                                    _italicizeMeN(
+                                      question.prompt,
+                                      TextStyle(
                                       fontSize: questionHeaderTextSize,
                                       height: 1.35,
+                                      ),
                                     ),
                                   ),
                                   _buildImageReference(question),

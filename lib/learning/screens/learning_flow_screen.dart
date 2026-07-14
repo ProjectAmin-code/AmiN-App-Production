@@ -29,25 +29,9 @@ const Color _b01ScreenBgColor = Color(0xFFEAF7FF);
 const Color _b01ButtonColor = Color(0xFFFF6B81);
 const Color _b01WhiteColor = Color(0xFFFFFFFF);
 
-const Color _b04MeColor = Color(0xFF00F5D4);
-const Color _b04MemColor = Color(0xFF00BBF9);
-const Color _b04MenColor = Color(0xFFFEE440);
-const Color _b04MengColor = Color(0xFFF15BB5);
-const Color _b04MengeColor = Color(0xFF9B5DE5);
-const Color _b04TableHeaderColor = Color(0xFF005F73);
-const Color _b04ScreenBgColor = Color(0xFFFFF8E7);
+const Color _b04TableHeaderColor = Color(0xFF155E75);
+const Color _b04ScreenBgColor = Color(0xFFFFFDF8);
 const Color _b04WhiteColor = Color(0xFFFFFFFF);
-const Color _b04ProgressGreen = Color(0xFF5ACB33);
-const Color _b04MeLightBg = Color(0xFFE8FFFB);
-const Color _b04MemLightBg = Color(0xFFEAF8FF);
-const Color _b04MenLightBg = Color(0xFFFFFBE3);
-const Color _b04MengLightBg = Color(0xFFFFEAF6);
-const Color _b04MengeLightBg = Color(0xFFF3EAFF);
-const Color _b04MeTextColor = Color(0xFF009688);
-const Color _b04MemTextColor = Color(0xFF087CB0);
-const Color _b04MenTextColor = Color(0xFFA67C00);
-const Color _b04MengTextColor = Color(0xFFB0307A);
-const Color _b04MengeTextColor = Color(0xFF6F42C1);
 
 const Color _b05MainColor = Color(0xFF2E8B57);
 const Color _b05LightBackground = Color(0xFFEAF7EF);
@@ -1161,7 +1145,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     final progress = (_currentIndex + 1) / _steps.length;
     final isB04 = _currentStep.id == 'B04';
     final isB25 = _currentStep.id == 'B25';
-    final iconColor = isB25 ? _b25MainText : null;
+    final usesB25Palette = isB04 || isB25;
+    final iconColor = usesB25Palette ? _b25MainText : null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
       child: Row(
@@ -1177,13 +1162,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 value: progress,
                 minHeight: 6,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  isB25
-                      ? _b05MainColor
-                      : isB04
-                      ? _b04ProgressGreen
-                      : const Color(0xFF10B981),
+                  usesB25Palette ? _b05MainColor : const Color(0xFF10B981),
                 ),
-                backgroundColor: isB25
+                backgroundColor: usesB25Palette
                     ? const Color(0xFFE5E7EB)
                     : const Color(0xFFE6EEF8),
               ),
@@ -1215,24 +1196,25 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     Color textColor = Colors.white,
     Color? borderColor,
     bool showBackground = true,
+    bool italicizeMeN = false,
   }) {
     return Builder(
       builder: (context) {
         final effectiveFontSize =
             responsiveClamp(context, 20, fontSize, 26) *
             _narrowWidthTextScale(context);
-        final titleText = Text(
-          text,
-          style: TextStyle(
-            fontSize: effectiveFontSize,
-            fontWeight: textColor == _b01TitleTextColor
-                ? FontWeight.w900
-                : FontWeight.w800,
-            color: textColor,
-            fontFamily: 'Century Gothic',
-            fontFamilyFallback: _fontFallback,
-          ),
+        final textStyle = TextStyle(
+          fontSize: effectiveFontSize,
+          fontWeight: textColor == _b01TitleTextColor
+              ? FontWeight.w900
+              : FontWeight.w800,
+          color: textColor,
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
         );
+        final titleText = italicizeMeN
+            ? Text.rich(_meNItalicTextSpan(text, textStyle))
+            : Text(text, style: textStyle);
         if (!showBackground) {
           return titleText;
         }
@@ -3452,32 +3434,55 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         children: [
           _titleBubble(
             step.title,
-            backgroundColor: usesTitleSubtitleStyle
+            backgroundColor: isB04
+                ? _b25HeadingStart
+                : usesTitleSubtitleStyle
                 ? _b01TitleBoxColor
                 : const Color(0xFFD97706),
-            textColor: usesTitleSubtitleStyle
+            textColor: isB04
+                ? Colors.white
+                : usesTitleSubtitleStyle
                 ? _b01TitleTextColor
                 : Colors.white,
-            borderColor: usesTitleSubtitleStyle ? _b01TitleBorderColor : null,
+            borderColor: isB04
+                ? _b25Border
+                : usesTitleSubtitleStyle
+                ? _b01TitleBorderColor
+                : null,
+            italicizeMeN: isB04,
           ),
           const SizedBox(height: 12),
           if (step.subtitle.isNotEmpty)
             _contentCard(
               color: usesTitleSubtitleStyle ? _b01CardColor : Colors.white,
-              child: _subtitleContent(
-                step.subtitle,
-                TextStyle(
-                  fontSize: bodySize,
-                  height: 1.4,
-                  fontWeight: FontWeight.w600,
-                  color: usesTitleSubtitleStyle ? _b01MainTextColor : null,
-                  fontFamily: 'Century Gothic',
-                  fontFamilyFallback: _fontFallback,
-                ),
-                textAlign: usesTitleSubtitleStyle
-                    ? TextAlign.start
-                    : _subtitleTextAlign(step.subtitle),
-              ),
+              child: isB04
+                  ? _buildB04Subtitle(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _b25MainText,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                    )
+                  : _subtitleContent(
+                      step.subtitle,
+                      TextStyle(
+                        fontSize: bodySize,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: usesTitleSubtitleStyle
+                            ? _b01MainTextColor
+                            : null,
+                        fontFamily: 'Century Gothic',
+                        fontFamilyFallback: _fontFallback,
+                      ),
+                      textAlign: usesTitleSubtitleStyle
+                          ? TextAlign.start
+                          : _subtitleTextAlign(step.subtitle),
+                    ),
             ),
           if (!isB04 && step.exampleSubheading.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -3510,6 +3515,32 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildB04Subtitle(String text, TextStyle style) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in text.split('\n'))
+          if (_isBulletLine(line))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 18, child: Text('\u2022', style: style)),
+                  Expanded(
+                    child: Text.rich(
+                      _meNItalicTextSpan(_stripBulletMarker(line), style),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Text.rich(_meNItalicTextSpan(line, style)),
+      ],
     );
   }
 
@@ -3645,9 +3676,9 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: _b04WhiteColor,
+        color: _b25Border,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _b04WhiteColor),
+        border: Border.all(color: _b25Border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x22000000),
@@ -3680,7 +3711,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               rightText: cells[1],
               leftBackgroundColor: palette.leftColor,
               rightBackgroundColor: palette.rightBackgroundColor,
-              leftTextColor: _b04WhiteColor,
+              leftTextColor: palette.leftTextColor,
               rightTextColor: palette.rightTextColor,
               fontSize: tableFontSize,
               fontWeight: FontWeight.w900,
@@ -3724,6 +3755,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 fontSize: fontSize,
                 fontWeight: fontWeight,
                 textAlign: TextAlign.center,
+                italicizeMeN: rowIndex == -1,
               ),
             ),
           ),
@@ -3738,13 +3770,22 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
               fontWeight: fontWeight,
               verticalPadding: verticalPadding,
               textAlign: TextAlign.start,
-              child: _b04RightCellContent(
-                rightText,
-                rowIndex: rowIndex,
-                textColor: rightTextColor,
-                fontSize: fontSize,
-                fontWeight: fontWeight,
-              ),
+              child: rowIndex == -1
+                  ? _singleLineTableText(
+                      rightText,
+                      color: rightTextColor,
+                      fontSize: fontSize,
+                      fontWeight: fontWeight,
+                      textAlign: TextAlign.start,
+                      italicizeMeN: true,
+                    )
+                  : _b04RightCellContent(
+                      rightText,
+                      rowIndex: rowIndex,
+                      textColor: rightTextColor,
+                      fontSize: fontSize,
+                      fontWeight: fontWeight,
+                    ),
             ),
           ),
         ],
@@ -3791,25 +3832,40 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     required double fontSize,
     required FontWeight fontWeight,
     required TextAlign textAlign,
+    bool italicizeMeN = false,
   }) {
     return FittedBox(
       fit: BoxFit.scaleDown,
       alignment: textAlign == TextAlign.center
           ? Alignment.center
           : Alignment.centerLeft,
-      child: Text(
-        text,
+      child: Text.rich(
+        italicizeMeN
+            ? _meNItalicTextSpan(
+                text,
+                TextStyle(
+                  color: color,
+                  fontSize: fontSize,
+                  fontWeight: fontWeight,
+                  height: 1.32,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              )
+            : TextSpan(
+                text: text,
+                style: TextStyle(
+                  color: color,
+                  fontSize: fontSize,
+                  fontWeight: fontWeight,
+                  height: 1.32,
+                  fontFamily: 'Century Gothic',
+                  fontFamilyFallback: _fontFallback,
+                ),
+              ),
         maxLines: 1,
         softWrap: false,
         textAlign: textAlign,
-        style: TextStyle(
-          color: color,
-          fontSize: fontSize,
-          fontWeight: fontWeight,
-          height: 1.32,
-          fontFamily: 'Century Gothic',
-          fontFamilyFallback: _fontFallback,
-        ),
       ),
     );
   }
@@ -3830,7 +3886,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       fontFamilyFallback: _fontFallback,
     );
     final blackStyle = TextStyle(
-      color: Colors.black,
+      color: _b25SecondaryText,
       fontSize: fontSize,
       fontWeight: FontWeight.w900,
       fontFamily: 'Century Gothic',
@@ -3856,7 +3912,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
           children: [
             const TextSpan(text: 'a, e, i, o, u '),
             TextSpan(text: '(vokal)', style: blackStyle),
-            const TextSpan(text: ',\ng, h'),
+            const TextSpan(text: ',\ng, h (konsonan)'),
           ],
         ),
       );
@@ -3924,33 +3980,43 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  ({Color leftColor, Color rightBackgroundColor, Color rightTextColor})
+  ({
+    Color leftColor,
+    Color leftTextColor,
+    Color rightBackgroundColor,
+    Color rightTextColor,
+  })
   _b04TablePalette(int rowIndex) {
     const palettes = [
       (
-        leftColor: _b04MeColor,
-        rightBackgroundColor: _b04MeLightBg,
-        rightTextColor: _b04MeTextColor,
+        leftColor: _b05MainColor,
+        leftTextColor: _b05TextOnColoredBox,
+        rightBackgroundColor: _b05LightBackground,
+        rightTextColor: _b25MainText,
       ),
       (
-        leftColor: _b04MemColor,
-        rightBackgroundColor: _b04MemLightBg,
-        rightTextColor: _b04MemTextColor,
+        leftColor: _b15MainColor,
+        leftTextColor: _b15TextOnColoredBox,
+        rightBackgroundColor: _b15LightBackground,
+        rightTextColor: _b25MainText,
       ),
       (
-        leftColor: _b04MenColor,
-        rightBackgroundColor: _b04MenLightBg,
-        rightTextColor: _b04MenTextColor,
+        leftColor: _b16MainColor,
+        leftTextColor: Colors.white,
+        rightBackgroundColor: _b16LightBackground,
+        rightTextColor: _b25MainText,
       ),
       (
-        leftColor: _b04MengColor,
-        rightBackgroundColor: _b04MengLightBg,
-        rightTextColor: _b04MengTextColor,
+        leftColor: _b17MainColor,
+        leftTextColor: _b17TextOnColoredBox,
+        rightBackgroundColor: _b17LightBackground,
+        rightTextColor: _b25MainText,
       ),
       (
-        leftColor: _b04MengeColor,
-        rightBackgroundColor: _b04MengeLightBg,
-        rightTextColor: _b04MengeTextColor,
+        leftColor: _b18MainColor,
+        leftTextColor: _b18TextOnColoredBox,
+        rightBackgroundColor: _b18LightBackground,
+        rightTextColor: _b25MainText,
       ),
     ];
     return palettes[rowIndex % palettes.length];
@@ -4331,6 +4397,13 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     final paragraphAlign = _useLeftAlignedParagraphs(step)
         ? TextAlign.left
         : TextAlign.justify;
+    final separateTapStarInstruction = const {
+      'B20',
+      'B21',
+      'B22',
+      'B23',
+      'B24',
+    }.contains(step.id);
     return LayoutBuilder(
       builder: (context, constraints) {
         final shortScreen = constraints.maxHeight < 560;
@@ -4359,6 +4432,26 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         );
         final instructionMaxHeight =
             constraints.maxHeight * (shortScreen ? 0.32 : 0.40);
+        final instructionTextStyle = TextStyle(
+          fontSize: bodySize,
+          height: 1.4,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF334155),
+          fontFamily: 'Century Gothic',
+          fontFamilyFallback: _fontFallback,
+        );
+        final instructionLines = step.instructionBody.split('\n');
+        final tapIndex = instructionLines.isEmpty
+            ? -1
+            : instructionLines.first.indexOf('Tekan');
+        final displayInstructionBody =
+            separateTapStarInstruction && tapIndex >= 0
+            ? [
+                instructionLines.first.substring(0, tapIndex).trimRight(),
+                instructionLines.first.substring(tapIndex),
+                ...instructionLines.skip(1),
+              ].join('\n')
+            : step.instructionBody;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -4395,15 +4488,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                           SizedBox(height: shortScreen ? 6 : 8),
                           Text.rich(
                             _meNItalicTextSpan(
-                              step.instructionBody,
-                              TextStyle(
-                                fontSize: bodySize,
-                                height: 1.4,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF334155),
-                                fontFamily: 'Century Gothic',
-                                fontFamilyFallback: _fontFallback,
-                              ),
+                              displayInstructionBody,
+                              instructionTextStyle,
                             ),
                             textAlign: paragraphAlign,
                           ),
@@ -4686,15 +4772,17 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        line.replaceFirst('\u2022', '').trim(),
-                        style: TextStyle(
-                          fontSize: bodySize,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
-                          color: _b25HeadingSubtitle,
-                          fontFamily: 'Century Gothic',
-                          fontFamilyFallback: _fontFallback,
+                      child: Text.rich(
+                        _meNItalicTextSpan(
+                          line.replaceFirst('\u2022', '').trim(),
+                          TextStyle(
+                            fontSize: bodySize,
+                            height: 1.35,
+                            fontWeight: FontWeight.w700,
+                            color: _b25HeadingSubtitle,
+                            fontFamily: 'Century Gothic',
+                            fontFamilyFallback: _fontFallback,
+                          ),
                         ),
                       ),
                     ),
@@ -6274,7 +6362,7 @@ List<LearningStep> _buildSteps() {
           backgroundColor: Color(0xFFFFB74D),
         ),
         LearningRuleRow(
-          cells: ['meng-', 'a, e, i, o, u (vokal) \ng, h'],
+          cells: ['meng-', 'a, e, i, o, u (vokal) \ng, h (konsonan)'],
           backgroundColor: Color(0xFFEF9A9A),
         ),
         LearningRuleRow(
@@ -6587,9 +6675,9 @@ List<LearningStep> _buildSteps() {
       instructionTitle: 'Situasi: AmiN di dalam kelas',
       instructionBody:
           'Arahan: Tekan ⭐\n'
-          'Dengar kata dasar\n'
-          'Sebut imbuhan awalan meN- yang sesuai\n'
-          'Tekan lagi untuk semak jawapan',
+          'Dengar kata dasar.\n'
+          'Sebut imbuhan awalan meN- yang sesuai.\n'
+          'Tekan lagi untuk semak jawapan.',
       hotspots: [
         LearningHotspot(
           label: 'membaca',
@@ -6631,9 +6719,9 @@ List<LearningStep> _buildSteps() {
       instructionTitle: 'Situasi: AmiN di padang sekolah',
       instructionBody:
           'Arahan: Tekan ⭐\n'
-          'Dengar kata dasar\n'
-          'Sebut imbuhan awalan meN- yang sesuai\n'
-          'Tekan lagi untuk semak jawapan',
+          'Dengar kata dasar.\n'
+          'Sebut imbuhan awalan meN- yang sesuai.\n'
+          'Tekan lagi untuk semak jawapan.',
       hotspots: [
         LearningHotspot(
           label: 'mengangkat',
@@ -6675,9 +6763,9 @@ List<LearningStep> _buildSteps() {
       instructionTitle: 'Situasi: AmiN di dapur',
       instructionBody:
           'Arahan: Tekan ⭐\n'
-          'Dengar kata dasar\n'
-          'Sebut imbuhan awalan meN- yang sesuai\n'
-          'Tekan lagi untuk semak jawapan',
+          'Dengar kata dasar.\n'
+          'Sebut imbuhan awalan meN- yang sesuai.\n'
+          'Tekan lagi untuk semak jawapan.',
       hotspots: [
         LearningHotspot(
           label: 'memotong',
@@ -6719,9 +6807,9 @@ List<LearningStep> _buildSteps() {
       instructionTitle: 'Situasi: AmiN dalam aktiviti seni',
       instructionBody:
           'Arahan: Tekan ⭐\n'
-          'Dengar kata dasar\n'
-          'Sebut imbuhan awalan meN- yang sesuai\n'
-          'Tekan lagi untuk semak jawapan',
+          'Dengar kata dasar.\n'
+          'Sebut imbuhan awalan meN- yang sesuai.\n'
+          'Tekan lagi untuk semak jawapan.',
       hotspots: [
         LearningHotspot(
           label: 'melukis',
@@ -6763,9 +6851,9 @@ List<LearningStep> _buildSteps() {
       instructionTitle: 'Situasi: AmiN dalam aktiviti gotong-royong',
       instructionBody:
           'Arahan: Tekan ⭐\n'
-          'Dengar kata dasar\n'
-          'Sebut imbuhan awalan meN- yang sesuai\n'
-          'Tekan lagi untuk semak jawapan',
+          'Dengar kata dasar.\n'
+          'Sebut imbuhan awalan meN- yang sesuai.\n'
+          'Tekan lagi untuk semak jawapan.',
       hotspots: [
         LearningHotspot(
           label: 'mengutip',

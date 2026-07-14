@@ -299,37 +299,21 @@ class _QuizLevelCardState extends State<_QuizLevelCard> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        const baseStyle = TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 52,
-                          height: 1,
-                        );
-                        final painter = TextPainter(
-                          text: const TextSpan(
-                            text: 'Sederhana',
-                            style: baseStyle,
-                          ),
-                          maxLines: 1,
-                          textDirection: TextDirection.ltr,
-                        )..layout(maxWidth: double.infinity);
-                        final scale = painter.width > constraints.maxWidth
-                            ? constraints.maxWidth / painter.width
-                            : 1.0;
-
-                        return Text(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
                           widget.title,
                           maxLines: 1,
                           softWrap: false,
-                          overflow: TextOverflow.clip,
-                          style: baseStyle.copyWith(
-                            fontSize: (baseStyle.fontSize ?? 52) * scale,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 36,
+                            height: 1,
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
                   ),
                   const Icon(
                     Icons.chevron_right_rounded,

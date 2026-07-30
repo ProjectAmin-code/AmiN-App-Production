@@ -16,18 +16,25 @@ import '../../shared/widgets/adaptive_asset_image.dart';
 import '../models/learning_models.dart';
 import '../services/amin_tts_service.dart';
 
-const Color _b01HeadingColor = Color(0xFF0F9FB0);
-const Color _b01TitleBoxColor = Color(0xFFD6F3F6);
-const Color _b01TitleBorderColor = Color(0xFF9ADFE7);
-const Color _b01TitleTextColor = Color(0xFF064C55);
-const Color _b01ImbuhanColor = Color(0xFFFF6B81);
-const Color _b01KataDasarColor = Color(0xFF29B6F6);
-const Color _b01KataTerbitanColor = Color(0xFF4EDEAE);
-const Color _b01MainTextColor = Color(0xFF16325C);
+const Color _b01HeadingColor = Color(0xFF2C7A7B);
+const Color _b01TitleBoxColor = Color(0xFFDFF4F1);
+const Color _b01TitleBorderColor = Color(0xFFBFE7E1);
+const Color _b01TitleTextColor = Color(0xFF1F4D4A);
+const Color _b01ImbuhanColor = Color(0xFFFCE7F3);
+const Color _b01ImbuhanTextColor = Color(0xFF9D174D);
+const Color _b01KataDasarColor = Color(0xFFDBEAFE);
+const Color _b01KataDasarTextColor = Color(0xFF1D4ED8);
+const Color _b01KataTerbitanColor = Color(0xFFDCFCE7);
+const Color _b01KataTerbitanTextColor = Color(0xFF166534);
+const Color _b01MainTextColor = Color(0xFF1F2937);
 const Color _b01CardColor = Color(0xFFFFFFFF);
-const Color _b01ScreenBgColor = Color(0xFFEAF7FF);
-const Color _b01ButtonColor = Color(0xFFFF6B81);
+const Color _b01ScreenBgColor = Color(0xFFFFFDF8);
+const Color _b01ButtonColor = Color(0xFFE85D75);
 const Color _b01WhiteColor = Color(0xFFFFFFFF);
+
+const Color _b07TextColor = Color(0xFF1F2937);
+const Color _b07ChangeFromColor = Color(0xFFE11D48);
+const Color _b07ChangeToColor = Color(0xFF16A34A);
 
 const Color _b04TableHeaderColor = Color(0xFF155E75);
 const Color _b04ScreenBgColor = Color(0xFFFFFDF8);
@@ -151,11 +158,11 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       'assets/Action Figures/AmiN Pointing.svg';
   static const Map<String, _AnimatedWordSpec> _animatedWordSpecs = {
     'B07': _AnimatedWordSpec(
-      rootWord: 'Salin',
-      finalWord: 'menyalin',
-      originalLetter: 'S',
-      replacementLetters: 'ny',
-      remainingLetters: 'alin',
+      rootWord: 'pilih',
+      finalWord: 'memilih',
+      originalLetter: 'p',
+      replacementLetters: 'm',
+      remainingLetters: 'ilih',
     ),
     'B08': _AnimatedWordSpec(
       rootWord: 'simpan',
@@ -242,6 +249,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       duration: AppMotionSpec.pulse,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProgressTracker.instance.recordLessonStarted(_currentStep.id);
       ProgressTracker.instance.updateLearningStep(
         reachedStep: _currentIndex + 1,
         totalSteps: _steps.length,
@@ -345,6 +353,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       reachedStep: _currentIndex + 1,
       totalSteps: _steps.length,
     );
+    ProgressTracker.instance.recordLessonStarted(_currentStep.id);
     await _speakCurrentStep();
   }
 
@@ -370,6 +379,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       reachedStep: _currentIndex + 1,
       totalSteps: _steps.length,
     );
+    ProgressTracker.instance.recordLessonStarted(_currentStep.id);
     await _speakCurrentStep();
   }
 
@@ -1520,7 +1530,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ),
           ),
           if (step.subtitle.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: usesB01Style ? 16 : 12),
             _contentCard(
               color: usesB01Style ? _b01CardColor : Colors.white,
               child: _subtitleContent(
@@ -1540,7 +1550,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             ),
           ],
           if (step.equationExamples.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: usesB01Style ? 24 : 14),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -1556,7 +1566,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: usesB01Style ? 14 : 10),
             ...step.equationExamples.asMap().entries.map((entry) {
               final index = entry.key;
               final row = entry.value;
@@ -1573,22 +1583,37 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                     width: baseChipWidth,
                     height: chipHeight,
                     fontSize: chipFontSize,
+                    textColor: usesB01Style
+                        ? _b01EquationTextColor(row.leftColor)
+                        : Colors.white,
                   ),
-                  _equationSymbol('+'),
+                  _equationSymbol(
+                    '+',
+                    color: usesB01Style ? _b01MainTextColor : null,
+                  ),
                   _equationChip(
                     row.middle,
                     row.middleColor,
                     width: baseChipWidth,
                     height: chipHeight,
                     fontSize: chipFontSize,
+                    textColor: usesB01Style
+                        ? _b01EquationTextColor(row.middleColor)
+                        : Colors.white,
                   ),
-                  _equationSymbol('='),
+                  _equationSymbol(
+                    '=',
+                    color: usesB01Style ? _b01MainTextColor : null,
+                  ),
                   _equationChip(
                     row.right,
                     row.rightColor,
                     width: resultChipWidth,
                     height: chipHeight,
                     fontSize: chipFontSize,
+                    textColor: usesB01Style
+                        ? _b01EquationTextColor(row.rightColor)
+                        : Colors.white,
                   ),
                 ],
               );
@@ -1607,7 +1632,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.only(bottom: usesB01Style ? 14 : 8),
                   child: shouldNumberRow
                       ? Row(
                           children: [
@@ -1633,7 +1658,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
             }),
           ],
           if (step.colorLegends.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: usesB01Style ? 18 : 10),
             _contentCard(
               color: usesB01Style ? _b01CardColor : const Color(0xFFFCFFFC),
               child: Column(
@@ -3303,6 +3328,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     double? width,
     double? height,
     double? fontSize,
+    Color textColor = Colors.white,
   }) {
     final effectiveFontSize = fontSize == null
         ? _responsiveLabelFontSize(context, 18, min: 14, max: 18)
@@ -3320,7 +3346,7 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
       child: Text(
         text,
         style: TextStyle(
-          color: Colors.white,
+          color: textColor,
           fontSize: effectiveFontSize,
           fontWeight: FontWeight.w800,
           fontFamily: 'Century Gothic',
@@ -3328,6 +3354,16 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
         ),
       ),
     );
+  }
+
+  Color _b01EquationTextColor(Color backgroundColor) {
+    if (backgroundColor == _b01ImbuhanColor) {
+      return _b01ImbuhanTextColor;
+    }
+    if (backgroundColor == _b01KataDasarColor) {
+      return _b01KataDasarTextColor;
+    }
+    return _b01KataTerbitanTextColor;
   }
 
   bool _shouldNumberEquationExamples(LearningStep step) {
@@ -3368,14 +3404,14 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
-  Widget _equationSymbol(String symbol) {
+  Widget _equationSymbol(String symbol, {Color? color}) {
     final fontSize = _responsiveLabelFontSize(context, 23, min: 17, max: 23);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         symbol,
         style: TextStyle(
-          color: Color(0xFF1D3557),
+          color: color ?? const Color(0xFF1D3557),
           fontSize: fontSize,
           fontWeight: FontWeight.w900,
           fontFamily: 'Century Gothic',
@@ -5577,6 +5613,240 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
     );
   }
 
+  // Retained temporarily while the B07 whiteboard prototype is phased out.
+  // ignore: unused_element
+  Widget _buildPtksTutorialStep(LearningStep step, _AnimatedWordSpec spec) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stage = _wordAnimationStageForStep(step.id);
+        final isAnimating = _isWordAnimationRunningForStep(step.id);
+        final onAdvance = _wordAnimationAdvanceForStep(step.id);
+        final animationComplete = stage >= 6 && !isAnimating;
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/background/backgroundImg1.jpg',
+              fit: BoxFit.cover,
+            ),
+            Positioned(
+              left: constraints.maxWidth * 0.15,
+              right: constraints.maxWidth * 0.15,
+              top: constraints.maxHeight * 0.15,
+              height: constraints.maxHeight * 0.42,
+              child: _buildPtksBoardContent(step.id, spec, stage),
+            ),
+            Positioned(
+              left: responsiveClamp(context, 18, 24, 30),
+              right: responsiveClamp(context, 18, 24, 30),
+              bottom: responsiveClamp(context, 16, 20, 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: isAnimating
+                        ? SizedBox(
+                            key: ValueKey('${step.id}-animation-running'),
+                            height: 54,
+                          )
+                        : _buildLearningContinueButton(
+                            key: ValueKey(
+                              animationComplete
+                                  ? '${step.id}-finished-button'
+                                  : '${step.id}-tap-$stage',
+                            ),
+                            label: step.buttonText,
+                            onPressed: animationComplete
+                                ? _goNext
+                                : onAdvance,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPtksBoardContent(
+    String stepId,
+    _AnimatedWordSpec spec,
+    int stage,
+  ) {
+    final size = responsiveClamp(context, 27, 38, 48);
+    final style = TextStyle(
+      color: _b07TextColor,
+      fontSize: size,
+      fontWeight: FontWeight.w900,
+      height: 1,
+      fontFamily: 'Century Gothic',
+      fontFamilyFallback: _fontFallback,
+    );
+
+    Widget formula(String letter, Color letterColor, {bool checked = false}) {
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text.rich(
+          TextSpan(
+            children: [
+              if (checked) const TextSpan(text: 'me'),
+              if (!checked) const TextSpan(text: 'me-  +  '),
+              TextSpan(text: letter, style: TextStyle(color: letterColor)),
+              TextSpan(
+                text: checked
+                    ? '${spec.remainingLetters}  ✓'
+                    : '  ${spec.remainingLetters}',
+              ),
+            ],
+          ),
+          maxLines: 1,
+          style: style,
+        ),
+      );
+    }
+
+    Widget rootWord() {
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.all(size * 0.10),
+              decoration: stage >= 2
+                  ? BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _b07ChangeFromColor, width: 3),
+                    )
+                  : null,
+              child: Text(spec.originalLetter, style: style),
+            ),
+            Text(spec.remainingLetters, style: style),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        SizedBox(
+          height: size * 1.25,
+          child: stage >= 6
+              ? formula(
+                  spec.replacementLetters,
+                  _b07ChangeToColor,
+                  checked: true,
+                )
+              : stage >= 1 && stage <= 3
+              ? rootWord()
+              : null,
+        ),
+        SizedBox(
+          height: size * 1.35,
+          child: stage >= 5
+              ? formula(spec.replacementLetters, _b07ChangeToColor)
+              : null,
+        ),
+        SizedBox(
+          height: size * 1.25,
+          child: stage == 4
+              ? _buildPtksLetterChangeAnimation(stepId, spec, style, size)
+              : stage >= 3
+              ? formula(spec.originalLetter, _b07ChangeFromColor)
+              : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPtksLetterChangeAnimation(
+    String stepId,
+    _AnimatedWordSpec spec,
+    TextStyle style,
+    double size,
+  ) {
+    if (AppMotionSpec.reduceMotion(context)) {
+      return Text.rich(
+        TextSpan(
+          children: [
+            const TextSpan(text: 'me-  +  '),
+            TextSpan(
+              text: spec.replacementLetters,
+              style: const TextStyle(color: _b07ChangeToColor),
+            ),
+            TextSpan(text: '  ${spec.remainingLetters}'),
+          ],
+        ),
+        style: style,
+      );
+    }
+    return TweenAnimationBuilder<double>(
+      key: ValueKey('$stepId-letter-change-upward'),
+      tween: Tween(begin: 0, end: 1),
+      duration: _ptksStageDuration(stepId),
+      curve: Curves.easeInOutCubic,
+      builder: (context, value, child) {
+        final showM = value >= 0.58;
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('me-  +  ', style: style),
+              SizedBox(
+                width: size * 1.15,
+                height: size,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      bottom: size * 0.52,
+                      child: Icon(
+                        Icons.arrow_upward_rounded,
+                        size: size * 0.90,
+                        color: _b07TextColor.withValues(alpha: 0.75),
+                      ),
+                    ),
+                    Transform.translate(
+                      offset: Offset(0, -value * size * 1.25),
+                      child: Text(
+                        showM
+                            ? spec.replacementLetters
+                            : spec.originalLetter,
+                        style: style.copyWith(
+                          color: showM
+                              ? _b07ChangeToColor
+                              : _b07ChangeFromColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text('  ${spec.remainingLetters}', style: style),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Duration _ptksStageDuration(String stepId) {
+    return switch (stepId) {
+      'B07' => _b07StageDuration(4),
+      'B08' => _b08StageDuration(4),
+      'B09' => _b09StageDuration(4),
+      'B10' => _b10StageDuration(4),
+      _ => _wordAnimationStageDuration(4),
+    };
+  }
+
   Widget _buildAnimatedWordStageContent(
     BuildContext context, {
     required String stepId,
@@ -6038,6 +6308,8 @@ class _LearningFlowScreenState extends State<LearningFlowScreen>
                               width: double.infinity,
                               padding: isLevelTransition
                                   ? EdgeInsets.zero
+                                  : usesB01Style
+                                  ? const EdgeInsets.all(20)
                                   : const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isLevelTransition
@@ -6168,14 +6440,6 @@ List<LearningStep> _buildSteps() {
           middleColor: _b01ImbuhanColor,
           rightColor: _b01KataTerbitanColor,
         ),
-        LearningEquationExample(
-          left: 'minum',
-          middle: 'an',
-          right: 'minuman',
-          leftColor: _b01KataDasarColor,
-          middleColor: _b01ImbuhanColor,
-          rightColor: _b01KataTerbitanColor,
-        ),
       ],
       colorLegends: [
         LearningColorLegend(
@@ -6225,22 +6489,6 @@ List<LearningStep> _buildSteps() {
           left: 'ter',
           middle: 'tidur',
           right: 'tertidur',
-          leftColor: _b01ImbuhanColor,
-          middleColor: _b01KataDasarColor,
-          rightColor: _b01KataTerbitanColor,
-        ),
-        LearningEquationExample(
-          left: 'meN-',
-          middle: 'baca',
-          right: 'membaca',
-          leftColor: _b01ImbuhanColor,
-          middleColor: _b01KataDasarColor,
-          rightColor: _b01KataTerbitanColor,
-        ),
-        LearningEquationExample(
-          left: 'peN-',
-          middle: 'tulis',
-          right: 'penulis',
           leftColor: _b01ImbuhanColor,
           middleColor: _b01KataDasarColor,
           rightColor: _b01KataTerbitanColor,
@@ -6295,22 +6543,6 @@ List<LearningStep> _buildSteps() {
           left: 'meN-',
           middle: 'cat',
           right: 'mengecat',
-          leftColor: _b01ImbuhanColor,
-          middleColor: _b01KataDasarColor,
-          rightColor: _b01KataTerbitanColor,
-        ),
-        LearningEquationExample(
-          left: 'meN-',
-          middle: 'tulis',
-          right: 'menulis',
-          leftColor: _b01ImbuhanColor,
-          middleColor: _b01KataDasarColor,
-          rightColor: _b01KataTerbitanColor,
-        ),
-        LearningEquationExample(
-          left: 'meN-',
-          middle: 'sapu',
-          right: 'menyapu',
           leftColor: _b01ImbuhanColor,
           middleColor: _b01KataDasarColor,
           rightColor: _b01KataTerbitanColor,
@@ -6448,11 +6680,11 @@ List<LearningStep> _buildSteps() {
     ),
     LearningStep(
       id: 'B07',
-      title: 'salin',
-      subtitle: 'menyalin',
+      title: 'pilih',
+      subtitle: 'memilih',
       type: LearningStepType.levelTransition,
       buttonText: 'Teruskan',
-      voiceScript: 'salin… tambah imbuhan me-… menjadi… menyalin',
+      voiceScript: 'pilih… tambah imbuhan me-… p berubah menjadi m… memilih',
       backgroundImage: 'assets/background/animaBgGirl.jpg',
     ),
     LearningStep(

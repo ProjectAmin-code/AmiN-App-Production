@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/animations/animations.dart';
@@ -22,8 +23,11 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
   late final AnimationController _pulseController;
   late final TextEditingController _nameController;
   late final TextEditingController _userIdController;
+  late final TextEditingController _pinController;
+  late final TextEditingController _confirmPinController;
   String? _nameError;
   String? _userIdError;
+  String? _pinError;
   bool _recoverMode = false;
   bool _recovering = false;
 
@@ -34,12 +38,16 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
       text: ProgressTracker.instance.userName.trim(),
     );
     _userIdController = TextEditingController();
+    _pinController = TextEditingController();
+    _confirmPinController = TextEditingController();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ProgressTracker.instance.hasIdentity && mounted) {
+      if (ProgressTracker.instance.hasIdentity &&
+          !ProgressTracker.instance.needsPinSetup &&
+          mounted) {
         context.go(AppRoutes.s003MainMenu);
         return;
       }
@@ -55,11 +63,14 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
     _pulseController.dispose();
     _nameController.dispose();
     _userIdController.dispose();
+    _pinController.dispose();
+    _confirmPinController.dispose();
     super.dispose();
   }
 
   Future<void> _goNext() async {
     final name = _nameController.text.trim();
+    final pin = _pinController.text;
     if (name.isEmpty) {
       setState(() {
         _nameError = 'Sila masukkan nama pelajar';
@@ -67,22 +78,36 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
       return;
     }
 
+    if (!RegExp(r'^\d{6}$').hasMatch(pin) || pin != _confirmPinController.text) {
+      setState(() {
+        _pinError = pin.length != 6
+            ? 'PIN mesti mempunyai 6 nombor'
+            : 'PIN tidak sepadan';
+      });
+      return;
+    }
+
     setState(() {
       _nameError = null;
+      _pinError = null;
     });
 
-    await ProgressTracker.instance.setUserName(name);
+    final result = await ProgressTracker.instance.createStudent(name: name, pin: pin);
     if (!mounted) {
       return;
     }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message)));
+    if (!result.success) return;
     context.go(AppRoutes.s003MainMenu);
   }
 
   Future<void> _recoverByUserId() async {
     final userId = _userIdController.text.trim();
-    if (userId.isEmpty || _recovering) {
+    final pin = _pinController.text;
+    if (userId.isEmpty || !RegExp(r'^\d{6}$').hasMatch(pin) || _recovering) {
       setState(() {
-        _userIdError = 'Sila masukkan User ID';
+        _userIdError = userId.isEmpty ? 'Sila masukkan ID Pelajar' : null;
+        _pinError = pin.length != 6 ? 'PIN mesti mempunyai 6 nombor' : null;
       });
       return;
     }
@@ -91,7 +116,7 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
       _recovering = true;
     });
 
-    final result = await ProgressTracker.instance.restoreFromUserId(userId);
+    final result = await ProgressTracker.instance.restoreFromStudentId(userId, pin);
     setState(() {
       _recovering = false;
     });
@@ -172,7 +197,7 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                           ),
                           ButtonSegment<bool>(
                             value: true,
-                            label: Text('Guna User ID'),
+                            label: Text('Pulihkan Akaun'),
                             icon: Icon(Icons.vpn_key_rounded),
                           ),
                         ],
@@ -216,9 +241,20 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 12),
+                              _pinField(
+                                controller: _pinController,
+                                label: 'PIN Pemulihan',
+                                errorText: _pinError,
+                              ),
+                              const SizedBox(height: 12),
+                              _pinField(
+                                controller: _confirmPinController,
+                                label: 'Sahkan PIN',
+                              ),
                             ] else ...[
                               const Text(
-                                'User ID',
+                                'ID Pelajar',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
@@ -231,7 +267,7 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => _recoverByUserId(),
                                 decoration: InputDecoration(
-                                  hintText: 'Masukkan User ID anda',
+                                  hintText: 'Contoh: AMIN-7K3MQ-9X2TR',
                                   errorText: _userIdError,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -243,6 +279,12 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
                                     ),
                                   ),
                                 ),
+                              ),
+                              const SizedBox(height: 12),
+                              _pinField(
+                                controller: _pinController,
+                                label: 'PIN Pemulihan',
+                                errorText: _pinError,
                               ),
                             ],
                           ],
@@ -278,6 +320,27 @@ class _S002WelcomeScreenState extends State<S002WelcomeScreen>
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _pinField({
+    required TextEditingController controller,
+    required String label,
+    String? errorText,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: true,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(6),
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        errorText: errorText,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }

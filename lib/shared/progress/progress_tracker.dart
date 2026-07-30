@@ -1,265 +1,171 @@
 import 'dart:async';
-import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
+import 'auth/auth_repository.dart';
+import 'data/firebase_data_sources.dart';
+import 'data/local_progress_repository.dart';
+import 'data/progress_database.dart';
 import 'progress_snapshot.dart';
-import 'progress_sync_service.dart';
+import 'sync/progress_sync_coordinator.dart';
 
 class ProgressTracker extends ChangeNotifier {
   ProgressTracker._();
 
   static final ProgressTracker instance = ProgressTracker._();
 
-  static const String _snapshotStorageKey = 'amin_progress_snapshot_v1';
-  static const String _userStorageKey = 'amin_progress_user_v1';
-  static const String _userIdStorageKey = 'amin_progress_user_id_v1';
-  static const Duration _syncDebounceDelay = Duration(seconds: 2);
-  static const bool _legacySnapshotCompatibilityEnabled = true;
+  final ProgressDatabase _db = ProgressDatabase.instance;
+  late final LocalProgressRepository _local;
+  late final AuthRepository _authRepository;
+  late final ProgressSyncCoordinator _syncCoordinator;
 
-  SharedPreferences? _prefs;
   ProgressSnapshot _snapshot = ProgressSnapshot.empty();
   String _userName = '';
   String _userId = '';
+  String? _firebaseUid;
+  String _authState = 'pending';
   bool _initialized = false;
-  bool _isSyncing = false;
-  bool _dirtySinceLastSync = false;
+  int _pendingEventCount = 0;
   DateTime? _lastSyncedUtc;
   String? _lastSyncError;
-  Timer? _syncDebounce;
+  String? _activeQuizAttemptId;
+  String? _activeGameSessionId;
+  Timer? _inactivityTimer;
 
   ProgressSnapshot get snapshot => _snapshot;
   String get userName => _userName;
   String get userId => _userId;
-  bool get hasIdentity =>
-      _userName.trim().isNotEmpty && _userId.trim().isNotEmpty;
-  bool get isSyncing => _isSyncing;
+  bool get hasIdentity => _userName.isNotEmpty && _userId.isNotEmpty;
+  bool get needsPinSetup => _authState == 'needs_pin';
+  bool get isSyncing => _initialized && _syncCoordinator.isRunning;
+  int get pendingEventCount => _pendingEventCount;
+  bool get hasPendingBackup => _pendingEventCount > 0;
   DateTime? get lastSyncedUtc => _lastSyncedUtc;
   String? get lastSyncError => _lastSyncError;
 
   Future<void> initialize() async {
-    if (_initialized) {
-      return;
-    }
+    if (_initialized) return;
     _initialized = true;
+    _local = LocalProgressRepository(_db);
+    await _local.initialize();
+
+    FirebaseAuth? auth;
+    FirebaseProgressDataSource? remote;
     try {
-      _prefs = await SharedPreferences.getInstance();
-      _userName = _prefs?.getString(_userStorageKey) ?? '';
-      _userId = _prefs?.getString(_userIdStorageKey) ?? '';
-      final raw = _prefs?.getString(_snapshotStorageKey);
-      if (raw != null && raw.trim().isNotEmpty) {
-        final decoded = jsonDecode(raw);
-        if (decoded is Map<String, dynamic>) {
-          _snapshot = ProgressSnapshot.fromJson(decoded);
-        } else if (decoded is Map) {
-          _snapshot = ProgressSnapshot.fromJson(
-            decoded.map((key, value) => MapEntry('$key', value)),
-          );
-        }
-      }
-      if (_userName.trim().isNotEmpty) {
-        await _ensureUserId();
-      }
-    } catch (_) {
-      // Fallback to in-memory state only when persistence is unavailable.
+      await Firebase.initializeApp();
+      auth = FirebaseAuth.instance;
+      remote = FirebaseProgressDataSource(FirebaseFirestore.instance);
+    } catch (error) {
+      _log('firebase_unavailable', {'error': error.runtimeType.toString()});
     }
-    notifyListeners();
+
+    _authRepository = FirebaseAuthRepository(
+      database: _db,
+      installationId: _local.installationId,
+      firebaseAuth: auth,
+      studentRemote: remote,
+      progressRemote: remote,
+    );
+    _syncCoordinator = ProgressSyncCoordinator(
+      database: _db,
+      local: _local,
+      remote: remote,
+      uidProvider: () => _firebaseUid,
+    )..onStatusChanged = () => unawaited(_refresh());
+    _syncCoordinator.startConnectivityMonitoring();
+    await _refresh();
+    unawaited(_authRepository.completePendingRegistration().then((_) async {
+      await _refresh();
+      _syncCoordinator.schedule();
+    }));
+  }
+
+  Future<AuthResult> createStudent({required String name, required String pin}) async {
+    await _local.ensureProfile(name);
+    final result = await _authRepository.createStudent(name, pin);
+    await _refresh();
+    if (result.success) _syncCoordinator.schedule();
+    if (result.success && !result.message.contains(_userId)) {
+      return AuthResult(
+        success: true,
+        message: 'ID Pelajar anda ialah $_userId. ${result.message}',
+      );
+    }
+    return result;
   }
 
   Future<void> setUserName(String name) async {
-    final cleaned = name.trim();
-    if (cleaned.isEmpty) {
-      return;
-    }
-    final changed = cleaned != _userName;
-    _userName = cleaned;
-    await _ensureUserId();
-    await _persistUserName();
-    _dirtySinceLastSync = true;
-    if (changed) {
-      notifyListeners();
-    }
-    _scheduleSync();
-    unawaited(_registerStudent());
-    unawaited(_syncBackfillCompletedLessons());
+    if (name.trim().isEmpty) return;
+    await _local.ensureProfile(name);
+    await _refresh();
+  }
+
+  Future<AuthResult> restoreFromStudentId(String studentId, String pin) async {
+    final result = await _authRepository.recover(studentId, pin);
+    await _refresh();
+    if (result.success) _syncCoordinator.schedule();
+    return result;
   }
 
   Future<void> clearUserIdentity({bool clearProgress = false}) async {
-    _userName = '';
-    _userId = '';
-    if (clearProgress) {
-      _snapshot = ProgressSnapshot.empty();
-    }
-    _dirtySinceLastSync = false;
-    _lastSyncedUtc = null;
-    _lastSyncError = null;
-
-    try {
-      await _prefs?.remove(_userStorageKey);
-      await _prefs?.remove(_userIdStorageKey);
-      if (clearProgress) {
-        await _prefs?.remove(_snapshotStorageKey);
-      }
-    } catch (_) {
-      // Ignore persistence errors and keep app responsive.
-    }
-
-    notifyListeners();
+    await _authRepository.signOut();
+    if (clearProgress) await _local.clearLocalData();
+    await _refresh();
   }
 
-  Future<ProgressSyncResult> restoreFromUserId(String userId) async {
-    final cleaned = userId.trim();
-    if (cleaned.isEmpty) {
-      return const ProgressSyncResult(
-        success: false,
-        message: 'Sila masukkan User ID.',
-      );
-    }
+  Future<void> updateOnboardingStep({required int reachedStep, required int totalSteps}) =>
+      _updateLessonRange(reachedStep: reachedStep, previous: _snapshot.onboardingReached, start: 1);
 
-    final studentResult = await ProgressSyncService.instance
-        .fetchStudentByUserId(userId: cleaned);
-    if (!studentResult.success) {
-      return ProgressSyncResult(
-        success: false,
-        message: studentResult.message,
-        statusCode: studentResult.statusCode,
-      );
-    }
+  Future<void> updateBelajarStep({required int reachedStep, required int totalSteps}) =>
+      _updateLessonRange(reachedStep: reachedStep, previous: _snapshot.belajarReached, start: 4);
 
-    final rawStudentData = studentResult.data;
-    if (rawStudentData is! Map) {
-      return const ProgressSyncResult(
-        success: false,
-        message: 'Format data pelajar tidak sah.',
-      );
-    }
-    final studentData = rawStudentData.map(
-      (key, value) => MapEntry('$key', value),
-    );
-    final restoredName = '${studentData['name'] ?? ''}'.trim();
-    if (restoredName.isEmpty) {
-      return const ProgressSyncResult(
-        success: false,
-        message: 'Nama pelajar tidak sah di server.',
-      );
-    }
+  Future<void> updateLearningStep({required int reachedStep, required int totalSteps}) =>
+      _updateLessonRange(reachedStep: reachedStep, previous: _snapshot.learningReached, start: 7);
 
-    final progressResult = await ProgressSyncService.instance
-        .fetchProgressByUserId(userId: cleaned);
-    if (!progressResult.success) {
-      return ProgressSyncResult(
-        success: false,
-        message: progressResult.message,
-        statusCode: progressResult.statusCode,
-      );
-    }
-
-    final progressData = progressResult.data;
-    final rows = progressData is List ? progressData : const <dynamic>[];
-    final restoredSnapshot = _snapshotFromProgressRows(rows);
-
-    _userId = cleaned;
-    _userName = restoredName;
-    _snapshot = restoredSnapshot;
-    _dirtySinceLastSync = false;
-    _lastSyncError = null;
-    _lastSyncedUtc = DateTime.now().toUtc();
-
-    await _persistUserId();
-    await _persistUserName();
-    await _persistSnapshot();
-    notifyListeners();
-
-    return const ProgressSyncResult(
-      success: true,
-      message: 'Data berjaya dipulihkan.',
-    );
+  Future<void> _updateLessonRange({required int reachedStep, required int previous, required int start}) async {
+    if (!_initialized) return;
+    if (reachedStep <= previous) return;
+    await _local.completeLessonRange(from: previous + 1, to: reachedStep, start: start);
+    await _changed();
   }
 
-  Future<void> updateOnboardingStep({
-    required int reachedStep,
-    required int totalSteps,
+  Future<void> recordLessonStarted(String lessonId) async {
+    if (!_initialized) return;
+    await _local.startLesson(lessonId);
+    await _changed();
+  }
+
+  Future<String> beginQuiz({required String quizId, required String level}) async {
+    if (!_initialized) return '';
+    _activeQuizAttemptId = await _local.startQuiz(quizId: quizId, level: level);
+    await _changed();
+    return _activeQuizAttemptId!;
+  }
+
+  Future<void> recordQuizAnswer({
+    required String questionId,
+    required String selectedAnswer,
+    required bool isAutoGraded,
+    required bool isCorrect,
+    required bool isBonus,
+    required int responseTimeMilliseconds,
   }) async {
-    final previousReached = _snapshot.onboardingReached;
-    final nextReached = _maxClamped(reachedStep, totalSteps);
-    final nextTotal = totalSteps <= 0 ? _snapshot.onboardingTotal : totalSteps;
-    if (nextReached <= _snapshot.onboardingReached &&
-        nextTotal == _snapshot.onboardingTotal) {
-      return;
-    }
-    await _updateSnapshot(
-      _snapshot.copyWith(
-        onboardingReached: nextReached > _snapshot.onboardingReached
-            ? nextReached
-            : _snapshot.onboardingReached,
-        onboardingTotal: nextTotal,
-        lastUpdatedUtcMillis: DateTime.now().toUtc().millisecondsSinceEpoch,
-      ),
+    if (!_initialized) return;
+    final attemptId = _activeQuizAttemptId;
+    if (attemptId == null) return;
+    await _local.answerQuiz(
+      attemptId: attemptId,
+      questionId: questionId,
+      selectedAnswer: selectedAnswer,
+      isAutoGraded: isAutoGraded,
+      isCorrect: isCorrect,
+      isBonus: isBonus,
+      responseMillis: responseTimeMilliseconds,
     );
-
-    final from = previousReached + 1;
-    final to = nextReached;
-    if (from <= to) {
-      unawaited(_syncCompletedSteps(from: from, to: to, lessonStartNumber: 1));
-    }
-  }
-
-  Future<void> updateBelajarStep({
-    required int reachedStep,
-    required int totalSteps,
-  }) async {
-    final previousReached = _snapshot.belajarReached;
-    final nextReached = _maxClamped(reachedStep, totalSteps);
-    final nextTotal = totalSteps <= 0 ? _snapshot.belajarTotal : totalSteps;
-    if (nextReached <= _snapshot.belajarReached &&
-        nextTotal == _snapshot.belajarTotal) {
-      return;
-    }
-    await _updateSnapshot(
-      _snapshot.copyWith(
-        belajarReached: nextReached > _snapshot.belajarReached
-            ? nextReached
-            : _snapshot.belajarReached,
-        belajarTotal: nextTotal,
-        lastUpdatedUtcMillis: DateTime.now().toUtc().millisecondsSinceEpoch,
-      ),
-    );
-
-    final from = previousReached + 1;
-    final to = nextReached;
-    if (from <= to) {
-      unawaited(_syncCompletedSteps(from: from, to: to, lessonStartNumber: 4));
-    }
-  }
-
-  Future<void> updateLearningStep({
-    required int reachedStep,
-    required int totalSteps,
-  }) async {
-    final previousReached = _snapshot.learningReached;
-    final nextReached = _maxClamped(reachedStep, totalSteps);
-    final nextTotal = totalSteps <= 0 ? _snapshot.learningTotal : totalSteps;
-    if (nextReached <= _snapshot.learningReached &&
-        nextTotal == _snapshot.learningTotal) {
-      return;
-    }
-    await _updateSnapshot(
-      _snapshot.copyWith(
-        learningReached: nextReached > _snapshot.learningReached
-            ? nextReached
-            : _snapshot.learningReached,
-        learningTotal: nextTotal,
-        lastUpdatedUtcMillis: DateTime.now().toUtc().millisecondsSinceEpoch,
-      ),
-    );
-
-    final from = previousReached + 1;
-    final to = nextReached;
-    if (from <= to) {
-      unawaited(_syncCompletedSteps(from: from, to: to, lessonStartNumber: 7));
-    }
+    await _changed();
   }
 
   Future<void> recordQuizSubmission({
@@ -268,377 +174,145 @@ class ProgressTracker extends ChangeNotifier {
     required int questionGoal,
     String? lessonId,
     int? score,
-  }) async {
-    final nextAnswered = _snapshot.quizAnswered + 1;
-    final nextAutoTotal = _snapshot.quizAutoTotal + (isAutoGraded ? 1 : 0);
-    final nextAutoCorrect =
-        _snapshot.quizAutoCorrect + (isAutoGraded && isCorrect ? 1 : 0);
-    final nextGoal = questionGoal > 0
-        ? questionGoal
-        : _snapshot.quizQuestionGoal;
-    await _updateSnapshot(
-      _snapshot.copyWith(
-        quizAnswered: nextAnswered,
-        quizAutoTotal: nextAutoTotal,
-        quizAutoCorrect: nextAutoCorrect,
-        quizQuestionGoal: nextGoal,
-        lastUpdatedUtcMillis: DateTime.now().toUtc().millisecondsSinceEpoch,
-      ),
-    );
-
-    final resolvedLessonId =
-        lessonId ?? 'QUIZ_${nextAnswered.toString().padLeft(2, '0')}';
-    final resolvedScore = score ?? (isAutoGraded ? (isCorrect ? 100 : 0) : 100);
-    unawaited(
-      _syncLessonProgress(
-        lessonId: resolvedLessonId,
-        status: 'completed',
-        score: resolvedScore,
-      ),
+    String selectedAnswer = '',
+    bool isBonus = false,
+    int responseTimeMilliseconds = 0,
+  }) {
+    return recordQuizAnswer(
+      questionId: lessonId ?? 'unknown',
+      selectedAnswer: selectedAnswer,
+      isAutoGraded: isAutoGraded,
+      isCorrect: isAutoGraded ? isCorrect : true,
+      isBonus: isBonus,
+      responseTimeMilliseconds: responseTimeMilliseconds,
     );
   }
 
-  Future<void> recordQuizSessionCompleted({
-    String lessonId = 'QUIZ_SESSION',
-    int? score,
-  }) async {
-    final nextSnapshot = _snapshot.copyWith(
-      quizSessionsCompleted: _snapshot.quizSessionsCompleted + 1,
-      lastUpdatedUtcMillis: DateTime.now().toUtc().millisecondsSinceEpoch,
-    );
-    await _updateSnapshot(nextSnapshot);
-    final resolvedScore = score ?? nextSnapshot.quizAccuracyPercent;
-    unawaited(
-      _syncLessonProgress(
-        lessonId: lessonId,
-        status: 'completed',
-        score: resolvedScore,
-      ),
-    );
+  Future<void> recordQuizSessionCompleted({String lessonId = 'QUIZ_SESSION', int? score}) async {
+    if (!_initialized) return;
+    final attemptId = _activeQuizAttemptId;
+    if (attemptId == null) return;
+    await _local.finishQuiz(attemptId, completed: true, score: score ?? 0);
+    _activeQuizAttemptId = null;
+    await _changed();
   }
 
-  Future<void> recordGameSession({
-    required int starsEarned,
-    required int starsPossible,
-    String lessonId = 'M000_GAME',
-  }) async {
-    final normalizedPossible = starsPossible <= 0 ? 1 : starsPossible;
-    final normalizedEarned = starsEarned.clamp(0, normalizedPossible);
-    final score = ((normalizedEarned / normalizedPossible) * 100).round().clamp(
-      0,
-      100,
-    );
-    await _updateSnapshot(
-      _snapshot.copyWith(
-        gameSessionsCompleted: _snapshot.gameSessionsCompleted + 1,
-        gameStarsEarned: _snapshot.gameStarsEarned + normalizedEarned,
-        gameStarsPossible: _snapshot.gameStarsPossible + normalizedPossible,
-        lastUpdatedUtcMillis: DateTime.now().toUtc().millisecondsSinceEpoch,
-      ),
-    );
+  Future<void> abandonQuiz() async {
+    if (!_initialized) return;
+    final attemptId = _activeQuizAttemptId;
+    if (attemptId == null) return;
+    await _local.finishQuiz(attemptId, completed: false);
+    _activeQuizAttemptId = null;
+    await _changed();
+  }
 
-    unawaited(
-      _syncLessonProgress(
-        lessonId: lessonId,
-        status: 'completed',
-        score: score,
-      ),
-    );
+  Future<void> recordGameSession({required int starsEarned, required int starsPossible, String lessonId = 'M000_GAME'}) async {
+    if (!_initialized) return;
+    final type = switch (lessonId.toLowerCase()) {
+      final id when id.contains('pilihpantas') => 'pilih_pantas',
+      final id when id.contains('carikumpul') => 'cari_kumpul',
+      final id when id.contains('caripilih') => 'cari_bulatkan',
+      final id when id.contains('betulsalah') => 'betul_atau_salah',
+      _ => 'unknown',
+    };
+    final activeId = _activeGameSessionId;
+    if (activeId == null) {
+      await _local.recordGame(gameType: type, gameId: lessonId, earned: starsEarned, possible: starsPossible);
+    } else {
+      await _local.finishStartedGame(activeId, earned: starsEarned, possible: starsPossible, completed: true);
+      _activeGameSessionId = null;
+    }
+    await _changed();
+  }
+
+  Future<void> beginGame({required String gameType, required String gameId}) async {
+    if (!_initialized) return;
+    _activeGameSessionId = await _local.startGame(gameType: gameType, gameId: gameId);
+    await _changed();
+  }
+
+  Future<void> abandonGame() async {
+    if (!_initialized) return;
+    final id = _activeGameSessionId;
+    if (id == null) return;
+    _activeGameSessionId = null;
+    await _local.finishStartedGame(id, earned: 0, possible: 0, completed: false);
+    await _changed();
   }
 
   Future<void> forceSync() async {
-    await _syncNow(force: true);
-  }
-
-  Future<void> _updateSnapshot(ProgressSnapshot nextSnapshot) async {
-    _snapshot = nextSnapshot;
-    _dirtySinceLastSync = true;
+    if (!_initialized) return;
     _lastSyncError = null;
-    await _persistSnapshot();
-    notifyListeners();
-    _scheduleSync();
+    final ran = await _syncCoordinator.syncNow(ignoreBackoff: true);
+    if (!ran && _firebaseUid == null) {
+      _lastSyncError = 'Kemajuan disimpan pada peranti. Sandaran akan bermula selepas akaun disambungkan.';
+    }
+    await _refresh();
   }
 
-  Future<void> _syncCompletedSteps({
-    required int from,
-    required int to,
-    required int lessonStartNumber,
-  }) async {
-    for (var index = from; index <= to; index++) {
-      final lessonNumber = lessonStartNumber + (index - 1);
-      final lessonId = 'S${lessonNumber.toString().padLeft(3, '0')}';
-      await _syncLessonProgress(
-        lessonId: lessonId,
-        status: 'completed',
-        score: 100,
-      );
-    }
+  Future<void> onAppResumed() async {
+    if (!_initialized) return;
+    await _authRepository.completePendingRegistration();
+    await _refresh();
+    _syncCoordinator.schedule();
+    await registerActivity();
   }
 
-  Future<void> _syncBackfillCompletedLessons() async {
-    if (_userName.trim().isEmpty) {
-      return;
-    }
-    if (_snapshot.onboardingReached > 0) {
-      await _syncCompletedSteps(
-        from: 1,
-        to: _snapshot.onboardingReached,
-        lessonStartNumber: 1,
-      );
-    }
-    if (_snapshot.belajarReached > 0) {
-      await _syncCompletedSteps(
-        from: 1,
-        to: _snapshot.belajarReached,
-        lessonStartNumber: 4,
-      );
-    }
-    if (_snapshot.learningReached > 0) {
-      await _syncCompletedSteps(
-        from: 1,
-        to: _snapshot.learningReached,
-        lessonStartNumber: 7,
-      );
-    }
+  Future<void> onAppPaused() async {
+    if (!_initialized) return;
+    _inactivityTimer?.cancel();
+    await _local.endLearningSession();
+    await _changed();
   }
 
-  Future<void> _syncLessonProgress({
-    required String lessonId,
-    required String status,
-    required int score,
-  }) async {
-    if (_userName.trim().isEmpty) {
-      return;
-    }
-    await _ensureUserId();
-    final result = await ProgressSyncService.instance.upsertProgress(
-      userId: _userId,
-      lessonId: lessonId,
-      status: status,
-      score: score,
-    );
-    if (result.success) {
-      _lastSyncedUtc = DateTime.now().toUtc();
-      _lastSyncError = null;
-    } else {
-      _lastSyncError = result.message;
-    }
-    notifyListeners();
-  }
-
-  Future<void> _registerStudent() async {
-    if (_userName.trim().isEmpty) {
-      return;
-    }
-    await _ensureUserId();
-    final result = await ProgressSyncService.instance.registerStudent(
-      userId: _userId,
-      name: _userName,
-    );
-    if (result.success) {
-      _lastSyncedUtc = DateTime.now().toUtc();
-      _lastSyncError = null;
-    } else {
-      _lastSyncError = result.message;
-    }
-    notifyListeners();
-  }
-
-  void _scheduleSync() {
-    if (_userName.trim().isEmpty || !_legacySnapshotCompatibilityEnabled) {
-      return;
-    }
-    _syncDebounce?.cancel();
-    _syncDebounce = Timer(_syncDebounceDelay, () {
-      _syncNow();
+  Future<void> registerActivity() async {
+    if (!_initialized) return;
+    await _local.startLearningSession();
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(const Duration(minutes: 5), () {
+      unawaited(_local.endLearningSession().then((_) => _changed()));
     });
   }
 
-  Future<void> _syncNow({bool force = false}) async {
-    if (_userName.trim().isEmpty || _isSyncing) {
-      return;
+  Future<void> _changed() async {
+    await _refresh();
+    await _local.enqueueSummary(_snapshot);
+    await _refresh();
+    _syncCoordinator.schedule();
+  }
+
+  Future<void> _refresh() async {
+    final profile = await _local.currentProfile();
+    _userName = profile?.displayName ?? '';
+    _userId = profile?.publicStudentId ?? '';
+    _firebaseUid = profile?.firebaseUid;
+    _authState = profile?.authState ?? 'pending';
+    _snapshot = await _local.loadSnapshot();
+    _pendingEventCount = await _local.pendingCount();
+    if (profile != null) {
+      final metadata = await (_db.select(_db.syncMetadataRows)
+            ..where((t) => t.localProfileId.equals(profile.localId)))
+          .getSingleOrNull();
+      if (metadata?.lastSyncAtMillis != null) {
+        _lastSyncedUtc = DateTime.fromMillisecondsSinceEpoch(metadata!.lastSyncAtMillis!, isUtc: true);
+      }
+      if (metadata?.lastResult == 'Sandaran berjaya.') {
+        _lastSyncError = null;
+      } else if (metadata?.lastResult != null) {
+        _lastSyncError = metadata!.lastResult;
+      }
     }
-    if (!_dirtySinceLastSync && !force) {
-      return;
-    }
-    _isSyncing = true;
     notifyListeners();
-    final result = await ProgressSyncService.instance.uploadLegacySnapshot(
-      userName: _userName,
-      snapshot: _snapshot,
-    );
-    _isSyncing = false;
-    if (result.success) {
-      _dirtySinceLastSync = false;
-      _lastSyncError = null;
-      _lastSyncedUtc = DateTime.now().toUtc();
-    } else {
-      _lastSyncError = result.message;
-    }
-    notifyListeners();
   }
 
-  Future<void> _ensureUserId() async {
-    if (_userId.trim().isNotEmpty) {
-      return;
-    }
-    _userId = const Uuid().v4();
-    await _persistUserId();
-  }
-
-  Future<void> _persistSnapshot() async {
-    try {
-      await _prefs?.setString(
-        _snapshotStorageKey,
-        jsonEncode(_snapshot.toJson()),
-      );
-    } catch (_) {
-      // Ignore persistence errors and keep app responsive.
-    }
-  }
-
-  Future<void> _persistUserName() async {
-    try {
-      await _prefs?.setString(_userStorageKey, _userName);
-    } catch (_) {
-      // Ignore persistence errors and keep app responsive.
-    }
-  }
-
-  Future<void> _persistUserId() async {
-    try {
-      await _prefs?.setString(_userIdStorageKey, _userId);
-    } catch (_) {
-      // Ignore persistence errors and keep app responsive.
-    }
-  }
-
-  int _maxClamped(int reached, int total) {
-    final safeTotal = total <= 0 ? 1 : total;
-    return reached.clamp(0, safeTotal);
-  }
-
-  ProgressSnapshot _snapshotFromProgressRows(List<dynamic> rows) {
-    var onboardingReached = 0;
-    var belajarReached = 0;
-    var learningReached = 0;
-    var quizAnswered = 0;
-    var quizAutoTotal = 0;
-    var quizAutoCorrect = 0;
-    var quizSessionsCompleted = 0;
-    var gameScoreAccumulated = 0;
-    var gameSessionsCompleted = 0;
-    var latestUpdatedUtcMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
-
-    for (final raw in rows) {
-      if (raw is! Map) {
-        continue;
-      }
-      final map = raw.map((key, value) => MapEntry('$key', value));
-      final lessonId = '${map['lessonId'] ?? ''}'.trim();
-      if (lessonId.isEmpty) {
-        continue;
-      }
-      final lessonUpper = lessonId.toUpperCase();
-      final score = _parseInt(map['score']).clamp(0, 100);
-
-      final updatedMillis = _parseUpdatedMillis(map['updatedAt']);
-      if (updatedMillis > latestUpdatedUtcMillis) {
-        latestUpdatedUtcMillis = updatedMillis;
-      }
-
-      if (lessonUpper.startsWith('S')) {
-        final number = _parseScreenNumber(lessonUpper);
-        if (number >= 1 && number <= 3) {
-          onboardingReached = number > onboardingReached
-              ? number
-              : onboardingReached;
-          continue;
-        }
-        if (number >= 4 && number <= 6) {
-          final step = number - 3;
-          belajarReached = step > belajarReached ? step : belajarReached;
-          continue;
-        }
-        if (number >= 7 && number <= 21) {
-          final step = number - 6;
-          learningReached = step > learningReached ? step : learningReached;
-          continue;
-        }
-      }
-
-      if (lessonUpper.startsWith('QUIZ_LEVEL_') ||
-          lessonUpper == 'QUIZ_SESSION') {
-        quizSessionsCompleted += 1;
-        continue;
-      }
-
-      if (lessonUpper.startsWith('Q') || lessonUpper.startsWith('QUIZ_')) {
-        quizAnswered += 1;
-        quizAutoTotal += 1;
-        if (score >= 100) {
-          quizAutoCorrect += 1;
-        }
-        continue;
-      }
-
-      if (lessonUpper.startsWith('M')) {
-        gameSessionsCompleted += 1;
-        gameScoreAccumulated += score;
-      }
-    }
-
-    final gameStarsPossible = gameSessionsCompleted * 100;
-    return ProgressSnapshot.empty().copyWith(
-      onboardingReached: onboardingReached,
-      onboardingTotal: 3,
-      belajarReached: belajarReached,
-      belajarTotal: 3,
-      learningReached: learningReached,
-      learningTotal: 15,
-      quizAnswered: quizAnswered,
-      quizAutoTotal: quizAutoTotal,
-      quizAutoCorrect: quizAutoCorrect,
-      quizQuestionGoal: 32,
-      quizSessionsCompleted: quizSessionsCompleted,
-      gameStarsEarned: gameScoreAccumulated,
-      gameStarsPossible: gameStarsPossible,
-      gameSessionsCompleted: gameSessionsCompleted,
-      lastUpdatedUtcMillis: latestUpdatedUtcMillis,
-    );
-  }
-
-  int _parseScreenNumber(String lessonUpper) {
-    final match = RegExp(r'^S0*(\d+)$').firstMatch(lessonUpper);
-    if (match == null) {
-      return -1;
-    }
-    return int.tryParse(match.group(1) ?? '') ?? -1;
-  }
-
-  int _parseUpdatedMillis(dynamic raw) {
-    if (raw is String) {
-      final parsed = DateTime.tryParse(raw);
-      if (parsed != null) {
-        return parsed.toUtc().millisecondsSinceEpoch;
-      }
-    }
-    return DateTime.now().toUtc().millisecondsSinceEpoch;
-  }
-
-  int _parseInt(dynamic raw) {
-    if (raw is int) {
-      return raw;
-    }
-    if (raw is num) {
-      return raw.toInt();
-    }
-    return int.tryParse('$raw') ?? 0;
+  void _log(String event, Map<String, Object?> fields) {
+    if (kDebugMode) debugPrint('[AmiNProgress] $event $fields');
   }
 
   @override
   void dispose() {
-    _syncDebounce?.cancel();
+    _inactivityTimer?.cancel();
+    if (_initialized) unawaited(_syncCoordinator.dispose());
     super.dispose();
   }
 }

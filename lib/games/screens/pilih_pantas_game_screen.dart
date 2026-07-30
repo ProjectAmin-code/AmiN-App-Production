@@ -28,26 +28,26 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   // Flip this to false for a quick rollback of the intro modal experience.
   static const bool _enableIntroCoachOverlay = true;
   static const String _introInstructionScript =
-      'Arahan: Pilih sama ada perkataan berikut mempunyai imbuhan meN- atau tidak.';
+      'Arahan: Lihat perkataan. Tentukan sama ada perkataan itu berimbuhan awalan meN-.';
   static const String _introMascotAsset =
       'assets/Action Figures/AmiN pointing right.svg';
 
   static const List<String> _withMenPrefix = [
-    'Meneroka',
-    'Melayan',
-    'Mengukus',
-    'Menangkap',
-    'Menambah',
-    'Menghias',
+    'meneroka',
+    'melayan',
+    'mengukus',
+    'menangkap',
+    'menambah',
+    'menghias',
   ];
 
   static const List<String> _withoutMenPrefix = [
-    'Menara',
-    'Pelihara',
-    'Pancing',
-    'Melayu',
-    'Selam',
-    'Catat',
+    'menara',
+    'pelihara',
+    'pancing',
+    'melayu',
+    'selam',
+    'catat',
   ];
 
   final Random _random = Random();
@@ -55,7 +55,6 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   late List<_WordItem> _roundWords;
   int _currentIndex = 0;
   int _score = 0;
-  int _burstKey = 0;
   bool _isLocked = false;
   bool? _lastAnswerCorrect;
   _PantasChoice? _selectedChoice;
@@ -76,6 +75,12 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
   @override
   void initState() {
     super.initState();
+    unawaited(
+      ProgressTracker.instance.beginGame(
+        gameType: 'pilih_pantas',
+        gameId: 'M003_PilihPantas',
+      ),
+    );
     _startNewRound();
     if (_showIntroOverlay) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -89,6 +94,7 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
 
   @override
   void dispose() {
+    unawaited(ProgressTracker.instance.abandonGame());
     _nextWordTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
@@ -144,6 +150,25 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
     }
     final clampedCount = _visibleIntroWordCount.clamp(0, _introWords.length);
     return _introWords.take(clampedCount).join(' ');
+  }
+
+  TextSpan _buildIntroTextSpan(String text) {
+    const marker = 'meN-';
+    final markerIndex = text.indexOf(marker);
+    if (markerIndex < 0) {
+      return TextSpan(text: text);
+    }
+
+    return TextSpan(
+      children: [
+        TextSpan(text: text.substring(0, markerIndex)),
+        const TextSpan(
+          text: marker,
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
+        TextSpan(text: text.substring(markerIndex + marker.length)),
+      ],
+    );
   }
 
   void _animateIntroWordsSilently(List<String> words, int token) {
@@ -217,7 +242,6 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
       _feedbackText = correct ? 'Betul!' : 'Cuba lagi!';
       if (correct) {
         _score += 1;
-        _burstKey += 1;
       }
     });
     unawaited(
@@ -305,6 +329,92 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
     );
   }
 
+  Widget _buildAnimatedFeedback() {
+    final isCorrect = _lastAnswerCorrect == true;
+    final foregroundColor = isCorrect
+        ? const Color(0xFF087A5B)
+        : const Color(0xFFC63C32);
+    final backgroundColor = isCorrect
+        ? const Color(0xFFE6F8F1)
+        : const Color(0xFFFFECEA);
+
+    return SizedBox(
+      height: 42,
+      child: AnimatedSwitcher(
+        duration: AppMotionSpec.chooseDuration(
+          context,
+          const Duration(milliseconds: 260),
+          const Duration(milliseconds: 120),
+        ),
+        reverseDuration: AppMotionSpec.chooseDuration(
+          context,
+          const Duration(milliseconds: 160),
+          const Duration(milliseconds: 100),
+        ),
+        transitionBuilder: (child, animation) {
+          if (AppMotionSpec.reduceMotion(context)) {
+            return FadeTransition(opacity: animation, child: child);
+          }
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          );
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.25),
+                end: Offset.zero,
+              ).animate(curvedAnimation),
+              child: ScaleTransition(
+                scale: Tween<double>(
+                  begin: 0.88,
+                  end: 1,
+                ).animate(curvedAnimation),
+                child: child,
+              ),
+            ),
+          );
+        },
+        child: _feedbackText.isEmpty
+            ? const SizedBox(key: ValueKey('empty-feedback'))
+            : Container(
+                key: ValueKey('$_currentIndex-$_feedbackText'),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: foregroundColor, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isCorrect
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      size: 22,
+                      color: foregroundColor,
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      _feedbackText,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: foregroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
   Widget _buildIntroSpeechBubble(BuildContext context) {
     final showAction = !_introIsTyping;
     const actionLabel = 'Jom mula!';
@@ -335,8 +445,10 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
                 constraints: const BoxConstraints(minHeight: 84),
                 child: Align(
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    _introTypedText.isEmpty ? '...' : _introTypedText,
+                  child: Text.rich(
+                    _buildIntroTextSpan(
+                      _introTypedText.isEmpty ? '...' : _introTypedText,
+                    ),
                     style: const TextStyle(
                       fontSize: 22,
                       height: 1.25,
@@ -499,84 +611,94 @@ class _PilihPantasGameScreenState extends State<PilihPantasGameScreen> {
                           child: FractionallySizedBox(
                             heightFactor: 0.5,
                             widthFactor: 1,
-                            child: StarBurstOverlay(
-                              burstKey: _burstKey,
-                              child: Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: const Color(0xFFDDE9F4),
-                                  ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0x1A000000),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
+                            child: Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: const Color(0xFFDDE9F4),
                                 ),
-                                child: AnimatedSwitcher(
-                                  duration: AppMotionSpec.chooseDuration(
-                                    context,
-                                    const Duration(milliseconds: 220),
-                                    const Duration(milliseconds: 140),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x1A000000),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 3),
                                   ),
-                                  transitionBuilder: (child, animation) {
-                                    return buildAdaptiveSwitcherTransition(
-                                      context: context,
-                                      animation: animation,
-                                      child: child,
-                                    );
-                                  },
-                                  child: Text(
-                                    _currentWord.word,
-                                    key: ValueKey(_currentWord.word),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(text: 'Berimbuhan awalan '),
+                                        TextSpan(
+                                          text: 'meN-',
+                                          style: TextStyle(
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                        TextSpan(text: '?'),
+                                      ],
+                                    ),
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.w900,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
                                       color: Color(0xFF1D3557),
-                                      height: 1.05,
                                     ),
                                   ),
-                                ),
+                                  const SizedBox(height: 14),
+                                  AnimatedSwitcher(
+                                    duration: AppMotionSpec.chooseDuration(
+                                      context,
+                                      const Duration(milliseconds: 220),
+                                      const Duration(milliseconds: 140),
+                                    ),
+                                    transitionBuilder: (child, animation) {
+                                      return buildAdaptiveSwitcherTransition(
+                                        context: context,
+                                        animation: animation,
+                                        child: child,
+                                      );
+                                    },
+                                    child: Text(
+                                      _currentWord.word,
+                                      key: ValueKey(_currentWord.word),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 48,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF1D3557),
+                                        height: 1.05,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 6),
-                      SizedBox(
-                        height: 34,
-                        child: Text(
-                          _feedbackText,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: _lastAnswerCorrect == true
-                                ? const Color(0xFF0B6B58)
-                                : const Color(0xFFE45832),
-                          ),
-                        ),
-                      ),
+                      _buildAnimatedFeedback(),
                       const SizedBox(height: 6),
                       Padding(
                         padding: EdgeInsets.only(bottom: buttonLift),
                         child: Row(
                           children: [
                             _choiceButton(
-                              label: 'Ada imbuhan meN-',
+                              label: 'Ya',
                               choice: _PantasChoice.hasPrefix,
                             ),
                             const SizedBox(width: 10),
                             _choiceButton(
-                              label: 'Tiada imbuhan meN-',
+                              label: 'Tidak',
                               choice: _PantasChoice.noPrefix,
                             ),
                           ],

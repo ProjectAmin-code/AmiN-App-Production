@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -52,6 +53,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   static const String _firstQuestionWithSeparatedMOptions = 'EK1';
 
   int _currentIndex = 0;
+  DateTime _questionShownAt = DateTime.now();
+  bool _quizFinished = false;
 
   bool _startsWithM(QuizOption option) =>
       option.label.trim().toLowerCase().startsWith('m');
@@ -77,6 +80,20 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
   void initState() {
     super.initState();
     _reloadQuestionDefinitions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(
+        ProgressTracker.instance.beginQuiz(
+          quizId: 'MALAYALAM_QUIZ',
+          level: widget.level?.name ?? 'all',
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    if (!_quizFinished) unawaited(ProgressTracker.instance.abandonQuiz());
+    super.dispose();
   }
 
   void _reloadQuestionDefinitions() {
@@ -324,7 +341,13 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       case QuizInteractionType.multiSelect:
         return _selectedFor(question).isNotEmpty;
       case QuizInteractionType.textInput:
-        return (_typedAnswers[question.id] ?? '').trim().isNotEmpty;
+        final typedAnswer = _typedAnswers[question.id] ?? '';
+        if (question.id == 'HK10') {
+          final answers = typedAnswer.split(',');
+          return answers.length == 3 &&
+              answers.every((answer) => answer.trim().isNotEmpty);
+        }
+        return typedAnswer.trim().isNotEmpty;
       case QuizInteractionType.matching:
         final selected = _matchingFor(question);
         return selected.isNotEmpty && selected.every((value) => value != null);
@@ -355,6 +378,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       final levelSuffix = widget.level == null
           ? 'ALL'
           : quizLevelTrackingSuffix(widget.level!);
+      _quizFinished = true;
       await ProgressTracker.instance.recordQuizSessionCompleted(
         lessonId: 'QUIZ_LEVEL_$levelSuffix',
         score: quizPercent,
@@ -379,7 +403,22 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
 
     setState(() {
       _currentIndex += 1;
+      _questionShownAt = DateTime.now();
     });
+  }
+
+  String _selectedAnswer(QuizQuestion question) {
+    if (_typedAnswers.containsKey(question.id)) return _typedAnswers[question.id]!;
+    if (_selectedOptionIds.containsKey(question.id)) {
+      return (_selectedOptionIds[question.id]!.toList()..sort()).join('|');
+    }
+    if (_matchingSelections.containsKey(question.id)) {
+      return _matchingSelections[question.id]!.map((v) => v ?? '').join('|');
+    }
+    if (_dragSelections.containsKey(question.id)) {
+      return _dragSelections[question.id]!.map((v) => v ?? '').join('|');
+    }
+    return '';
   }
 
   void _jumpToQuestion(int questionIndex) {
@@ -434,11 +473,296 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     }
   }
 
+  QuizAnswerGroupResult _answerGroupResultFor(QuizQuestion question) {
+    if (question.interactionType == QuizInteractionType.matching &&
+        question.matchingAnswers.isNotEmpty) {
+      final selected = _matchingFor(question);
+      return QuizAnswerGroupResult(
+        questions: List.generate(question.matchingAnswers.length, (index) {
+          final userAnswer = selected[index] ?? '';
+          final correctAnswer = question.matchingAnswers[index];
+          final label = index < question.matchingLeft.length
+              ? question.matchingLeft[index]
+              : 'Jawapan ${index + 1}';
+          return QuizQuestionAnswerResult(
+            id: '${question.id}-${index + 1}',
+            label: label,
+            userAnswer: userAnswer,
+            correctAnswer: correctAnswer,
+            isCorrect:
+                normalizeQuizText(userAnswer) ==
+                normalizeQuizText(correctAnswer),
+          );
+        }),
+      );
+    }
+
+    if (question.interactionType == QuizInteractionType.dragDrop &&
+        question.dragAnswers.isNotEmpty) {
+      final selected = _dragFor(question);
+      return QuizAnswerGroupResult(
+        questions: List.generate(question.dragAnswers.length, (index) {
+          final userAnswer = selected[index] ?? '';
+          final correctAnswer = question.dragAnswers[index];
+          final label = index < question.dragTargets.length
+              ? question.dragTargets[index]
+              : 'Jawapan ${index + 1}';
+          return QuizQuestionAnswerResult(
+            id: '${question.id}-${index + 1}',
+            label: label,
+            userAnswer: userAnswer,
+            correctAnswer: correctAnswer,
+            isCorrect:
+                normalizeQuizText(userAnswer) ==
+                normalizeQuizText(correctAnswer),
+          );
+        }),
+      );
+    }
+
+    if (question.interactionType == QuizInteractionType.textInput &&
+        question.acceptableTextAnswers.length > 1) {
+      final enteredAnswers = (_typedAnswers[question.id] ?? '').split(',');
+      return QuizAnswerGroupResult(
+        questions: List.generate(question.acceptableTextAnswers.length, (
+          index,
+        ) {
+          final userAnswer = index < enteredAnswers.length
+              ? enteredAnswers[index].trim()
+              : '';
+          final correctAnswer = question.acceptableTextAnswers[index];
+          return QuizQuestionAnswerResult(
+            id: '${question.id}-${index + 1}',
+            label: 'Jawapan ${index + 1}',
+            userAnswer: userAnswer,
+            correctAnswer: correctAnswer,
+            isCorrect:
+                normalizeQuizText(userAnswer) ==
+                normalizeQuizText(correctAnswer),
+          );
+        }),
+      );
+    }
+
+    final expectedAnswers = _expectedAnswersFor(question);
+    return QuizAnswerGroupResult(
+      questions: [
+        QuizQuestionAnswerResult(
+          id: question.id,
+          label: question.prompt,
+          userAnswer: _selectedAnswer(question),
+          correctAnswer: expectedAnswers.isEmpty ? '' : expectedAnswers.first,
+          isCorrect: _evaluateAutoQuestion(question),
+        ),
+      ],
+    );
+  }
+
+  List<String> _expectedAnswersFor(QuizQuestion question) {
+    if (question.correctOptionIds.isNotEmpty && question.options.isNotEmpty) {
+      return question.options
+          .where((option) => question.correctOptionIds.contains(option.id))
+          .map((option) => option.label.trim())
+          .toList(growable: false);
+    }
+    if (question.acceptableTextAnswers.isNotEmpty) {
+      return question.acceptableTextAnswers
+          .map((answer) => answer.trim())
+          .toList(growable: false);
+    }
+    if (question.matchingAnswers.isNotEmpty) {
+      return question.matchingAnswers
+          .map((answer) => answer.trim())
+          .toList(growable: false);
+    }
+    if (question.dragAnswers.isNotEmpty) {
+      return question.dragAnswers
+          .map((answer) => answer.trim())
+          .toList(growable: false);
+    }
+    return const [];
+  }
+
+  ({
+    String title,
+    String message,
+    List<String> answers,
+    bool answersAreVertical,
+  })?
+  _compactFeedbackFor(QuizQuestion question, bool isCorrect) {
+    final expectedAnswers = _expectedAnswersFor(question);
+    final isMultiSelect =
+        question.interactionType == QuizInteractionType.multiSelect;
+    if (!isMultiSelect &&
+        (expectedAnswers.length < 2 || expectedAnswers.length > 3)) {
+      return null;
+    }
+
+    if (isCorrect) {
+      return (
+        title: 'Tahniah!',
+        message: 'Semua jawapan betul.',
+        answers: const [],
+        answersAreVertical: false,
+      );
+    }
+
+    if (isMultiSelect) {
+      final selected = _selectedFor(question);
+      final selectedCorrectCount = selected
+          .where(question.correctOptionIds.contains)
+          .length;
+      final selectedIncorrectCount = selected
+          .where((id) => !question.correctOptionIds.contains(id))
+          .length;
+      if (selectedIncorrectCount == 0 &&
+          selectedCorrectCount < question.correctOptionIds.length) {
+        return (
+          title: 'Belum lengkap.',
+          message: 'Pilih semua jawapan yang betul.',
+          answers: const [],
+          answersAreVertical: false,
+        );
+      }
+      return (
+        title: 'Belum tepat.',
+        message:
+            '$selectedCorrectCount daripada '
+            '${question.correctOptionIds.length} jawapan betul.',
+        answers: expectedAnswers,
+        answersAreVertical: true,
+      );
+    }
+
+    final shortAnswers =
+        expectedAnswers.every((answer) => !answer.contains(RegExp(r'\s'))) &&
+        expectedAnswers.join(', ').length <= 32;
+    return (
+      title: 'Belum tepat.',
+      message: 'Jawapan yang betul ialah:',
+      answers: expectedAnswers,
+      answersAreVertical: !shortAnswers,
+    );
+  }
+
+  String _joinShortAnswers(List<String> answers) {
+    if (answers.length == 2) {
+      return '${answers.first} dan ${answers.last}.';
+    }
+    return '${answers[0]}, ${answers[1]} dan ${answers[2]}.';
+  }
+
+  Widget _buildGroupedFeedback(QuizAnswerGroupResult result) {
+    final overallStatus = result.overallStatus;
+    final isCorrect = overallStatus == QuizAnswerOverallStatus.correct;
+    if (isCorrect) {
+      return const Text(
+        'Tahniah!\nSemua jawapan betul.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: QuizTokens.headingTextSize,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF0B6B58),
+          height: 1.3,
+        ),
+      );
+    }
+
+    final verdict = switch (overallStatus) {
+      QuizAnswerOverallStatus.correct => 'Tahniah!',
+      QuizAnswerOverallStatus.partial => 'Hampir tepat',
+      QuizAnswerOverallStatus.incorrect => 'Belum tepat.',
+    };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          verdict,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: QuizTokens.headingTextSize,
+            fontWeight: FontWeight.w900,
+            color: const Color(0xFFB42318),
+            height: 1.25,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...result.questions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final answer = entry.value;
+          // Correctness is checked per row so partial groups reveal only wrong answers.
+          final rowIsCorrect = answer.isCorrect;
+          return Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: rowIsCorrect
+                    ? const Color(0xFF86D39B)
+                    : const Color(0xFFF2AAA2),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    '${index + 1}.',
+                    style: const TextStyle(
+                      fontSize: QuizTokens.headingTextSize,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1F2937),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                Icon(
+                  rowIsCorrect
+                      ? Icons.check_circle_rounded
+                      : Icons.cancel_rounded,
+                  color: rowIsCorrect
+                      ? const Color(0xFF15803D)
+                      : const Color(0xFFB42318),
+                  size: 26,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    rowIsCorrect
+                        ? answer.correctAnswer
+                        : 'Jawapan betul: ${answer.correctAnswer}',
+                    style: TextStyle(
+                      fontSize: QuizTokens.headingTextSize,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF15803D),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
   Future<void> _showFeedbackDialog({
     required bool isCorrect,
     required QuizQuestion question,
+    required QuizAnswerGroupResult result,
   }) async {
     final reduceMotion = AppMotionSpec.reduceMotion(context);
+    final expectedAnswers = _expectedAnswersFor(question);
+    final compactFeedback = _compactFeedbackFor(question, isCorrect);
+    final isGrouped = result.questions.length > 1;
+    final modalIsCorrect =
+        result.overallStatus == QuizAnswerOverallStatus.correct;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final imageSize = (screenHeight * 0.20).clamp(120.0, 220.0);
     final dialogDuration = AppMotionSpec.chooseDuration(
@@ -446,7 +770,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       AppMotionSpec.feedbackEnter,
       AppMotionSpec.feedbackEnterReduced,
     );
-    final dialogColor = isCorrect
+    final dialogColor = modalIsCorrect
         ? const Color(0xFFDFF5E6)
         : const Color(0xFFFFE2DD);
 
@@ -462,7 +786,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
             curve: Curves.easeOutCubic,
             builder: (context, value, child) {
               final scale = reduceMotion ? 1.0 : (0.94 + (0.06 * value));
-              final shakeOffset = !isCorrect && !reduceMotion
+              final shakeOffset = !modalIsCorrect && !reduceMotion
                   ? (1 - value) * 12
                   : 0.0;
               return Opacity(
@@ -474,7 +798,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
               );
             },
             child: ConfettiCelebration(
-              active: isCorrect,
+              active: modalIsCorrect,
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -485,7 +809,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AdaptiveAssetImage(
-                      assetPath: isCorrect
+                      assetPath: modalIsCorrect
                           ? 'assets/Action Figures/AmiN answer correct.svg'
                           : 'assets/Action Figures/AmiN answer wrong.svg',
                       width: imageSize,
@@ -493,33 +817,144 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      isCorrect
-                          ? (question.correctFeedback.trim().isNotEmpty
-                                ? question.correctFeedback
-                                : 'Tahniah! Jawapan anda betul.')
-                          : (question.wrongFeedback.trim().isNotEmpty
-                                ? question.wrongFeedback
-                                : 'Cuba lagi. Semak jawapan anda.'),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: QuizTokens.headingTextSize,
-                        fontWeight: FontWeight.w800,
-                        color: isCorrect
-                            ? const Color(0xFF0B6B58)
-                            : const Color(0xFFB42318),
-                        height: 1.3,
+                    if (isGrouped)
+                      _buildGroupedFeedback(result)
+                    else if (compactFeedback == null) ...[
+                      if (!isCorrect && expectedAnswers.length == 1) ...[
+                        const Text(
+                          'Belum tepat.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: QuizTokens.headingTextSize,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFB42318),
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Jawapan betul: ${expectedAnswers.first}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: QuizTokens.headingTextSize,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF15803D),
+                            height: 1.3,
+                          ),
+                        ),
+                      ] else
+                        Text(
+                          isCorrect
+                              ? (expectedAnswers.length <= 1
+                                    ? 'Tahniah!\nJawapan betul.'
+                                    : 'Tahniah!\nSemua jawapan betul.')
+                              : (question.wrongFeedback.trim().isNotEmpty
+                                    ? question.wrongFeedback
+                                    : 'Cuba lagi. Semak jawapan anda.'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: QuizTokens.headingTextSize,
+                            fontWeight: FontWeight.w800,
+                            color: isCorrect
+                                ? const Color(0xFF0B6B58)
+                                : const Color(0xFFB42318),
+                            height: 1.3,
+                          ),
+                        ),
+                    ] else if (!isCorrect &&
+                        expectedAnswers.length == 2 &&
+                        question.interactionType !=
+                            QuizInteractionType.multiSelect) ...[
+                      const Text(
+                        'Belum tepat.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: QuizTokens.headingTextSize,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFB42318),
+                          height: 1.25,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Jawapan betul: ${expectedAnswers.first} dan '
+                        '${expectedAnswers.last}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: QuizTokens.headingTextSize,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF15803D),
+                          height: 1.3,
+                        ),
+                      ),
+                    ] else ...[
+                      Text(
+                        compactFeedback.title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: QuizTokens.headingTextSize,
+                          fontWeight: FontWeight.w900,
+                          color: isCorrect
+                              ? const Color(0xFF0B6B58)
+                              : const Color(0xFFB42318),
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        compactFeedback.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: QuizTokens.headingTextSize,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1F2937),
+                          height: 1.3,
+                        ),
+                      ),
+                      if (compactFeedback.answers.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        if (compactFeedback.answersAreVertical)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: compactFeedback.answers
+                                  .map(
+                                    (answer) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text(
+                                        '✓  $answer',
+                                        style: const TextStyle(
+                                          fontSize:
+                                              QuizTokens.headingTextSize,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF15803D),
+                                          height: 1.25,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(growable: false),
+                            ),
+                          )
+                        else
+                          Text(
+                            _joinShortAnswers(compactFeedback.answers),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: QuizTokens.headingTextSize,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF15803D),
+                              height: 1.3,
+                            ),
+                          ),
+                      ],
+                    ],
                     const SizedBox(height: 14),
                     SizedBox(
                       width: double.infinity,
                       child: AnimatedKidButton(
-                        label: question.level == QuizLevel.medium
-                            ? 'Seterusnya'
-                            : question.feedbackButtonLabel ??
-                                  question.submitLabel ??
-                                  'Seterusnya',
+                        label: 'Seterusnya',
                         icon: Icons.arrow_forward_rounded,
                         onPressed: () => Navigator.pop(context),
                         backgroundColor: const Color(0xFF2563EB),
@@ -549,6 +984,9 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
         questionGoal: QuizBank.questions.length,
         lessonId: question.id,
         score: 100,
+        selectedAnswer: _selectedAnswer(question),
+        isBonus: question.isBonus,
+        responseTimeMilliseconds: DateTime.now().difference(_questionShownAt).inMilliseconds,
       );
       gamification.awardXp(
         4,
@@ -585,6 +1023,9 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       questionGoal: QuizBank.questions.length,
       lessonId: question.id,
       score: isCorrect ? 100 : 0,
+      selectedAnswer: _selectedAnswer(question),
+      isBonus: question.isBonus,
+      responseTimeMilliseconds: DateTime.now().difference(_questionShownAt).inMilliseconds,
     );
     if (isCorrect) {
       gamification.awardXp(10, reason: correctReason, showOverlay: false);
@@ -596,7 +1037,11 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
       await AnswerAudioCue.playWrong();
     }
 
-    await _showFeedbackDialog(isCorrect: isCorrect, question: question);
+    await _showFeedbackDialog(
+      isCorrect: isCorrect,
+      question: question,
+      result: _answerGroupResultFor(question),
+    );
     if (!mounted) {
       return;
     }
@@ -692,6 +1137,7 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
           options: _optionsFor(question),
           selectedIds: _selectedFor(question),
           onToggle: (option) => _toggleMultiChoice(question, option),
+          revealCorrectness: _autoResults.containsKey(question.id),
         );
       case QuizInteractionType.singleChoice:
         final selected = _selectedFor(question);
@@ -901,7 +1347,8 @@ class _QuizShellScreenState extends State<QuizShellScreen> {
     final horizontalPagePadding = isWideImageQuestion
         ? 8.0
         : (isEasyCompact ? 12.0 : 16.0);
-    final actionLabel = question.level == QuizLevel.medium
+    final actionLabel = question.level == QuizLevel.medium ||
+            (question.level == QuizLevel.hard && question.submitLabel == null)
         ? 'Semak'
         : question.submitLabel ??
               (_isLastQuestion

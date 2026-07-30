@@ -17,27 +17,47 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _recoverController;
+  late final TextEditingController _pinController;
   bool _isRecovering = false;
 
   @override
   void initState() {
     super.initState();
     _recoverController = TextEditingController();
+    _pinController = TextEditingController();
   }
 
   @override
   void dispose() {
     _recoverController.dispose();
+    _pinController.dispose();
     super.dispose();
   }
 
   Future<void> _recoverByUserId() async {
     final userId = _recoverController.text.trim();
-    if (userId.isEmpty || _isRecovering) {
+    final pin = _pinController.text;
+    if (userId.isEmpty || pin.length != 6 || _isRecovering) {
       return;
     }
+    if (ProgressTracker.instance.hasPendingBackup) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Kemajuan belum disandarkan'),
+          content: const Text(
+            'Pulihkan akaun lain hanya selepas kemajuan semasa disandarkan, atau kemajuan pada peranti ini mungkin hilang.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Teruskan')),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
     setState(() => _isRecovering = true);
-    final result = await ProgressTracker.instance.restoreFromUserId(userId);
+    final result = await ProgressTracker.instance.restoreFromStudentId(userId, pin);
     setState(() => _isRecovering = false);
     if (!mounted) {
       return;
@@ -51,6 +71,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _logout() async {
+    if (ProgressTracker.instance.hasPendingBackup) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Kemajuan belum disandarkan'),
+          content: const Text(
+            'Sebahagian kemajuan masih disimpan pada peranti ini sahaja. Log keluar boleh menyebabkan kemajuan itu hilang.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Log Keluar')),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
     await ProgressTracker.instance.clearUserIdentity(clearProgress: true);
     if (!mounted) {
       return;
@@ -109,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'User ID: $displayUserId',
+                      'ID Pelajar: $displayUserId',
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -130,12 +166,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Data kemajuan dimuat naik automatik ke server.',
+                      'Kemajuan disimpan pada peranti dan disandarkan secara automatik.',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Jika aplikasi dipasang semula, gunakan User ID untuk pulihkan data.',
+                      'Jika aplikasi dipasang semula, gunakan ID Pelajar dan PIN Pemulihan.',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -147,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Pulihkan Data Dengan User ID',
+                      'Pulihkan Data',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
@@ -160,7 +196,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _recoverByUserId(),
                       decoration: const InputDecoration(
-                        hintText: 'Masukkan User ID',
+                        hintText: 'Masukkan ID Pelajar',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _pinController,
+                      obscureText: true,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      decoration: const InputDecoration(
+                        hintText: 'PIN Pemulihan 6 digit',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -200,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 8),
               AnimatedKidButton(
-                label: 'Muat naik data sekarang',
+                label: tracker.isSyncing ? 'Sedang menyandar...' : 'Sandarkan sekarang',
                 icon: Icons.cloud_upload_rounded,
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
@@ -210,7 +257,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
                   messenger.showSnackBar(
                     const SnackBar(
-                      content: Text('Permintaan muat naik data dihantar.'),
+                      content: Text('Permintaan sandaran telah diproses.'),
                     ),
                   );
                 },

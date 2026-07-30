@@ -52,6 +52,7 @@ app.*.map.json
 # Android
 # ----------------------------
 android/.gradle/
+android/.kotlin/
 android/local.properties
 android/key.properties
 *.jks
@@ -83,6 +84,7 @@ windows/flutter/ephemeral/
 # Node / dashboard
 # ----------------------------
 dashboard/node_modules/
+firebase_test/node_modules/
 dashboard/.next/
 dashboard/out/
 dashboard/.turbo/

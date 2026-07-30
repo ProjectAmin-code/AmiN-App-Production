@@ -31,6 +31,7 @@ class _BelajarLessonScreenState extends ConsumerState<BelajarLessonScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ProgressTracker.instance.recordLessonStarted(widget.lessonId);
       _syncProgress();
     });
   }
@@ -40,6 +41,7 @@ class _BelajarLessonScreenState extends ConsumerState<BelajarLessonScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.lessonId != widget.lessonId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        ProgressTracker.instance.recordLessonStarted(widget.lessonId);
         _syncProgress();
       });
     }

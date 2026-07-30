@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../shared/design/app_design_tokens.dart';
 import '../shared/gamification/gamification.dart';
 import '../shared/progress/progress_snapshot.dart';
-import '../shared/progress/progress_sync_service.dart';
 import '../shared/progress/progress_tracker.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -222,8 +221,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          SelectableText(
-            'Base URL: ${ProgressSyncService.instance.baseUri}',
+          Text(
+            'Menunggu sandaran: ${_tracker.pendingEventCount}',
             style: TextStyle(
               fontSize: compact ? 12 : 14,
               color: Color(0xFF4A5568),
@@ -232,7 +231,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           const SizedBox(height: 4),
           SelectableText(
-            'User ID: ${_tracker.userId.isEmpty ? '(belum dijana)' : _tracker.userId}',
+            'ID Pelajar: ${_tracker.userId.isEmpty ? '(belum dijana)' : _tracker.userId}',
             style: TextStyle(
               fontSize: compact ? 12 : 14,
               color: Color(0xFF4A5568),
@@ -252,7 +251,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           const SizedBox(height: 10),
           AnimatedKidButton(
-            label: 'Muat naik sekarang',
+            label: 'Sandarkan sekarang',
             icon: Icons.cloud_upload_rounded,
             onPressed: _tracker.isSyncing ? null : _tracker.forceSync,
             height: compact ? 48 : 54,
@@ -260,7 +259,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Data dihantar termasuk skor belajar, kuiz, main, dan masa kemas kini (${snapshot.lastUpdatedUtc.toLocal()}).',
+            'Kemajuan selamat pada peranti. Sandaran terakhir merangkumi data sehingga ${snapshot.lastUpdatedUtc.toLocal()}.',
             softWrap: true,
             style: TextStyle(
               fontSize: compact ? 12 : 14,

@@ -25,7 +25,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
   // Flip this to false for a quick rollback of the intro modal experience.
   static const bool _enableIntroCoachOverlay = true;
   static const String _introInstructionScript =
-      'Arahan: Cari 5 kata berimbuhan meN- dan pilih semua perkataan yang betul.';
+      'Arahan: Pilih 5 perkataan berimbuhan awalan meN-.';
   static const String _introMascotAsset =
       'assets/Action Figures/AmiN pointing right.svg';
 
@@ -77,6 +77,12 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
   @override
   void initState() {
     super.initState();
+    unawaited(
+      ProgressTracker.instance.beginGame(
+        gameType: 'cari_kumpul',
+        gameId: 'M004_CariKumpul',
+      ),
+    );
     _resetRound();
     if (_showIntroOverlay) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -90,6 +96,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
 
   @override
   void dispose() {
+    unawaited(ProgressTracker.instance.abandonGame());
     _feedbackTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
@@ -305,6 +312,25 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
     return _introWords.take(clampedCount).join(' ');
   }
 
+  TextSpan _buildIntroTextSpan(String text) {
+    const marker = 'meN-';
+    final markerIndex = text.indexOf(marker);
+    if (markerIndex < 0) {
+      return TextSpan(text: text);
+    }
+
+    return TextSpan(
+      children: [
+        TextSpan(text: text.substring(0, markerIndex)),
+        const TextSpan(
+          text: marker,
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
+        TextSpan(text: text.substring(markerIndex + marker.length)),
+      ],
+    );
+  }
+
   void _animateIntroWordsSilently(List<String> words, int token) {
     final wordStepDuration = AppMotionSpec.chooseDuration(
       context,
@@ -392,8 +418,10 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
                 constraints: const BoxConstraints(minHeight: 84),
                 child: Align(
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    _introTypedText.isEmpty ? '...' : _introTypedText,
+                  child: Text.rich(
+                    _buildIntroTextSpan(
+                      _introTypedText.isEmpty ? '...' : _introTypedText,
+                    ),
                     style: const TextStyle(
                       fontSize: 22,
                       height: 1.25,
@@ -520,7 +548,7 @@ class _CariKumpulGameScreenState extends State<CariKumpulGameScreen> {
                       ),
                       const Expanded(
                         child: Text(
-                          'Pilih & Kumpul',
+                          'Kumpul Kata',
                           style: TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.w900,
@@ -683,7 +711,7 @@ class CariKumpulResultScreen extends StatelessWidget {
       statusTitle: 'Hebat!',
       statusSubtitle: 'Anda berjaya!',
       confettiActive: true,
-      completionText: 'Anda telah menamatkan permainan Pilih & Kumpul.',
+      completionText: 'Anda telah menamatkan permainan Kumpul Kata.',
       onPlayAgain: () {
         pushReplacementAdaptive(context, const CariKumpulGameScreen());
       },

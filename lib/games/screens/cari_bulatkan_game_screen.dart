@@ -24,7 +24,9 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
   // Flip this to false for a quick rollback of the intro modal experience.
   static const bool _enableIntroCoachOverlay = true;
   static const String _introInstructionScript =
-      'Arahan: Cari dan pilih 6 kata berimbuhan meN- yang tersembunyi dalam kotak huruf.';
+      'Arahan: Cari 6 perkataan berimbuhan awalan meN- yang tersembunyi dalam petak huruf.';
+  static const String _dragInstruction =
+      'Seret huruf bagi membentuk perkataan.';
   static const String _introMascotAsset =
       'assets/Action Figures/AmiN pointing right.svg';
 
@@ -62,7 +64,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
   final Map<String, Color> _foundWordColors = <String, Color>{};
   List<_Cell> _currentPath = <_Cell>[];
   _Cell? _startCell;
-  String _feedback = 'Seret huruf untuk pilih perkataan.';
+  String _feedback = '';
   bool _selectionLocked = false;
   Timer? _clearSelectionTimer;
   Timer? _introWordTimer;
@@ -78,6 +80,12 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
   @override
   void initState() {
     super.initState();
+    unawaited(
+      ProgressTracker.instance.beginGame(
+        gameType: 'cari_bulatkan',
+        gameId: 'M005_CariPilih',
+      ),
+    );
     if (_showIntroOverlay) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_showIntroOverlay) {
@@ -90,6 +98,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
 
   @override
   void dispose() {
+    unawaited(ProgressTracker.instance.abandonGame());
     _clearSelectionTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
@@ -132,7 +141,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
       setState(() {
         _currentPath = <_Cell>[];
         _startCell = null;
-        _feedback = 'Seret huruf untuk pilih perkataan.';
+        _feedback = '';
       });
       return;
     }
@@ -146,7 +155,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
     setState(() {
       _startCell = null;
       _currentPath = <_Cell>[];
-      _feedback = 'Seret huruf untuk pilih perkataan.';
+      _feedback = '';
     });
   }
 
@@ -315,7 +324,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
           _startCell = null;
           _selectionLocked = false;
           if (!_feedback.startsWith('Betul')) {
-            _feedback = 'Seret huruf untuk pilih perkataan.';
+            _feedback = '';
           }
         });
       },
@@ -384,6 +393,25 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
     }
     final clampedCount = _visibleIntroWordCount.clamp(0, _introWords.length);
     return _introWords.take(clampedCount).join(' ');
+  }
+
+  TextSpan _buildIntroTextSpan(String text) {
+    const marker = 'meN-';
+    final markerIndex = text.indexOf(marker);
+    if (markerIndex < 0) {
+      return TextSpan(text: text);
+    }
+
+    return TextSpan(
+      children: [
+        TextSpan(text: text.substring(0, markerIndex)),
+        const TextSpan(
+          text: marker,
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
+        TextSpan(text: text.substring(markerIndex + marker.length)),
+      ],
+    );
   }
 
   void _animateIntroWordsSilently(List<String> words, int token) {
@@ -473,8 +501,10 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
                 constraints: const BoxConstraints(minHeight: 84),
                 child: Align(
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    _introTypedText.isEmpty ? '...' : _introTypedText,
+                  child: Text.rich(
+                    _buildIntroTextSpan(
+                      _introTypedText.isEmpty ? '...' : _introTypedText,
+                    ),
                     style: const TextStyle(
                       fontSize: 22,
                       height: 1.25,
@@ -603,7 +633,7 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
                       ),
                       const Expanded(
                         child: Text(
-                          'Cari & Pilih',
+                          'Cari Kata',
                           style: TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.w900,
@@ -638,118 +668,162 @@ class _CariBulatkanGameScreenState extends State<CariBulatkanGameScreen> {
                   ),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: Center(
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF4F7FB),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFD8E2EE)),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x1A000000),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final boardSize = Size(
-                                  constraints.maxWidth,
-                                  constraints.maxHeight,
-                                );
-                                return GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onPanStart: (details) => _onDragStart(
-                                    details.localPosition,
-                                    boardSize,
+                    child: LayoutBuilder(
+                      builder: (context, availableSpace) {
+                        final crosswordSize = min(
+                          availableSpace.maxWidth,
+                          availableSpace.maxHeight,
+                        );
+                        final spaceAboveCrossword =
+                            (availableSpace.maxHeight - crosswordSize) / 2;
+
+                        return Stack(
+                          children: [
+                            Center(
+                              child: SizedBox.square(
+                                dimension: crosswordSize,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF4F7FB),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: const Color(0xFFD8E2EE),
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x1A000000),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
-                                  onPanUpdate: (details) => _onDragUpdate(
-                                    details.localPosition,
-                                    boardSize,
-                                  ),
-                                  onPanEnd: (_) => _onDragEnd(),
-                                  onPanCancel: _onDragCancel,
-                                  child: Column(
-                                    children: List.generate(_grid.length, (
-                                      row,
-                                    ) {
-                                      return Expanded(
-                                        child: Row(
-                                          children: List.generate(
-                                            _grid[row].length,
-                                            (col) {
-                                              final cell = _Cell(row, col);
-                                              final key = cell.key;
-                                              final isCurrent = currentKeys
-                                                  .contains(key);
-                                              final foundColor =
-                                                  _foundCellColors[key];
-                                              final isFound =
-                                                  foundColor != null;
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final boardSize = Size(
+                                          constraints.maxWidth,
+                                          constraints.maxHeight,
+                                        );
+                                        return GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onPanStart: (details) => _onDragStart(
+                                            details.localPosition,
+                                            boardSize,
+                                          ),
+                                          onPanUpdate: (details) =>
+                                              _onDragUpdate(
+                                                details.localPosition,
+                                                boardSize,
+                                              ),
+                                          onPanEnd: (_) => _onDragEnd(),
+                                          onPanCancel: _onDragCancel,
+                                          child: Column(
+                                            children: List.generate(_grid.length, (
+                                              row,
+                                            ) {
                                               return Expanded(
-                                                child: Container(
-                                                  margin: const EdgeInsets.all(
-                                                    1.5,
-                                                  ),
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                    color: isFound
-                                                        ? foundColor
-                                                        : isCurrent
-                                                        ? const Color(
-                                                            0xFFFFDA70,
-                                                          )
-                                                        : Colors.white,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: isFound
-                                                          ? foundColor
-                                                          : isCurrent
-                                                          ? const Color(
-                                                              0xFFF0B93D,
-                                                            )
-                                                          : const Color(
-                                                              0xFFE2E8F0,
+                                                child: Row(
+                                                  children: List.generate(
+                                                    _grid[row].length,
+                                                    (col) {
+                                                      final cell = _Cell(
+                                                        row,
+                                                        col,
+                                                      );
+                                                      final key = cell.key;
+                                                      final isCurrent =
+                                                          currentKeys.contains(
+                                                            key,
+                                                          );
+                                                      final foundColor =
+                                                          _foundCellColors[key];
+                                                      final isFound =
+                                                          foundColor != null;
+                                                      return Expanded(
+                                                        child: Container(
+                                                          margin:
+                                                              const EdgeInsets.all(
+                                                                1.5,
+                                                              ),
+                                                          alignment:
+                                                              Alignment.center,
+                                                          decoration: BoxDecoration(
+                                                            color: isFound
+                                                                ? foundColor
+                                                                : isCurrent
+                                                                ? const Color(
+                                                                    0xFFFFDA70,
+                                                                  )
+                                                                : Colors.white,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                            border: Border.all(
+                                                              color: isFound
+                                                                  ? foundColor
+                                                                  : isCurrent
+                                                                  ? const Color(
+                                                                      0xFFF0B93D,
+                                                                    )
+                                                                  : const Color(
+                                                                      0xFFE2E8F0,
+                                                                    ),
+                                                              width:
+                                                                  isFound ||
+                                                                      isCurrent
+                                                                  ? 1.6
+                                                                  : 1,
                                                             ),
-                                                      width:
-                                                          isFound || isCurrent
-                                                          ? 1.6
-                                                          : 1,
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    _grid[row][col]
-                                                        .toUpperCase(),
-                                                    style: const TextStyle(
-                                                      fontSize: 22,
-                                                      fontWeight:
-                                                          FontWeight.w900,
-                                                      color: Color(0xFF1F2937),
-                                                      height: 1,
-                                                    ),
+                                                          ),
+                                                          child: Text(
+                                                            _grid[row][col]
+                                                                .toUpperCase(),
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 22,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w900,
+                                                                  color: Color(
+                                                                    0xFF1F2937,
+                                                                  ),
+                                                                  height: 1,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
                                                   ),
                                                 ),
                                               );
-                                            },
+                                            }),
                                           ),
-                                        ),
-                                      );
-                                    }),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                );
-                              },
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
+                            Positioned(
+                              top: max(0.0, (spaceAboveCrossword - 24) / 2),
+                              left: 0,
+                              right: 0,
+                              child: const Text(
+                                _dragInstruction,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF1D3557),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -829,7 +903,7 @@ class CariBulatkanResultScreen extends StatelessWidget {
       statusTitle: 'Hebat!',
       statusSubtitle: 'Anda berjaya!',
       confettiActive: true,
-      completionText: 'Anda telah menamatkan permainan Cari & Pilih.',
+      completionText: 'Anda telah menamatkan permainan Cari Kata.',
       onPlayAgain: () {
         pushReplacementAdaptive(context, const CariBulatkanGameScreen());
       },

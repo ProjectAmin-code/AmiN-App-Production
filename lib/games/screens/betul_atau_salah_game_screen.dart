@@ -23,46 +23,41 @@ class BetulAtauSalahGameScreen extends StatefulWidget {
       _BetulAtauSalahGameScreenState();
 }
 
-enum _TrueFalseChoice { betul, salah }
+enum _WordChoice { left, right }
 
 class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
   // Flip this to false for a quick rollback of the intro modal experience.
   static const bool _enableIntroCoachOverlay = true;
   static const String _introInstructionScript =
-      'Arahan: Tentukan sama ada perkataan ini betul atau salah.';
+      'Arahan: Pilih perkataan yang betul.';
   static const String _introMascotAsset =
       'assets/Action Figures/AmiN pointing right.svg';
 
-  static const List<String> _correctWords = [
-    'menutup',
-    'memeriksa',
-    'menyerap',
-    'mengarang',
-    'menyimpan',
-    'mengira',
-    'memohon',
-    'menabung',
-  ];
-
-  static const List<String> _incorrectWords = [
-    'mengkutip',
-    'mensambut',
-    'mepegang',
-    'mengtolak',
-    'mesusun',
-    'menpadam',
-    'mengkupas',
+  static const List<_WordPair> _wordPairs = [
+    _WordPair(correct: 'menutup', incorrect: 'mentutup'),
+    _WordPair(correct: 'memeriksa', incorrect: 'meperiksa'),
+    _WordPair(correct: 'menyerap', incorrect: 'menserap'),
+    _WordPair(correct: 'mengarang', incorrect: 'mengkarang'),
+    _WordPair(correct: 'menyimpan', incorrect: 'mensimpan'),
+    _WordPair(correct: 'mengira', incorrect: 'mengkira'),
+    _WordPair(correct: 'memohon', incorrect: 'menmohon'),
+    _WordPair(correct: 'menabung', incorrect: 'mentabung'),
+    _WordPair(correct: 'mengutip', incorrect: 'mengkutip'),
+    _WordPair(correct: 'menyambut', incorrect: 'mensambut'),
+    _WordPair(correct: 'memegang', incorrect: 'mepegang'),
+    _WordPair(correct: 'menolak', incorrect: 'mengtolak'),
+    _WordPair(correct: 'menyusun', incorrect: 'mesusun'),
+    _WordPair(correct: 'memadam', incorrect: 'menpadam'),
+    _WordPair(correct: 'mengupas', incorrect: 'mengkupas'),
   ];
 
   final Random _random = Random();
-  late List<_TrueFalseItem> _roundWords;
+  late List<_WordRound> _roundWords;
   int _currentIndex = 0;
   int _score = 0;
-  int _burstKey = 0;
   bool _isLocked = false;
   bool? _lastAnswerCorrect;
-  _TrueFalseChoice? _selectedChoice;
-  String _feedbackText = '';
+  _WordChoice? _selectedChoice;
   Timer? _nextWordTimer;
   Timer? _introWordTimer;
   bool _showIntroOverlay = _enableIntroCoachOverlay;
@@ -74,11 +69,17 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
   int _visibleIntroWordCount = 0;
   int _introTypingSession = 0;
 
-  _TrueFalseItem get _currentWord => _roundWords[_currentIndex];
+  _WordRound get _currentWord => _roundWords[_currentIndex];
 
   @override
   void initState() {
     super.initState();
+    unawaited(
+      ProgressTracker.instance.beginGame(
+        gameType: 'betul_atau_salah',
+        gameId: 'M006_BetulSalah',
+      ),
+    );
     _roundWords = _buildRoundWords();
     if (_showIntroOverlay) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -92,6 +93,7 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
 
   @override
   void dispose() {
+    unawaited(ProgressTracker.instance.abandonGame());
     _nextWordTimer?.cancel();
     _introWordTimer?.cancel();
     unawaited(GameInstructionVoice.stop());
@@ -99,16 +101,34 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
     super.dispose();
   }
 
-  List<_TrueFalseItem> _buildRoundWords() {
-    final words = <_TrueFalseItem>[
-      ..._correctWords.map(
-        (word) => _TrueFalseItem(word: word, isCorrect: true),
-      ),
-      ..._incorrectWords.map(
-        (word) => _TrueFalseItem(word: word, isCorrect: false),
-      ),
-    ]..shuffle(_random);
-    return words;
+  @override
+  void reassemble() {
+    super.reassemble();
+    _nextWordTimer?.cancel();
+    _roundWords = _buildRoundWords();
+    _currentIndex = 0;
+    _score = 0;
+    _isLocked = false;
+    _lastAnswerCorrect = null;
+    _selectedChoice = null;
+  }
+
+  List<_WordRound> _buildRoundWords() {
+    final pairs = List<_WordPair>.of(_wordPairs)..shuffle(_random);
+    final correctSidePattern = List<bool>.generate(
+      pairs.length,
+      (index) => index.isEven,
+    )..shuffle(_random);
+
+    return List<_WordRound>.generate(pairs.length, (index) {
+      final pair = pairs[index];
+      final correctOnLeft = correctSidePattern[index];
+      return _WordRound(
+        leftWord: correctOnLeft ? pair.correct : pair.incorrect,
+        rightWord: correctOnLeft ? pair.incorrect : pair.correct,
+        correctChoice: correctOnLeft ? _WordChoice.left : _WordChoice.right,
+      );
+    });
   }
 
   Future<void> _startIntroCoachSequence() async {
@@ -206,21 +226,18 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
     });
   }
 
-  Future<void> _submitAnswer(_TrueFalseChoice choice) async {
+  Future<void> _submitAnswer(_WordChoice choice) async {
     if (_isLocked || _showIntroOverlay) {
       return;
     }
 
-    final isCorrect =
-        (choice == _TrueFalseChoice.betul) == _currentWord.isCorrect;
+    final isCorrect = choice == _currentWord.correctChoice;
     setState(() {
       _isLocked = true;
       _selectedChoice = choice;
       _lastAnswerCorrect = isCorrect;
-      _feedbackText = isCorrect ? 'Betul!' : 'Cuba lagi!';
       if (isCorrect) {
         _score += 1;
-        _burstKey += 1;
       }
     });
     unawaited(
@@ -233,11 +250,23 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
     _nextWordTimer = Timer(
       AppMotionSpec.chooseDuration(
         context,
-        const Duration(milliseconds: 1100),
-        const Duration(milliseconds: 550),
+        Duration(milliseconds: isCorrect ? 750 : 550),
+        Duration(milliseconds: isCorrect ? 400 : 300),
       ),
-      _moveNext,
+      isCorrect ? _moveNext : _allowRetry,
     );
+  }
+
+  void _allowRetry() {
+    _nextWordTimer?.cancel();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isLocked = false;
+      _selectedChoice = null;
+      _lastAnswerCorrect = null;
+    });
   }
 
   void _moveNext() {
@@ -254,7 +283,6 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
       _isLocked = false;
       _selectedChoice = null;
       _lastAnswerCorrect = null;
-      _feedbackText = '';
     });
   }
 
@@ -268,7 +296,7 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
       lessonId: 'M006_BetulSalah',
     );
     final gamification = GamificationScope.of(context);
-    gamification.awardXp((_score * 2).clamp(8, 36), reason: 'Betul atau Salah');
+    gamification.awardXp((_score * 2).clamp(8, 36), reason: 'Pilih Kata Tepat');
     gamification.awardStars(_score >= 12 ? 2 : (_score >= 8 ? 1 : 0));
 
     pushReplacementAdaptive(
@@ -277,21 +305,17 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
     );
   }
 
-  Color _buttonColor(_TrueFalseChoice choice) {
-    const baseBetul = Color(0xFF34C759);
-    const baseSalah = Color(0xFFFF6B6B);
+  Color _buttonColor(_WordChoice choice) {
+    const neutral = Color(0xFF2563EB);
     if (!_isLocked || _selectedChoice != choice) {
-      return choice == _TrueFalseChoice.betul ? baseBetul : baseSalah;
+      return neutral;
     }
     return _lastAnswerCorrect == true
         ? const Color(0xFF34C759)
         : const Color(0xFFFF6B6B);
   }
 
-  Widget _choiceButton({
-    required String label,
-    required _TrueFalseChoice choice,
-  }) {
+  Widget _choiceButton({required String label, required _WordChoice choice}) {
     return Expanded(
       child: AnimatedContainer(
         duration: AppMotionSpec.chooseDuration(
@@ -305,7 +329,49 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
           onPressed: _isLocked ? null : () => _submitAnswer(choice),
           backgroundColor: _buttonColor(choice),
           foregroundColor: Colors.white,
+          height: 80,
+          labelFontSize: 26,
         ),
+      ),
+    );
+  }
+
+  Widget _buildFeedback() {
+    final isCorrect = _lastAnswerCorrect == true;
+    final feedbackColor = isCorrect
+        ? const Color(0xFF0B7A5A)
+        : const Color(0xFFD6453D);
+
+    return SizedBox(
+      height: 38,
+      child: AnimatedSwitcher(
+        duration: AppMotionSpec.chooseDuration(
+          context,
+          const Duration(milliseconds: 200),
+          const Duration(milliseconds: 100),
+        ),
+        transitionBuilder: (child, animation) {
+          if (AppMotionSpec.reduceMotion(context)) {
+            return FadeTransition(opacity: animation, child: child);
+          }
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.85, end: 1).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+              ),
+              child: child,
+            ),
+          );
+        },
+        child: _lastAnswerCorrect == null
+            ? const SizedBox(key: ValueKey('empty-feedback'))
+            : Icon(
+                key: ValueKey('$_currentIndex-$isCorrect'),
+                isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                size: 32,
+                color: feedbackColor,
+              ),
       ),
     );
   }
@@ -451,8 +517,6 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final buttonLift = MediaQuery.sizeOf(context).height * 0.03;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -490,7 +554,7 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Betul atau Salah?',
+                        'Pilih Kata Tepat',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 30,
@@ -504,51 +568,51 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
                           child: FractionallySizedBox(
                             heightFactor: 0.5,
                             widthFactor: 1,
-                            child: StarBurstOverlay(
-                              burstKey: _burstKey,
-                              child: Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: const Color(0xFFDDE9F4),
+                            child: Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: const Color(0xFFDDE9F4),
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x1A000000),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 3),
                                   ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0x1A000000),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 3),
+                                ],
+                              ),
+                              child: AnimatedSwitcher(
+                                duration: AppMotionSpec.chooseDuration(
+                                  context,
+                                  const Duration(milliseconds: 220),
+                                  const Duration(milliseconds: 140),
+                                ),
+                                transitionBuilder: (child, animation) {
+                                  return buildAdaptiveSwitcherTransition(
+                                    context: context,
+                                    animation: animation,
+                                    child: child,
+                                  );
+                                },
+                                child: Row(
+                                  key: ValueKey(_currentIndex),
+                                  children: [
+                                    _choiceButton(
+                                      label: _currentWord.leftWord,
+                                      choice: _WordChoice.left,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    _choiceButton(
+                                      label: _currentWord.rightWord,
+                                      choice: _WordChoice.right,
                                     ),
                                   ],
-                                ),
-                                child: AnimatedSwitcher(
-                                  duration: AppMotionSpec.chooseDuration(
-                                    context,
-                                    const Duration(milliseconds: 220),
-                                    const Duration(milliseconds: 140),
-                                  ),
-                                  transitionBuilder: (child, animation) {
-                                    return buildAdaptiveSwitcherTransition(
-                                      context: context,
-                                      animation: animation,
-                                      child: child,
-                                    );
-                                  },
-                                  child: Text(
-                                    _currentWord.word,
-                                    key: ValueKey(_currentWord.word),
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1D3557),
-                                      height: 1.05,
-                                    ),
-                                  ),
                                 ),
                               ),
                             ),
@@ -556,37 +620,8 @@ class _BetulAtauSalahGameScreenState extends State<BetulAtauSalahGameScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      SizedBox(
-                        height: 34,
-                        child: Text(
-                          _feedbackText,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: _lastAnswerCorrect == true
-                                ? const Color(0xFF0B6B58)
-                                : const Color(0xFFE45832),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: buttonLift),
-                        child: Row(
-                          children: [
-                            _choiceButton(
-                              label: 'Betul',
-                              choice: _TrueFalseChoice.betul,
-                            ),
-                            const SizedBox(width: 10),
-                            _choiceButton(
-                              label: 'Salah',
-                              choice: _TrueFalseChoice.salah,
-                            ),
-                          ],
-                        ),
-                      ),
+                      _buildFeedback(),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
@@ -638,7 +673,7 @@ class BetulAtauSalahResultScreen extends StatelessWidget {
       statusTitle: _statusTitle,
       statusSubtitle: _statusSubtitle,
       confettiActive: score >= 12,
-      completionText: 'Anda telah menamatkan permainan Betul atau Salah.',
+      completionText: 'Anda telah menamatkan permainan Pilih Kata Tepat.',
       onPlayAgain: () {
         pushReplacementAdaptive(context, const BetulAtauSalahGameScreen());
       },
@@ -649,9 +684,21 @@ class BetulAtauSalahResultScreen extends StatelessWidget {
   }
 }
 
-class _TrueFalseItem {
-  const _TrueFalseItem({required this.word, required this.isCorrect});
+class _WordPair {
+  const _WordPair({required this.correct, required this.incorrect});
 
-  final String word;
-  final bool isCorrect;
+  final String correct;
+  final String incorrect;
+}
+
+class _WordRound {
+  const _WordRound({
+    required this.leftWord,
+    required this.rightWord,
+    required this.correctChoice,
+  });
+
+  final String leftWord;
+  final String rightWord;
+  final _WordChoice correctChoice;
 }

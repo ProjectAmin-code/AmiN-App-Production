@@ -1,4 +1,9 @@
-# Student Sync API Contract
+# Legacy Student Sync API Contract (Deprecated)
+
+The Flutter application no longer calls this REST API. It is retained only as
+historical documentation for the untouched dashboard/backend integration. New
+mobile progress uses the Firestore structure documented in
+`docs/firebase_offline_progress.md`.
 
 ## 1) Register Student
 

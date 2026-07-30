@@ -153,7 +153,7 @@ class GameMenuScreen extends StatelessWidget {
                             ),
                             _menuButton(
                               context: context,
-                              label: 'Pilih & Kumpul',
+                              label: 'Kumpul Kata',
                               color: const Color(0xFF2EAD63),
                               destination: const CariKumpulGameScreen(),
                               heroTag: 'hero-game-pilih-kumpul',
@@ -162,7 +162,7 @@ class GameMenuScreen extends StatelessWidget {
                             ),
                             _menuButton(
                               context: context,
-                              label: 'Cari & Pilih',
+                              label: 'Cari Kata',
                               color: const Color(0xFF5A67D8),
                               destination: const CariBulatkanGameScreen(),
                               heroTag: 'hero-game-cari-pilih',
@@ -171,7 +171,7 @@ class GameMenuScreen extends StatelessWidget {
                             ),
                             _menuButton(
                               context: context,
-                              label: 'Betul atau Salah?',
+                              label: 'Pilih Kata Tepat',
                               color: const Color(0xFF8E44AD),
                               destination: const BetulAtauSalahGameScreen(),
                               heroTag: 'hero-game-betul-salah',

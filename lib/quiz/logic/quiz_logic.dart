@@ -1,5 +1,40 @@
 import 'dart:math';
 
+enum QuizAnswerOverallStatus { correct, partial, incorrect }
+
+class QuizQuestionAnswerResult {
+  const QuizQuestionAnswerResult({
+    required this.id,
+    required this.label,
+    required this.userAnswer,
+    required this.correctAnswer,
+    required this.isCorrect,
+  });
+
+  final String id;
+  final String label;
+  final String userAnswer;
+  final String correctAnswer;
+  final bool isCorrect;
+}
+
+class QuizAnswerGroupResult {
+  const QuizAnswerGroupResult({required this.questions});
+
+  final List<QuizQuestionAnswerResult> questions;
+
+  bool get allCorrect =>
+      questions.isNotEmpty && questions.every((question) => question.isCorrect);
+
+  bool get anyCorrect => questions.any((question) => question.isCorrect);
+
+  QuizAnswerOverallStatus get overallStatus => allCorrect
+      ? QuizAnswerOverallStatus.correct
+      : anyCorrect
+      ? QuizAnswerOverallStatus.partial
+      : QuizAnswerOverallStatus.incorrect;
+}
+
 String normalizeQuizText(String input) {
   return input
       .toLowerCase()
